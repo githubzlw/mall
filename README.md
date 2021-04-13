@@ -53,6 +53,6 @@
   - 只需启动mall-admin即可
 
   ## 项目演示
-    `mall-admin-web`地址：http://192.168.1.31:8090/#/login
+    `mall-admin-web`地址：http://192.168.1.31:808/#/login
 
   
