@@ -54,4 +54,5 @@
 
   ## 项目演示
     `mall-admin-web`地址：http://192.168.1.31:8090/#/login
+	前端项目`mall-admin-web`地址：http://192.168.1.98/cerong_dev/mall-admin-web
   
