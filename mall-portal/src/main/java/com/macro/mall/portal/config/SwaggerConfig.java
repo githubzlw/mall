@@ -17,9 +17,9 @@ public class SwaggerConfig extends BaseSwaggerConfig {
     public SwaggerProperties swaggerProperties() {
         return SwaggerProperties.builder()
                 .apiBasePackage("com.macro.mall.portal.controller")
-                .title("mall前台系统")
-                .description("mall前台相关接口文档")
-                .contactName("macro")
+                .title("ImportX 前台系统")
+                .description("ImportX前台相关接口文档")
+                .contactName("jack.luo")
                 .version("1.0")
                 .enableSecurity(true)
                 .build();
