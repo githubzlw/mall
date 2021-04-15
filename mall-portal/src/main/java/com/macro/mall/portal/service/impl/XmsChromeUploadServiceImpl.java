@@ -4,13 +4,18 @@ import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.mapper.UmsMemberMapper;
 import com.macro.mall.mapper.XmsChromeUploadMapper;
 import com.macro.mall.model.*;
+import com.macro.mall.portal.dao.XmsChromeUploadDao;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
 import com.macro.mall.portal.service.XmsChromeUploadService;
 import com.macro.mall.portal.service.mapstruct.XmsChromeUploadMapstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +35,9 @@ public class XmsChromeUploadServiceImpl implements XmsChromeUploadService {
     @Autowired
     private XmsChromeUploadMapstruct mapstruct;
 
+    @Autowired
+    private XmsChromeUploadDao xmsChromeUploadDao;
+
     @Override
     public void upload(XmsChromeUploadParam xmsChromeUploadParam) {
 
@@ -42,7 +50,10 @@ public class XmsChromeUploadServiceImpl implements XmsChromeUploadService {
         }
         //进行添加操作
         XmsChromeUpload xmsChromeUpload = mapstruct.toDto(xmsChromeUploadParam);
-        if(xmsChromeUploadParam.getUrl().contains("aliexpress.com")) {
+        if(xmsChromeUploadParam.getUrl().contains("alibaba.com")) {
+            //alibaba
+            xmsChromeUpload.setSiteType(1);
+        }else if(xmsChromeUploadParam.getUrl().contains("aliexpress.com")){
             //速卖通
             xmsChromeUpload.setSiteType(2);
         }else{
@@ -56,5 +67,11 @@ public class XmsChromeUploadServiceImpl implements XmsChromeUploadService {
 
         xmsChromeUploadMapper.insert(xmsChromeUpload);
 
+    }
+
+    @Override
+    public List<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        return xmsChromeUploadDao.getList(offset, pageSize);
     }
 }
