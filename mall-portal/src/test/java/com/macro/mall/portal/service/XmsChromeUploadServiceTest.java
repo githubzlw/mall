@@ -19,7 +19,7 @@ class XmsChromeUploadServiceTest {
     @Test
     void upload() {
         XmsChromeUploadParam param = new XmsChromeUploadParam();
-        param.setUsername("wangwu");
+        param.setUsername("luohao");
         param.setUrl("https://www.aliexpress.com/item/4000410940954.html?spm=a2g01.12617084.fdpcl001.2.27cekJEPkJEP54&gps-id=5547572&scm=1007.19201.130907.0&scm_id=1007.19201.130907.0&scm-url=1007.19201.130907.0&pvid=d27667eb-2391-40e8-ab5d-f8ee71663cc5");
         param.setTitle("Let'S Make 1set Silicone Baby Feeding Set Waterproof Spoon Non-Slip Feedings Silicone Bowl Tableware Baby Products Baby Plate");
         param.setMoq("3");

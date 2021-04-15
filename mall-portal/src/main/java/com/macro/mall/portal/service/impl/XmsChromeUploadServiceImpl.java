@@ -72,6 +72,6 @@ public class XmsChromeUploadServiceImpl implements XmsChromeUploadService {
     @Override
     public List<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize) {
         int offset = (pageNum - 1) * pageSize;
-        return xmsChromeUploadDao.getList(offset, pageSize);
+        return xmsChromeUploadDao.getList(memberId,offset, pageSize);
     }
 }

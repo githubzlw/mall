@@ -33,7 +33,7 @@ secure:
       - /home/**
       - /product/**
       - /brand/**
-      - /chrome/**
+      - /chrome/upload
 
 # 自定义redis key
 redis:
@@ -43,7 +43,7 @@ redis:
     orderId: 'oms:orderId'
     member: 'ums:member'
   expire:
-    authCode: 90 # 验证码超期时间
+    authCode: 180 # 验证码超期时间
     common: 86400 # 24小时
 
 # 消息队列定义

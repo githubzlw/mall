@@ -13,9 +13,9 @@ import java.util.List;
 public interface XmsChromeUploadDao {
 
     /**
-     * 获取推荐品牌
+     * 获取列表
      */
-    List<XmsChromeUpload> getList(@Param("offset") Integer offset, @Param("limit") Integer limit);
+    List<XmsChromeUpload> getList(@Param("memberId") Long memberId,@Param("offset") Integer offset, @Param("limit") Integer limit);
 
 
 }

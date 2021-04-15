@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.portal.dao.XmsChromeUploadDao">
+    <resultMap id="flashPromotionProduct" type="com.macro.mall.portal.domain.FlashPromotionProduct"
+               extends="com.macro.mall.mapper.PmsProductMapper.BaseResultMap">
+        <result column="flash_promotion_price" property="flashPromotionPrice"/>
+        <result column="flash_promotion_count" property="flashPromotionCount"/>
+        <result column="flash_promotion_limit" property="flashPromotionLimit"/>
+    </resultMap>
+
+    <select id="getList" resultMap="com.macro.mall.mapper.XmsChromeUploadMapper.BaseResultMap">
+        SELECT *
+        FROM
+            xms_chrome_upload
+        WHERE
+            member_id = #{memberId}
+        ORDER BY
+            update_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+
+</mapper>

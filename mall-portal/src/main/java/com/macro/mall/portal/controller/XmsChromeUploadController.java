@@ -2,8 +2,10 @@ package com.macro.mall.portal.controller;
 
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.XmsChromeUpload;
 import com.macro.mall.portal.domain.MemberProductCollection;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
+import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.service.XmsChromeUploadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,6 +24,10 @@ import java.util.List;
 @Api(tags = "XmsChromeUploadController", description = "谷歌扩展插件抓取内容上传")
 @RequestMapping("/chrome")
 public class XmsChromeUploadController {
+
+    @Autowired
+    private UmsMemberService umsMemberService;
+
     @Autowired
     private XmsChromeUploadService xmsChromeUploadService;
 
@@ -37,10 +43,11 @@ public class XmsChromeUploadController {
     @ApiOperation("显示上传列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<MemberProductCollection>> list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+    public CommonResult<List<XmsChromeUpload>> list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                             @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
 
-    return null;
+        List<XmsChromeUpload> result = xmsChromeUploadService.list(umsMemberService.getCurrentMember().getId(),pageNum,pageSize);
+        return CommonResult.success(result);
     }
 
 }
