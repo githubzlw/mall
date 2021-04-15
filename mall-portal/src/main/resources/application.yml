@@ -33,6 +33,7 @@ secure:
       - /home/**
       - /product/**
       - /brand/**
+      - /chrome/**
 
 # 自定义redis key
 redis:

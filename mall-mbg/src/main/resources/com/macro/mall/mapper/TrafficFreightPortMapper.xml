@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.mapper.TrafficFreightPortMapper">
+  <resultMap id="BaseResultMap" type="com.macro.mall.model.TrafficFreightPort">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="country_id" jdbcType="INTEGER" property="countryId" />
+    <result column="mode_of_transport" jdbcType="VARCHAR" property="modeOfTransport" />
+    <result column="delivery_time" jdbcType="VARCHAR" property="deliveryTime" />
+    <result column="freight_over_1000_price" jdbcType="DECIMAL" property="freightOver1000Price" />
+    <result column="del" jdbcType="INTEGER" property="del" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, country_id, mode_of_transport, delivery_time, freight_over_1000_price, del
+  </sql>
+  <select id="selectByExample" parameterType="com.macro.mall.model.TrafficFreightPortExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from traffic_freight_port
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from traffic_freight_port
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from traffic_freight_port
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.macro.mall.model.TrafficFreightPortExample">
+    delete from traffic_freight_port
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.macro.mall.model.TrafficFreightPort">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into traffic_freight_port (country_id, mode_of_transport, delivery_time, 
+      freight_over_1000_price, del)
+    values (#{countryId,jdbcType=INTEGER}, #{modeOfTransport,jdbcType=VARCHAR}, #{deliveryTime,jdbcType=VARCHAR}, 
+      #{freightOver1000Price,jdbcType=DECIMAL}, #{del,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.macro.mall.model.TrafficFreightPort">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into traffic_freight_port
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="countryId != null">
+        country_id,
+      </if>
+      <if test="modeOfTransport != null">
+        mode_of_transport,
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time,
+      </if>
+      <if test="freightOver1000Price != null">
+        freight_over_1000_price,
+      </if>
+      <if test="del != null">
+        del,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="countryId != null">
+        #{countryId,jdbcType=INTEGER},
+      </if>
+      <if test="modeOfTransport != null">
+        #{modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="deliveryTime != null">
+        #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="freightOver1000Price != null">
+        #{freightOver1000Price,jdbcType=DECIMAL},
+      </if>
+      <if test="del != null">
+        #{del,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.macro.mall.model.TrafficFreightPortExample" resultType="java.lang.Long">
+    select count(*) from traffic_freight_port
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update traffic_freight_port
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.countryId != null">
+        country_id = #{record.countryId,jdbcType=INTEGER},
+      </if>
+      <if test="record.modeOfTransport != null">
+        mode_of_transport = #{record.modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deliveryTime != null">
+        delivery_time = #{record.deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.freightOver1000Price != null">
+        freight_over_1000_price = #{record.freightOver1000Price,jdbcType=DECIMAL},
+      </if>
+      <if test="record.del != null">
+        del = #{record.del,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update traffic_freight_port
+    set id = #{record.id,jdbcType=INTEGER},
+      country_id = #{record.countryId,jdbcType=INTEGER},
+      mode_of_transport = #{record.modeOfTransport,jdbcType=VARCHAR},
+      delivery_time = #{record.deliveryTime,jdbcType=VARCHAR},
+      freight_over_1000_price = #{record.freightOver1000Price,jdbcType=DECIMAL},
+      del = #{record.del,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.macro.mall.model.TrafficFreightPort">
+    update traffic_freight_port
+    <set>
+      <if test="countryId != null">
+        country_id = #{countryId,jdbcType=INTEGER},
+      </if>
+      <if test="modeOfTransport != null">
+        mode_of_transport = #{modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time = #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="freightOver1000Price != null">
+        freight_over_1000_price = #{freightOver1000Price,jdbcType=DECIMAL},
+      </if>
+      <if test="del != null">
+        del = #{del,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.macro.mall.model.TrafficFreightPort">
+    update traffic_freight_port
+    set country_id = #{countryId,jdbcType=INTEGER},
+      mode_of_transport = #{modeOfTransport,jdbcType=VARCHAR},
+      delivery_time = #{deliveryTime,jdbcType=VARCHAR},
+      freight_over_1000_price = #{freightOver1000Price,jdbcType=DECIMAL},
+      del = #{del,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.mapper.ListOfCountriesMapper">
+  <resultMap id="BaseResultMap" type="com.macro.mall.model.ListOfCountries">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="english_name_of_country" jdbcType="VARCHAR" property="englishNameOfCountry" />
+    <result column="chinese_name_of_country" jdbcType="VARCHAR" property="chineseNameOfCountry" />
+    <result column="countries_in_code" jdbcType="VARCHAR" property="countriesInCode" />
+    <result column="area_num" jdbcType="INTEGER" property="areaNum" />
+    <result column="area_name" jdbcType="VARCHAR" property="areaName" />
+    <result column="africa_flag" jdbcType="INTEGER" property="africaFlag" />
+    <result column="cif_flag" jdbcType="INTEGER" property="cifFlag" />
+    <result column="del" jdbcType="INTEGER" property="del" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, english_name_of_country, chinese_name_of_country, countries_in_code, area_num, 
+    area_name, africa_flag, cif_flag, del
+  </sql>
+  <select id="selectByExample" parameterType="com.macro.mall.model.ListOfCountriesExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from list_of_countries
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from list_of_countries
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from list_of_countries
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.macro.mall.model.ListOfCountriesExample">
+    delete from list_of_countries
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.macro.mall.model.ListOfCountries">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into list_of_countries (english_name_of_country, chinese_name_of_country, 
+      countries_in_code, area_num, area_name, 
+      africa_flag, cif_flag, del
+      )
+    values (#{englishNameOfCountry,jdbcType=VARCHAR}, #{chineseNameOfCountry,jdbcType=VARCHAR}, 
+      #{countriesInCode,jdbcType=VARCHAR}, #{areaNum,jdbcType=INTEGER}, #{areaName,jdbcType=VARCHAR}, 
+      #{africaFlag,jdbcType=INTEGER}, #{cifFlag,jdbcType=INTEGER}, #{del,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.macro.mall.model.ListOfCountries">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into list_of_countries
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="englishNameOfCountry != null">
+        english_name_of_country,
+      </if>
+      <if test="chineseNameOfCountry != null">
+        chinese_name_of_country,
+      </if>
+      <if test="countriesInCode != null">
+        countries_in_code,
+      </if>
+      <if test="areaNum != null">
+        area_num,
+      </if>
+      <if test="areaName != null">
+        area_name,
+      </if>
+      <if test="africaFlag != null">
+        africa_flag,
+      </if>
+      <if test="cifFlag != null">
+        cif_flag,
+      </if>
+      <if test="del != null">
+        del,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="englishNameOfCountry != null">
+        #{englishNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="chineseNameOfCountry != null">
+        #{chineseNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="countriesInCode != null">
+        #{countriesInCode,jdbcType=VARCHAR},
+      </if>
+      <if test="areaNum != null">
+        #{areaNum,jdbcType=INTEGER},
+      </if>
+      <if test="areaName != null">
+        #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="africaFlag != null">
+        #{africaFlag,jdbcType=INTEGER},
+      </if>
+      <if test="cifFlag != null">
+        #{cifFlag,jdbcType=INTEGER},
+      </if>
+      <if test="del != null">
+        #{del,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.macro.mall.model.ListOfCountriesExample" resultType="java.lang.Long">
+    select count(*) from list_of_countries
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update list_of_countries
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.englishNameOfCountry != null">
+        english_name_of_country = #{record.englishNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="record.chineseNameOfCountry != null">
+        chinese_name_of_country = #{record.chineseNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="record.countriesInCode != null">
+        countries_in_code = #{record.countriesInCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.areaNum != null">
+        area_num = #{record.areaNum,jdbcType=INTEGER},
+      </if>
+      <if test="record.areaName != null">
+        area_name = #{record.areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.africaFlag != null">
+        africa_flag = #{record.africaFlag,jdbcType=INTEGER},
+      </if>
+      <if test="record.cifFlag != null">
+        cif_flag = #{record.cifFlag,jdbcType=INTEGER},
+      </if>
+      <if test="record.del != null">
+        del = #{record.del,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update list_of_countries
+    set id = #{record.id,jdbcType=INTEGER},
+      english_name_of_country = #{record.englishNameOfCountry,jdbcType=VARCHAR},
+      chinese_name_of_country = #{record.chineseNameOfCountry,jdbcType=VARCHAR},
+      countries_in_code = #{record.countriesInCode,jdbcType=VARCHAR},
+      area_num = #{record.areaNum,jdbcType=INTEGER},
+      area_name = #{record.areaName,jdbcType=VARCHAR},
+      africa_flag = #{record.africaFlag,jdbcType=INTEGER},
+      cif_flag = #{record.cifFlag,jdbcType=INTEGER},
+      del = #{record.del,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.macro.mall.model.ListOfCountries">
+    update list_of_countries
+    <set>
+      <if test="englishNameOfCountry != null">
+        english_name_of_country = #{englishNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="chineseNameOfCountry != null">
+        chinese_name_of_country = #{chineseNameOfCountry,jdbcType=VARCHAR},
+      </if>
+      <if test="countriesInCode != null">
+        countries_in_code = #{countriesInCode,jdbcType=VARCHAR},
+      </if>
+      <if test="areaNum != null">
+        area_num = #{areaNum,jdbcType=INTEGER},
+      </if>
+      <if test="areaName != null">
+        area_name = #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="africaFlag != null">
+        africa_flag = #{africaFlag,jdbcType=INTEGER},
+      </if>
+      <if test="cifFlag != null">
+        cif_flag = #{cifFlag,jdbcType=INTEGER},
+      </if>
+      <if test="del != null">
+        del = #{del,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.macro.mall.model.ListOfCountries">
+    update list_of_countries
+    set english_name_of_country = #{englishNameOfCountry,jdbcType=VARCHAR},
+      chinese_name_of_country = #{chineseNameOfCountry,jdbcType=VARCHAR},
+      countries_in_code = #{countriesInCode,jdbcType=VARCHAR},
+      area_num = #{areaNum,jdbcType=INTEGER},
+      area_name = #{areaName,jdbcType=VARCHAR},
+      africa_flag = #{africaFlag,jdbcType=INTEGER},
+      cif_flag = #{cifFlag,jdbcType=INTEGER},
+      del = #{del,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

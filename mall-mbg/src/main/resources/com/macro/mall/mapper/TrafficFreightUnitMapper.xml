@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.mapper.TrafficFreightUnitMapper">
+  <resultMap id="BaseResultMap" type="com.macro.mall.model.TrafficFreightUnit">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="mode_of_transport" jdbcType="VARCHAR" property="modeOfTransport" />
+    <result column="delivery_time" jdbcType="VARCHAR" property="deliveryTime" />
+    <result column="country_id" jdbcType="INTEGER" property="countryId" />
+    <result column="first_heavy" jdbcType="DOUBLE" property="firstHeavy" />
+    <result column="first_heavy_price" jdbcType="DECIMAL" property="firstHeavyPrice" />
+    <result column="continued_heavy_price" jdbcType="DECIMAL" property="continuedHeavyPrice" />
+    <result column="big_heavy_price" jdbcType="DECIMAL" property="bigHeavyPrice" />
+    <result column="default_weight_of_special" jdbcType="DOUBLE" property="defaultWeightOfSpecial" />
+    <result column="first_heavy_price_of_special" jdbcType="DECIMAL" property="firstHeavyPriceOfSpecial" />
+    <result column="continued_heavy_price_of_special" jdbcType="DECIMAL" property="continuedHeavyPriceOfSpecial" />
+    <result column="big_heavy_price_of_special" jdbcType="DECIMAL" property="bigHeavyPriceOfSpecial" />
+    <result column="del" jdbcType="INTEGER" property="del" />
+    <result column="split" jdbcType="INTEGER" property="split" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, mode_of_transport, delivery_time, country_id, first_heavy, first_heavy_price, 
+    continued_heavy_price, big_heavy_price, default_weight_of_special, first_heavy_price_of_special, 
+    continued_heavy_price_of_special, big_heavy_price_of_special, del, split
+  </sql>
+  <select id="selectByExample" parameterType="com.macro.mall.model.TrafficFreightUnitExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from traffic_freight_unit
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from traffic_freight_unit
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from traffic_freight_unit
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.macro.mall.model.TrafficFreightUnitExample">
+    delete from traffic_freight_unit
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.macro.mall.model.TrafficFreightUnit">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into traffic_freight_unit (mode_of_transport, delivery_time, country_id, 
+      first_heavy, first_heavy_price, continued_heavy_price, 
+      big_heavy_price, default_weight_of_special, first_heavy_price_of_special, 
+      continued_heavy_price_of_special, big_heavy_price_of_special, 
+      del, split)
+    values (#{modeOfTransport,jdbcType=VARCHAR}, #{deliveryTime,jdbcType=VARCHAR}, #{countryId,jdbcType=INTEGER}, 
+      #{firstHeavy,jdbcType=DOUBLE}, #{firstHeavyPrice,jdbcType=DECIMAL}, #{continuedHeavyPrice,jdbcType=DECIMAL}, 
+      #{bigHeavyPrice,jdbcType=DECIMAL}, #{defaultWeightOfSpecial,jdbcType=DOUBLE}, #{firstHeavyPriceOfSpecial,jdbcType=DECIMAL}, 
+      #{continuedHeavyPriceOfSpecial,jdbcType=DECIMAL}, #{bigHeavyPriceOfSpecial,jdbcType=DECIMAL}, 
+      #{del,jdbcType=INTEGER}, #{split,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.macro.mall.model.TrafficFreightUnit">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into traffic_freight_unit
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="modeOfTransport != null">
+        mode_of_transport,
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time,
+      </if>
+      <if test="countryId != null">
+        country_id,
+      </if>
+      <if test="firstHeavy != null">
+        first_heavy,
+      </if>
+      <if test="firstHeavyPrice != null">
+        first_heavy_price,
+      </if>
+      <if test="continuedHeavyPrice != null">
+        continued_heavy_price,
+      </if>
+      <if test="bigHeavyPrice != null">
+        big_heavy_price,
+      </if>
+      <if test="defaultWeightOfSpecial != null">
+        default_weight_of_special,
+      </if>
+      <if test="firstHeavyPriceOfSpecial != null">
+        first_heavy_price_of_special,
+      </if>
+      <if test="continuedHeavyPriceOfSpecial != null">
+        continued_heavy_price_of_special,
+      </if>
+      <if test="bigHeavyPriceOfSpecial != null">
+        big_heavy_price_of_special,
+      </if>
+      <if test="del != null">
+        del,
+      </if>
+      <if test="split != null">
+        split,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="modeOfTransport != null">
+        #{modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="deliveryTime != null">
+        #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="countryId != null">
+        #{countryId,jdbcType=INTEGER},
+      </if>
+      <if test="firstHeavy != null">
+        #{firstHeavy,jdbcType=DOUBLE},
+      </if>
+      <if test="firstHeavyPrice != null">
+        #{firstHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="continuedHeavyPrice != null">
+        #{continuedHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="bigHeavyPrice != null">
+        #{bigHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="defaultWeightOfSpecial != null">
+        #{defaultWeightOfSpecial,jdbcType=DOUBLE},
+      </if>
+      <if test="firstHeavyPriceOfSpecial != null">
+        #{firstHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="continuedHeavyPriceOfSpecial != null">
+        #{continuedHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="bigHeavyPriceOfSpecial != null">
+        #{bigHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="del != null">
+        #{del,jdbcType=INTEGER},
+      </if>
+      <if test="split != null">
+        #{split,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.macro.mall.model.TrafficFreightUnitExample" resultType="java.lang.Long">
+    select count(*) from traffic_freight_unit
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update traffic_freight_unit
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.modeOfTransport != null">
+        mode_of_transport = #{record.modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deliveryTime != null">
+        delivery_time = #{record.deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.countryId != null">
+        country_id = #{record.countryId,jdbcType=INTEGER},
+      </if>
+      <if test="record.firstHeavy != null">
+        first_heavy = #{record.firstHeavy,jdbcType=DOUBLE},
+      </if>
+      <if test="record.firstHeavyPrice != null">
+        first_heavy_price = #{record.firstHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="record.continuedHeavyPrice != null">
+        continued_heavy_price = #{record.continuedHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="record.bigHeavyPrice != null">
+        big_heavy_price = #{record.bigHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="record.defaultWeightOfSpecial != null">
+        default_weight_of_special = #{record.defaultWeightOfSpecial,jdbcType=DOUBLE},
+      </if>
+      <if test="record.firstHeavyPriceOfSpecial != null">
+        first_heavy_price_of_special = #{record.firstHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="record.continuedHeavyPriceOfSpecial != null">
+        continued_heavy_price_of_special = #{record.continuedHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="record.bigHeavyPriceOfSpecial != null">
+        big_heavy_price_of_special = #{record.bigHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="record.del != null">
+        del = #{record.del,jdbcType=INTEGER},
+      </if>
+      <if test="record.split != null">
+        split = #{record.split,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update traffic_freight_unit
+    set id = #{record.id,jdbcType=INTEGER},
+      mode_of_transport = #{record.modeOfTransport,jdbcType=VARCHAR},
+      delivery_time = #{record.deliveryTime,jdbcType=VARCHAR},
+      country_id = #{record.countryId,jdbcType=INTEGER},
+      first_heavy = #{record.firstHeavy,jdbcType=DOUBLE},
+      first_heavy_price = #{record.firstHeavyPrice,jdbcType=DECIMAL},
+      continued_heavy_price = #{record.continuedHeavyPrice,jdbcType=DECIMAL},
+      big_heavy_price = #{record.bigHeavyPrice,jdbcType=DECIMAL},
+      default_weight_of_special = #{record.defaultWeightOfSpecial,jdbcType=DOUBLE},
+      first_heavy_price_of_special = #{record.firstHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      continued_heavy_price_of_special = #{record.continuedHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      big_heavy_price_of_special = #{record.bigHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      del = #{record.del,jdbcType=INTEGER},
+      split = #{record.split,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.macro.mall.model.TrafficFreightUnit">
+    update traffic_freight_unit
+    <set>
+      <if test="modeOfTransport != null">
+        mode_of_transport = #{modeOfTransport,jdbcType=VARCHAR},
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time = #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="countryId != null">
+        country_id = #{countryId,jdbcType=INTEGER},
+      </if>
+      <if test="firstHeavy != null">
+        first_heavy = #{firstHeavy,jdbcType=DOUBLE},
+      </if>
+      <if test="firstHeavyPrice != null">
+        first_heavy_price = #{firstHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="continuedHeavyPrice != null">
+        continued_heavy_price = #{continuedHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="bigHeavyPrice != null">
+        big_heavy_price = #{bigHeavyPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="defaultWeightOfSpecial != null">
+        default_weight_of_special = #{defaultWeightOfSpecial,jdbcType=DOUBLE},
+      </if>
+      <if test="firstHeavyPriceOfSpecial != null">
+        first_heavy_price_of_special = #{firstHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="continuedHeavyPriceOfSpecial != null">
+        continued_heavy_price_of_special = #{continuedHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="bigHeavyPriceOfSpecial != null">
+        big_heavy_price_of_special = #{bigHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      </if>
+      <if test="del != null">
+        del = #{del,jdbcType=INTEGER},
+      </if>
+      <if test="split != null">
+        split = #{split,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.macro.mall.model.TrafficFreightUnit">
+    update traffic_freight_unit
+    set mode_of_transport = #{modeOfTransport,jdbcType=VARCHAR},
+      delivery_time = #{deliveryTime,jdbcType=VARCHAR},
+      country_id = #{countryId,jdbcType=INTEGER},
+      first_heavy = #{firstHeavy,jdbcType=DOUBLE},
+      first_heavy_price = #{firstHeavyPrice,jdbcType=DECIMAL},
+      continued_heavy_price = #{continuedHeavyPrice,jdbcType=DECIMAL},
+      big_heavy_price = #{bigHeavyPrice,jdbcType=DECIMAL},
+      default_weight_of_special = #{defaultWeightOfSpecial,jdbcType=DOUBLE},
+      first_heavy_price_of_special = #{firstHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      continued_heavy_price_of_special = #{continuedHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      big_heavy_price_of_special = #{bigHeavyPriceOfSpecial,jdbcType=DECIMAL},
+      del = #{del,jdbcType=INTEGER},
+      split = #{split,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

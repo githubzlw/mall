@@ -50,6 +50,8 @@
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
         <mall-security.version>1.0-SNAPSHOT</mall-security.version>
+        <mapstruct.version>1.4.2.Final</mapstruct.version>
+
     </properties>
 
     <dependencies>

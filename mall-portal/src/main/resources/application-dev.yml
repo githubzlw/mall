@@ -17,7 +17,7 @@ spring:
         login-password: druid
   data:
     mongodb:
-      host: 192.168.1.31
+      host: 192.168.1.153
       port: 27017
       database: mall-port
   redis:
@@ -27,9 +27,9 @@ spring:
     password: '@Import_Express.Auth_123'# Redis服务器连接密码（默认为空）
     timeout: 300ms # 连接超时时间（毫秒）
   rabbitmq:
-    host: 192.168.1.31
+    host: 192.168.1.98
     port: 5672
-    virtual-host: /mall
+    virtual-host: /
     username: mall
     password: mall
 
