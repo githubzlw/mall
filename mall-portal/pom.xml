@@ -53,6 +53,11 @@
             <version>${mapstruct.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!-- mybatis-plus-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

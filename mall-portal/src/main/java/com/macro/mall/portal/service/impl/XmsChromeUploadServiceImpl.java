@@ -24,7 +24,7 @@ import java.util.List;
  * @date 2021/4/15
  */
 @Service
-public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMapper, com.macro.mall.entity.XmsChromeUpload> implements IXmsChromeUploadService {
+public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMapper, XmsChromeUpload> implements IXmsChromeUploadService {
 
     @Autowired
     private UmsMemberMapper memberMapper;
