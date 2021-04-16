@@ -1,5 +1,7 @@
 package com.macro.mall;
 
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.setting.dialect.Props;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.core.exceptions.MybatisPlusException;
@@ -55,7 +57,6 @@ public class MyBatisPlusCodeGenerator {
         gc.setAuthor("jack.luo");
         // 是否覆盖
         gc.setFileOverride(true);
-        gc.setIdType(IdType.ID_WORKER);
         gc.setDateType(DateType.ONLY_DATE);
         gc.setOpen(false);
         gc.setSwagger2(true);
@@ -63,22 +64,23 @@ public class MyBatisPlusCodeGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://192.168.1.31:3306/mall?useUnicode=true&useSSL=false&characterEncoding=utf8");
-        // dsc.setSchemaName("public");
-        dsc.setDriverName("com.mysql.jdbc.Driver");
-        dsc.setUsername("mall");
-        dsc.setPassword("Password_2021");
+//        String str = ResourceUtil.readUtf8Str("generator.properties");
+        Props props =new Props("generator.properties");
+        dsc.setUrl(props.getStr("jdbc.connectionURL"));
+        dsc.setUsername(props.getStr("jdbc.userId"));
+        dsc.setPassword(props.getStr("jdbc.password"));
+        dsc.setDriverName(props.getStr("jdbc.driverClass"));
         mpg.setDataSource(dsc);
 
         // 包配置
         PackageConfig pc = new PackageConfig();
 //        pc.setModuleName(scanner("模块名"));
-        pc.setModuleName("mall");
-        pc.setParent("com.macro");
-        pc.setEntity("entity");
-        pc.setMapper("mapper");
-        pc.setService("service");
-        pc.setController("rest");
+//        pc.setModuleName("mall");
+        pc.setParent("com.macro.mall");
+//        pc.setEntity("entity");
+//        pc.setMapper("mapper");
+//        pc.setService("service");
+//        pc.setController("rest");
         mpg.setPackageInfo(pc);
 
         // 自定义配置
@@ -100,7 +102,7 @@ public class MyBatisPlusCodeGenerator {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return projectPath + "/src/main/resources/mapper/" + pc.getModuleName()
+                return projectPath + "/src/main/resources/com/macro/mall/mapper/" + pc.getModuleName()
                         + "/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
             }
         });
