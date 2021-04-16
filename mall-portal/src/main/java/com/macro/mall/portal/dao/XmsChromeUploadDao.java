@@ -1,6 +1,6 @@
 package com.macro.mall.portal.dao;
 
-import com.macro.mall.model.XmsChromeUpload;
+import com.macro.mall.entity.XmsChromeUpload;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface XmsChromeUploadDao {
     /**
      * 获取列表
      */
-    List<XmsChromeUpload> getList(@Param("memberId") Long memberId,@Param("offset") Integer offset, @Param("limit") Integer limit);
+    List<XmsChromeUpload> getList(@Param("memberId") Long memberId, @Param("offset") Integer offset, @Param("limit") Integer limit);
 
 
 }

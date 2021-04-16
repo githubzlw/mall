@@ -1,19 +1,26 @@
 package com.macro.mall.portal.service;
 
-import com.macro.mall.model.XmsChromeUpload;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
 
 import java.util.List;
 
 /**
- * 谷歌扩展插件抓取内容上传Service
- * Created by jack.luo on 2021/4/15.
+ * <p>
+ * 谷歌扩展插件抓取内容上传 服务类
+ * </p>
+ *
+ * @author jack.luo
+ * @since 2021-04-16
  */
-public interface XmsChromeUploadService {
+public interface IXmsChromeUploadService extends IService<XmsChromeUpload> {
+
     /**
      * 数据上传
      */
     void upload(XmsChromeUploadParam xmsChromeUploadParam);
+
     /**
      * 显示上传列表
      */

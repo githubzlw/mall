@@ -1,20 +1,22 @@
 package com.macro.mall.portal.service;
 
+import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
+import io.jsonwebtoken.lang.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class XmsChromeUploadServiceTest {
 
     @Autowired
-    private XmsChromeUploadService service;
+    private IXmsChromeUploadService service;
 
     @Test
     void upload() {
@@ -28,5 +30,13 @@ class XmsChromeUploadServiceTest {
         param.setSku("112121");
         param.setImages("image1.gif");
         service.upload(param);
+    }
+
+    @Test
+    void list() {
+        List<XmsChromeUpload> list = service.list(6L, 2, 2);
+        Assert.isTrue(list != null);
+        Assert.isTrue(list.size() == 2);
+        System.out.println(list);
     }
 }

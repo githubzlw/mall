@@ -1,30 +1,16 @@
 package com.macro.mall.mapper;
 
-import com.macro.mall.model.XmsChromeUpload;
-import com.macro.mall.model.XmsChromeUploadExample;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.macro.mall.entity.XmsChromeUpload;
 
-public interface XmsChromeUploadMapper {
-    long countByExample(XmsChromeUploadExample example);
+/**
+ * <p>
+ * 商品信息 Mapper 接口
+ * </p>
+ *
+ * @author jack.luo
+ * @since 2021-04-16
+ */
+public interface XmsChromeUploadMapper extends BaseMapper<XmsChromeUpload> {
 
-    int deleteByExample(XmsChromeUploadExample example);
-
-    int deleteByPrimaryKey(Long id);
-
-    int insert(XmsChromeUpload record);
-
-    int insertSelective(XmsChromeUpload record);
-
-    List<XmsChromeUpload> selectByExample(XmsChromeUploadExample example);
-
-    XmsChromeUpload selectByPrimaryKey(Long id);
-
-    int updateByExampleSelective(@Param("record") XmsChromeUpload record, @Param("example") XmsChromeUploadExample example);
-
-    int updateByExample(@Param("record") XmsChromeUpload record, @Param("example") XmsChromeUploadExample example);
-
-    int updateByPrimaryKeySelective(XmsChromeUpload record);
-
-    int updateByPrimaryKey(XmsChromeUpload record);
 }
