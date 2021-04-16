@@ -1,7 +1,7 @@
 package com.macro.mall.portal.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.macro.mall.common.exception.Asserts;
@@ -68,10 +68,11 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
     public List<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize) {
 
         Page<XmsChromeUpload> page = new Page<>(pageNum, pageSize);
-        //封装查询条件
-        Wrapper wrapper = new QueryWrapper<XmsChromeUpload>().eq("member_id", memberId).orderByDesc("update_time");
 
-        Page<XmsChromeUpload> xmsChromeUploadPage = xmsChromeUploadMapper.selectPage(page, wrapper);
+        //封装查询条件
+        LambdaQueryWrapper<XmsChromeUpload> query
+                = Wrappers.<XmsChromeUpload>lambdaQuery().eq(XmsChromeUpload::getMemberId, memberId).orderByDesc(XmsChromeUpload::getUpdateTime);
+        Page<XmsChromeUpload> xmsChromeUploadPage = xmsChromeUploadMapper.selectPage(page, query);
         return xmsChromeUploadPage.getRecords();
 
     }
