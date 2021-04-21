@@ -7,7 +7,10 @@ import lombok.Data;
  */
 public enum ChromeUploadSiteEnum {
 
-    ALIBABA(1,"alibaba.com"), ALIEXPRESS(2,"aliexpress.com");
+    ALIBABA(1,"https://www.alibaba.com/"), ALIEXPRESS(2,"https://www.aliexpress.com/")
+    , ESALIEXPRESS(3,"https://es.aliexpress.com/"), AMAZON(4,"https://www.amazon.cn/")
+    , WAYFAIR(5,"https://www.wayfair.com/"), EBAY(6,"https://www.ebay.com/")
+    , WALMART(7,"https://www.walmart.com/");
 
     private int siteType;
     private String siteDomain;
