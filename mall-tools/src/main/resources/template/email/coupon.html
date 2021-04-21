@@ -1,0 +1,707 @@
+<style type="text/css">
+
+    * {
+        margin: 0;
+        padding: 0;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+
+    img {
+        max-width: 100%;
+        outline: none;
+        text-decoration: none;
+        -ms-interpolation-mode: bicubic;
+    }
+
+    .image-fix {
+        display: block;
+    }
+
+    .collapse {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        -webkit-font-smoothing: antialiased;
+        -webkit-text-size-adjust: none;
+        width: 100% !important;
+        height: 100%;
+        text-align: center;
+        color: #747474;
+        background-color: #ffffff;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: Helvetica, Arial, sans-serif;
+        line-height: 1.1;
+    }
+
+    h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
+        font-size: 60%;
+        line-height: 0;
+        text-transform: none;
+    }
+
+    h1 {
+        font-weight: 200;
+        font-size: 44px;
+    }
+
+    h2 {
+        font-weight: 200;
+        font-size: 32px;
+        margin-bottom: 14px;
+    }
+
+    h3 {
+        font-weight: 500;
+        font-size: 27px;
+    }
+
+    h4 {
+        font-weight: 500;
+        font-size: 23px;
+    }
+
+    h5 {
+        font-weight: 900;
+        font-size: 17px;
+    }
+
+    h6 {
+        font-weight: 900;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+
+    .collapse {
+        margin: 0 !important;
+    }
+
+    td, div {
+        font-family: Helvetica, Arial, sans-serif;
+        text-align: center;
+    }
+
+    p, ul {
+        margin-bottom: 10px;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    p.lead {
+        font-size: 17px;
+    }
+
+    p.last {
+        margin-bottom: 0px;
+    }
+
+    i, em {
+        font-style: normal;
+    }
+
+    ul, ol, li {
+        list-style: none;
+    }
+
+    a {
+        color: #747474;
+        text-decoration: none;
+    }
+
+    a img {
+        border: none;
+    }
+
+    .clearfix:before, .clearfix:after {
+        content: "";
+        display: table;
+    }
+
+    .clearfix:after {
+        clear: both;
+    }
+
+    .clearfix {
+        zoom: 1;
+    }
+
+    .head-wrap {
+        width: 100%;
+        margin: 0 auto;
+        background-color: #f9f8f8;
+        border-bottom: 1px solid #d8d8d8;
+    }
+
+    .head-wrap * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-background{background: repeat-x url(https://www.filepicker.io/api/file/wUGKTIOZTDqV2oJx5NCh) left bottom; height: 60px;}
+    .header-background2{background: repeat-x url(https://www.filepicker.io/api/file/wUGKTIOZTDqV2oJx5NCh) left bottom; height: 90px;}
+    .header-background3{background: repeat-x url(https://www.filepicker.io/api/file/wUGKTIOZTDqV2oJx5NCh) left bottom; height: 102px;}
+
+    .header {
+        height: 42px;
+    }
+
+    .header .content {
+        padding: 0;
+    }
+
+    .header .brand {
+        font-size: 16px;
+        line-height: 42px;
+        font-weight: bold;
+    }
+
+    .header .brand a {
+        color: #464646;
+    }
+
+    .header .brand a img {
+        padding: 3% 0;
+    }
+
+    .body-wrap {
+        width: 505px;
+        margin: 0 auto;
+        background-color: #ffffff;
+    }
+
+    .soapbox .soapbox-title {
+        font-size: 30px;
+        color: #464646;
+        padding-top: 25px;
+        text-align: left;
+    }
+
+    .content .status-container.single .status-padding {
+        width: 80px;
+    }
+
+    .content .status {
+        width: 90%;
+    }
+
+    .content .status-container.single .status {
+        width: 300px;
+    }
+
+    .status {
+        border-collapse: collapse;
+        margin-left: 15px;
+        color: #656565;
+    }
+
+    .status .status-cell {
+        border: 1px solid #b3b3b3;
+        height: 50px;
+    }
+
+    .status .status-cell.success, .status .status-cell.active {
+        height: 65px;
+    }
+
+    .status .status-cell.success {
+        background: #f2ffeb;
+        color: #51da42;
+    }
+
+    .status .status-cell.success .status-title {
+        font-size: 15px;
+    }
+
+    .status .status-cell.active {
+        background: #fffde0;
+        width: 135px;
+    }
+
+    .status .status-title {
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 23px;
+    }
+
+    .status .status-image {
+        vertical-align: text-bottom;
+    }
+
+    .body .body-padded, .body .body-padding {
+        padding-top: 20px;
+    }
+
+    .body .body-padding {
+    }
+
+    .body-padded, .body-title {
+        text-align: left;
+    }
+
+    .body .body-title {
+        font-weight: bold;
+        font-size: 16px;
+        color: #464646;
+    }
+
+    .body .body-text .body-text-cell {
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 10px 0 10px;
+    }
+
+    .received_box {
+        width: 100%;
+        text-align: left;
+        margin: 15px auto 0;
+    }
+
+    .rece_shop {
+        border: 1px solid #d8d8d8;
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .rece_shop a {
+        color: #01a4ef;
+    }
+
+    .track a {
+        color: #01a4ef;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .rece_shop a:hover, .track a:hover, .rece_phone a:hover, .please_note p a:hover {
+        text-decoration: underline;
+    }
+
+    .shipping_to {
+        margin-top: 5px;
+        color: #333;
+        width: 100%;
+        text-align: left;
+        overflow: hidden;
+    }
+
+    .track {
+        color: #333;
+        font-size: 18px;
+    }
+
+    .shipping_to .shipp_left {
+        text-align: left;
+    }
+
+    .shipping_to .shipp_left p {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .shipping_to .shipp_left p sapn {
+        font-weight: 300;
+    }
+
+    .shipping_to .shipp_right {
+        text-align: left;
+        overflow: hidden;
+    }
+
+    .shipping_to .shipp_right p {
+        font-size: 14px;
+        margin-bottom: 0;
+        text-align: left;
+        margin-left: 20px;
+    }
+
+    .rece_phone a, .please_note p a {
+        color: #01a4ef;
+    }
+
+    .rece_date {
+        margin-bottom: 0px;
+        color: #333;
+    }
+
+    .rece_date strong {
+        color: #fb941a;
+        font-size: 24px;
+    }
+
+    .coupon {
+        width: 98%;
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid #01a4ef;
+        margin-top: 10px;
+        height: 105px;
+        overflow: hidden;
+    }
+
+    .code {
+        float: left;
+        width: 65%;
+        border-right: 1px dashed #01a4ef;
+        padding-right: 5px;
+        box-sizing: border-box;
+    }
+
+    .code_p {
+        text-align: left;
+        color: #01a4ef;
+        margin-bottom: 5px;
+        width: 100%;
+    }
+
+    .code_p span {
+        width: 100px;
+        text-align: left;
+        display: inline-block;
+    }
+
+    .code_p .code_id span{
+        width: 180px;
+        text-align: left;
+        display: inline-block;
+        border-bottom: 1px dashed rgb(204, 204, 204);
+    }
+    .code_p em span{
+        width: 72px;
+        text-align: left;
+        display: inline-block;
+    }
+
+    .coupon_num {
+        width: 30%;
+        float: left;
+        margin-left: 15px;
+    }
+
+    .coupon_num h1 {
+        color: #01a4ef;
+        font-size: 40px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .coupon_num a {
+        padding: 5px 12px;
+        background-color: #01a4ef;
+        color: #fff;
+        text-align: center;
+    }
+
+    .body .body-signature-block .body-signature-cell {
+        padding: 15px 0;
+        text-align: left;
+    }
+
+    .body .body-signature {
+        font-family: "Comic Sans MS", Textile, cursive;
+        font-weight: bold;
+    }
+
+    .footer-wrap {
+        width: 100%;
+        margin: 0 auto;
+        clear: both !important;
+        background-color: #e5e5e5;
+        border-top: 1px solid #b3b3b3;
+        font-size: 12px;
+        color: #656565;
+        line-height: 30px;
+    }
+
+    .thanks_so {
+        margin-bottom: 5px;
+    }
+
+    .please_note {
+        width: 96%;
+        padding: 1%;
+        border: 1px solid #dfdfdf;
+        background-color: #f6f6f6;
+        text-align: left;
+        color: #555;
+    }
+
+    .please_note h3 {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .please_note p {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 0;
+    }
+
+    .footer-wrap .container {
+        padding: 14px 0;
+    }
+
+    .footer-wrap .container .content {
+        padding: 0;
+    }
+
+    .footer-wrap .container .footer-lead {
+        font-size: 14px;
+    }
+
+    .footer-wrap .container .footer-lead a {
+        font-size: 14px;
+        font-weight: bold;
+        color: #535353;
+    }
+
+    .footer-wrap .container a {
+        font-size: 12px;
+        color: #656565;
+    }
+
+    .footer-wrap .container a.last {
+        margin-right: 0;
+    }
+
+    .footer-wrap .footer-group {
+        display: inline-block;
+    }
+
+    .container {
+        display: block !important;
+        max-width: 505px !important;
+        clear: both !important;
+    }
+
+    .content {
+        padding: 0;
+        max-width: 505px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .content table {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .clear {
+        display: block;
+        clear: both;
+    }
+
+    table.full-width-gmail-android {
+        width: 100% !important;
+    }
+
+
+</style>
+
+<style type="text/css" media="only screen">
+
+    @media only screen {
+
+        table[class*="head-wrap"],
+        table[class*="body-wrap"],
+        table[class*="footer-wrap"] {
+            width: 100% !important;
+        }
+
+        td[class*="container"] {
+            margin: 0 auto !important;
+        }
+
+    }
+
+    @media only screen and (max-width: 505px) {
+
+        *[class*="w320"] {
+            width: 320px !important;
+        }
+
+        table[class="status"] td[class*="status-cell"],
+        table[class="status"] td[class*="status-cell"].active {
+            display: block !important;
+            width: auto !important;
+        }
+
+        table[class="status-container single"] table[class="status"] {
+            width: 270px !important;
+            margin-left: 0;
+        }
+
+        table[class="status"] td[class*="status-cell"],
+        table[class="status"] td[class*="status-cell"].active,
+        table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+            line-height: 65px !important;
+            font-size: 18px !important;
+        }
+
+        table[class="status-container single"] table[class="status"] td[class*="status-cell"],
+        table[class="status-container single"] table[class="status"] td[class*="status-cell"].active,
+        table[class="status-container single"] table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+            line-height: 51px !important;
+        }
+
+        table[class="status"] td[class*="status-cell"].active [class*="status-title"] {
+            display: inline !important;
+        }
+
+    }
+</style>
+<div bgcolor="#ffffff">
+    <div align="center">
+        <table class="head-wrap w320 full-width-gmail-android" bgcolor="#f9f8f8" cellpadding="0" cellspacing="0"
+               border="0" width="100%">
+            <tr>
+                <td background="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC" bgcolor="#ffffff" width="100%"
+                    height="8" valign="top">
+                    <!--[if gte mso 9]>
+                    <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false"
+                            style="mso-width-percent:1000;height:8px;">
+                        <v:fill type="tile" src="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC"
+                                color="#ffffff"/>
+                        <v:textbox inset="0,0,0,0">
+                    <![endif]-->
+                    <div height="8">
+                    </div>
+                    <!--[if gte mso 9]>
+                    </v:textbox>
+                    </v:rect>
+                    <![endif]-->
+                </td>
+            </tr>
+            <tr class="header-background" th:if="${websiteType} eq 1">
+                <td class="header container" align="center">
+                    <div class="content">
+            <span class="brand">
+              <a href="https://www.import-express.com/">
+                <img src="https://www.import-express.com/newindex/img/logo.png">
+              </a>
+            </span>
+                    </div>
+                </td>
+            </tr>
+            <tr class="header-background2" th:if="${websiteType} eq 2">
+                <td class="header container" align="center">
+                    <div class="content">
+            <span class="brand">
+              <a href="https://www.kidsproductwholesale.com/">
+                <img src="https://img1.kidsproductwholesale.com/importcsvimg/webpic/newindex/img/kids_logo.png">
+              </a>
+            </span>
+                    </div>
+                </td>
+            </tr>
+            <tr class="header-background3" th:if="${websiteType} eq 3">
+                <td class="header container" align="center">
+                    <div class="content">
+            <span class="brand">
+              <a href="https://www.petstoreinc.com/">
+                <img src="https://img.kidsproductwholesale.com/importcsvimg/webpic/img/wh89/pet/pet_logo.png">
+              </a>
+            </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="body-wrap w320">
+            <tr>
+                <td></td>
+                <td class="container">
+                    <div class="content">
+                        <table cellspacing="0">
+                            <tr>
+                                <td>
+                                    <table class="soapbox">
+                                        <tr>
+                                            <td class="soapbox-title">A coupon was sent to your individual center!!</td>
+                                        </tr>
+                                    </table>
+
+                                    <table class="body">
+                                        <tr>
+                                            <td class="body-padding"></td>
+                                            <td class="body-padded">
+                                                <div class="body-title">Hey <span
+                                                        th:text="${firstName}">ZhangSan</span>,
+                                                </div>
+                                                <div class="received_box">
+                                                    <p class="rece_date">There is a <strong
+                                                            th:text="${codeValue}">$20</strong> coupon in your
+                                                        individual center, go and check it now~</p>
+                                                    <div class="coupon clearfix">
+                                                        <div class="code">
+                                                            <p class="code_p">
+                                                                <span>Code:</span>
+                                                                <em class="code_id" th:text="${codeId}">0001-215565-10000</em>
+                                                            </p>
+                                                            <p class="code_p">
+                                                                <span>Description:</span>
+                                                                <em class="code_id" th:utext="${description}">If order over $300</em>
+                                                            </p>
+                                                            <p class="code_p">
+                                                                <span>Validity period:</span>
+                                                                <em th:text="${validityPeriod}">2019/01/18</em>
+                                                            </p>
+                                                        </div>
+                                                        <div class="coupon_num">
+                                                            <h1 th:text="${codeValue}">$20</h1>
+                                                            <a th:if="${websiteType} eq 1" target="_blank"
+                                                               href="https://www.import-express.com/coupon/listCoupons">MY
+                                                                ACCOUNT</a>
+                                                            <a th:if="${websiteType} eq 2" target="_blank"
+                                                               href="https://www.kidsproductwholesale.com/coupon/listCoupons">MY
+                                                                ACCOUNT</a>
+                                                            <a th:if="${websiteType} eq 3" target="_blank"
+                                                               href="https://www.petstoreinc.com/coupon/listCoupons">MY
+                                                                ACCOUNT</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <table class="body-signature-block">
+                                                    <tr>
+                                                        <td class="body-signature-cell">
+                                                            <p class="thanks_so">Thanks so much,</p>
+                                                            <p th:if="${websiteType} eq 1">ImportExpress</p>
+                                                            <p th:if="${websiteType} eq 2">kidsProductWholesale</p>
+                                                            <p th:if="${websiteType} eq 3">petstoreinc</p>
+                                                            <div class="please_note">
+                                                                <h3>PLEASE NOTE:</h3>
+                                                                <p>This email message was sent from a notification-only
+                                                                    address that cannot accept incoming email. PLEASE DO
+                                                                    NOT REPLY to this message. If you have any question
+                                                                    or concern
+                                                                    , access your account
+                                                                    <a th:if="${websiteType} eq 1" href="https://www.import-express.com/user/loginNew">here</a>
+                                                                    <a th:if="${websiteType} eq 2" href="https://www.kidsproductwholesale.com/user/loginNew">here</a>
+                                                                    <a th:if="${websiteType} eq 3" href="https://www.petstoreinc.com/user/loginNew">here</a>
+                                                                    .</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+
+
+    </div>
+</div>
