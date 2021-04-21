@@ -1,9 +1,11 @@
 package com.macro.mall.portal.service.impl;
 
+import cn.hutool.core.util.ArrayUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.macro.mall.common.enums.ChromeUploadSiteEnum;
 import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.mapper.UmsMemberMapper;
@@ -17,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author jack.luo
@@ -47,15 +51,15 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
         }
         //进行添加操作
         XmsChromeUpload xmsChromeUpload = mapstruct.toDto(xmsChromeUploadParam);
-        if(xmsChromeUploadParam.getUrl().contains("alibaba.com")) {
-            //alibaba
-            xmsChromeUpload.setSiteType(1);
-        } else if (xmsChromeUploadParam.getUrl().contains("aliexpress.com")) {
-            //速卖通
-            xmsChromeUpload.setSiteType(2);
-        } else {
+
+        //判断是否属于抓取网站范围
+        List<ChromeUploadSiteEnum> collectFilter = Arrays.stream(ChromeUploadSiteEnum.values()).filter(i -> xmsChromeUploadParam.getUrl().contains(i.getSiteDomain())).collect(Collectors.toList());
+        if(collectFilter.size() ==1 ){
+            xmsChromeUpload.setSiteType(collectFilter.get(0).getSiteType());
+        }else{
             Asserts.fail("不属于抓取网站范围");
         }
+
         xmsChromeUpload.setMemberId(umsMembers.get(0).getId());
         xmsChromeUpload.setStatus(1);
 
