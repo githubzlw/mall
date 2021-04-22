@@ -54,9 +54,9 @@ public class UmsMemberController {
     @ApiOperation("会员登录")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult login(@RequestParam String username,
-                              @RequestParam String password) {
-        String token = memberService.login(username, password);
+    public CommonResult login(@RequestParam String usernamez,
+                              @RequestParam String passwordz) {
+        String token = memberService.login(usernamez, passwordz);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
