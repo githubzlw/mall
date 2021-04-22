@@ -57,6 +57,14 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
 
+    @ApiModelProperty(value = "抓取的产品详情")
+    @TableField("productDetail")
+    private String productdetail;
+
+    @ApiModelProperty(value = "抓取的产品描述")
+    @TableField("productDescription")
+    private String productdescription;
+
     @ApiModelProperty(value = "抓取的运费")
     private String shippingFee;
 
@@ -66,7 +74,7 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
     private Integer status;
 
-    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；")
+    @ApiModelProperty(value = "网站类型")
     private Integer siteType;
 
     @ApiModelProperty(value = "创建时间")
