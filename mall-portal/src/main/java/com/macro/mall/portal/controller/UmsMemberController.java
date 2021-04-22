@@ -48,7 +48,15 @@ public class UmsMemberController {
                                  @RequestParam String organizationname,
                                  @RequestParam String monthlyOrders) {
         memberService.register(username, password, organizationname,monthlyOrders,0);
-        return CommonResult.success(null,"注册成功");
+        String token = memberService.login(username, password);
+        if (token == null) {
+            return CommonResult.validateFailed("用户名或密码错误");
+        }
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", token);
+        tokenMap.put("tokenHead", tokenHead);
+        return CommonResult.success(tokenMap);
+        //return CommonResult.success(null,"注册成功");
     }
 
     @ApiOperation("会员登录")
