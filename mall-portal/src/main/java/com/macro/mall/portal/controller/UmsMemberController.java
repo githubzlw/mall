@@ -37,6 +37,8 @@ public class UmsMemberController {
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+    @Value("${tpurl.tpLogin}")
+    public String tpLogin;
     @Autowired
     private UmsMemberService memberService;
 
@@ -127,7 +129,7 @@ public class UmsMemberController {
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair= null;
         try {
-            pair = UrlUtil.getInstance().googleAuth(idtokenstr);
+            pair = UrlUtil.getInstance().googleAuth(idtokenstr,tpLogin);
             memberService.register(pair.getRight(), "","","",1);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
@@ -142,7 +144,7 @@ public class UmsMemberController {
 
         LOGGER.info("facebook login begin");
         try {
-            String email = UrlUtil.getInstance().facebookAuth(idtokenstr);
+            String email = UrlUtil.getInstance().facebookAuth(idtokenstr,tpLogin);
             memberService.register(email, "", "","",2);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);

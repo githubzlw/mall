@@ -92,14 +92,6 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             Asserts.fail("The email is used");
         }
 
-//        //查询是否已有该用户
-//        UmsMemberExample example = new UmsMemberExample();
-//        example.createCriteria().andUsernameEqualTo(username);
-//        example.or(example.createCriteria().andPhoneEqualTo(telephone));
-//        List<UmsMember> umsMembers = memberMapper.selectByExample(example);
-//        if (!CollectionUtils.isEmpty(umsMembers)) {
-//            Asserts.fail("The email is used");
-//        }
         //没有该用户进行添加操作
         UmsMember umsMember = new UmsMember();
         umsMember.setUsername(username);

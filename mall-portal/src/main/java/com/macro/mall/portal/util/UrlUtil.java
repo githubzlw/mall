@@ -3,26 +3,28 @@ package com.macro.mall.portal.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.CharMatcher;
+import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.portal.controller.UmsMemberController;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import com.google.gson.Gson;
-import okhttp3.*;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author zlw
  * @date 2021/4/20
  */
+@RequestMapping("/UrlUtil")
 public class UrlUtil {
 
-    public final static String ZUUL_LOGIN = "http://127.0.0.1:18005/api/login-service";
     private static final Logger LOGGER = LoggerFactory.getLogger(UrlUtil.class);
 
     /**
@@ -42,12 +44,12 @@ public class UrlUtil {
      * @return
      * @throws IOException
      */
-    public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
+    public ImmutablePair<String, String> googleAuth(String idTokenString,String url) throws IOException {
 
         //sample:http://192.168.1.71:18013/googleAuth?site=IMPORTX&idTokenString=111
 
         JSONObject jsonObject =
-                this.callUrlByGet(UrlUtil.ZUUL_LOGIN + "/googleAuth?site=IMPORTX&idTokenString=" +idTokenString );
+                this.callUrlByGet(url + "/googleAuth?site=IMPORTX&idTokenString=" +idTokenString );
         CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
         if(commonResult.getCode() !=CommonResult.SUCCESS){
             throw new IllegalStateException("googleAuth() return value is error. commonResult="+commonResult);
@@ -69,12 +71,12 @@ public class UrlUtil {
      * @return
      * @throws IOException
      */
-    public String facebookAuth(String code) throws IOException {
+    public String facebookAuth(String code,String url) throws IOException {
 
         //sample:http://192.168.1.71:18013/facebookAuth?site=IMPORTX&code=1111
 
         JSONObject jsonObject =
-                this.callUrlByGet(UrlUtil.ZUUL_LOGIN + "/facebookAuth?site=IMPORTX&code=" +code );
+                this.callUrlByGet(url + "/facebookAuth?site=IMPORTX&code=" +code );
         CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
         LOGGER.info("call result:[{}]",commonResult);
         if(commonResult.getCode() !=CommonResult.SUCCESS){
