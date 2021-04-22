@@ -47,7 +47,7 @@ public class UmsMemberController {
                                  @RequestParam String password,
                                  @RequestParam String organizationname,
                                  @RequestParam String monthlyOrders) {
-        memberService.register(username, password, organizationname,monthlyOrders,"");
+        memberService.register(username, password, organizationname,monthlyOrders,0);
         return CommonResult.success(null,"注册成功");
     }
 
@@ -120,7 +120,7 @@ public class UmsMemberController {
         ImmutablePair<String, String> pair= null;
         try {
             pair = UrlUtil.getInstance().googleAuth(idtokenstr);
-            memberService.register(pair.getRight(), "","","","1");
+            memberService.register(pair.getRight(), "","","",1);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
         }
@@ -135,7 +135,7 @@ public class UmsMemberController {
         LOGGER.info("facebook login begin");
         try {
             String email = UrlUtil.getInstance().facebookAuth(idtokenstr);
-            memberService.register(email, "", "","","2");
+            memberService.register(email, "", "","",2);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
         }
