@@ -37,4 +37,10 @@ public class XmsChromeUploadParam {
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
 
+    @ApiModelProperty(value = "抓取的运费")
+    private String shippingFee;
+
+    @ApiModelProperty(value = "抓取的运输方式")
+    private String shippingBy;
+
 }

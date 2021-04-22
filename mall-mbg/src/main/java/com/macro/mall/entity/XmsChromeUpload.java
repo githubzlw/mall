@@ -14,15 +14,15 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 商品信息
+ * chrome插件导入表
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-16
+ * @since 2021-04-22
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsChromeUpload对象", description="商品信息")
+@ApiModel(value="XmsChromeUpload对象", description="chrome插件导入表")
 public class XmsChromeUpload implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -56,6 +56,12 @@ public class XmsChromeUpload implements Serializable {
 
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
+
+    @ApiModelProperty(value = "抓取的运费")
+    private String shippingFee;
+
+    @ApiModelProperty(value = "抓取的运输方式")
+    private String shippingBy;
 
     @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
     private Integer status;
