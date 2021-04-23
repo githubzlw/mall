@@ -5,6 +5,16 @@ package com.macro.mall.common.api;
  * Created by macro on 2019/4/19.
  */
 public class CommonResult<T> {
+
+    /**
+     *成功
+     */
+    public static final int SUCCESS = 200;
+    /**
+     *失败
+     */
+    public static final int FAILED = 500;
+
     /**
      * 状态码
      */

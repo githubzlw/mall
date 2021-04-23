@@ -75,19 +75,23 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
-    public void register(String username, String password, String telephone, String authCode) {
-        //验证验证码
-        if(!verifyAuthCode(authCode,telephone)){
-            Asserts.fail("验证码错误");
+    public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType) {
+//        //验证验证码
+//        if(!verifyAuthCode(authCode,telephone)){
+//            Asserts.fail("验证码错误");
+//        }
+        String telephone = username;
+        //如果用户用改email从我们网站上登录，提示该邮箱已使用,查询是否已有该用户
+        UmsMemberExample exampleSf = new UmsMemberExample();
+        exampleSf.createCriteria().andUsernameEqualTo(username);
+        exampleSf.createCriteria().andLoginTypeEqualTo(loginType);
+        List<UmsMember> umsMembersSf = memberMapper.selectByExample(exampleSf);
+        if (!CollectionUtils.isEmpty(umsMembersSf) && umsMembersSf.get(0).getLoginType() != 0) {
+            Asserts.fail("The email is used, please login with "+username);
+        }else if(!CollectionUtils.isEmpty(umsMembersSf) && umsMembersSf.get(0).getLoginType() == 0){
+            Asserts.fail("The email is used");
         }
-        //查询是否已有该用户
-        UmsMemberExample example = new UmsMemberExample();
-        example.createCriteria().andUsernameEqualTo(username);
-        example.or(example.createCriteria().andPhoneEqualTo(telephone));
-        List<UmsMember> umsMembers = memberMapper.selectByExample(example);
-        if (!CollectionUtils.isEmpty(umsMembers)) {
-            Asserts.fail("该用户已经存在");
-        }
+
         //没有该用户进行添加操作
         UmsMember umsMember = new UmsMember();
         umsMember.setUsername(username);
@@ -102,6 +106,9 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         if (!CollectionUtils.isEmpty(memberLevelList)) {
             umsMember.setMemberLevelId(memberLevelList.get(0).getId());
         }
+        umsMember.setOrganizationname(organizationname);
+        umsMember.setMonthlyOrders(monthlyOrders);
+        umsMember.setLoginType(loginType);
         memberMapper.insert(umsMember);
         umsMember.setPassword(null);
     }

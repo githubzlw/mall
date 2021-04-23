@@ -3,8 +3,12 @@ package com.macro.mall.portal.controller;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.util.UrlUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -26,10 +30,15 @@ import java.util.Map;
 @Api(tags = "UmsMemberController", description = "会员登录注册管理")
 @RequestMapping("/sso")
 public class UmsMemberController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberController.class);
+
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+    @Value("${tpurl.tpLogin}")
+    public String tpLogin;
     @Autowired
     private UmsMemberService memberService;
 
@@ -38,18 +47,26 @@ public class UmsMemberController {
     @ResponseBody
     public CommonResult register(@RequestParam String username,
                                  @RequestParam String password,
-                                 @RequestParam String telephone,
-                                 @RequestParam String authCode) {
-        memberService.register(username, password, telephone, authCode);
-        return CommonResult.success(null,"注册成功");
+                                 @RequestParam String organizationname,
+                                 @RequestParam String monthlyOrders) {
+        memberService.register(username, password, organizationname,monthlyOrders,0);
+        String token = memberService.login(username, password);
+        if (token == null) {
+            return CommonResult.validateFailed("用户名或密码错误");
+        }
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", token);
+        tokenMap.put("tokenHead", tokenHead);
+        return CommonResult.success(tokenMap);
+        //return CommonResult.success(null,"注册成功");
     }
 
     @ApiOperation("会员登录")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult login(@RequestParam String username,
-                              @RequestParam String password) {
-        String token = memberService.login(username, password);
+    public CommonResult login(@RequestParam String usernamez,
+                              @RequestParam String passwordz) {
+        String token = memberService.login(usernamez, passwordz);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
@@ -102,5 +119,36 @@ public class UmsMemberController {
         tokenMap.put("token", refreshToken);
         tokenMap.put("tokenHead", tokenHead);
         return CommonResult.success(tokenMap);
+    }
+
+    @ApiOperation("google登录")
+    @RequestMapping(value = "/googleLogin", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult googleAuth(@RequestParam String idtokenstr) {
+
+        LOGGER.info("google login begin");
+        ImmutablePair<String, String> pair= null;
+        try {
+            pair = UrlUtil.getInstance().googleAuth(idtokenstr,tpLogin);
+            memberService.register(pair.getRight(), "","","",1);
+        } catch (Exception e) {
+            LOGGER.error("googleAuth", e);
+        }
+        return CommonResult.success(null,"成功");
+    }
+
+    @ApiOperation("facebook登录")
+    @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult facebookAuth(@RequestParam String idtokenstr) {
+
+        LOGGER.info("facebook login begin");
+        try {
+            String email = UrlUtil.getInstance().facebookAuth(idtokenstr,tpLogin);
+            memberService.register(email, "", "","",2);
+        } catch (Exception e) {
+            LOGGER.error("facebookLogin", e);
+        }
+        return CommonResult.success(null,"成功");
     }
 }

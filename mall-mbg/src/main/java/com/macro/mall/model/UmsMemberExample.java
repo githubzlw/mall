@@ -1351,6 +1351,206 @@ public class UmsMemberExample {
             addCriterion("history_integration not between", value1, value2, "historyIntegration");
             return (Criteria) this;
         }
+
+        public Criteria andOrganizationnameIsNull() {
+            addCriterion("organizationname is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameIsNotNull() {
+            addCriterion("organizationname is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameEqualTo(String value) {
+            addCriterion("organizationname =", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameNotEqualTo(String value) {
+            addCriterion("organizationname <>", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameGreaterThan(String value) {
+            addCriterion("organizationname >", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameGreaterThanOrEqualTo(String value) {
+            addCriterion("organizationname >=", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameLessThan(String value) {
+            addCriterion("organizationname <", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameLessThanOrEqualTo(String value) {
+            addCriterion("organizationname <=", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameLike(String value) {
+            addCriterion("organizationname like", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameNotLike(String value) {
+            addCriterion("organizationname not like", value, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameIn(List<String> values) {
+            addCriterion("organizationname in", values, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameNotIn(List<String> values) {
+            addCriterion("organizationname not in", values, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameBetween(String value1, String value2) {
+            addCriterion("organizationname between", value1, value2, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrganizationnameNotBetween(String value1, String value2) {
+            addCriterion("organizationname not between", value1, value2, "organizationname");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersIsNull() {
+            addCriterion("monthly_orders is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersIsNotNull() {
+            addCriterion("monthly_orders is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersEqualTo(String value) {
+            addCriterion("monthly_orders =", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersNotEqualTo(String value) {
+            addCriterion("monthly_orders <>", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersGreaterThan(String value) {
+            addCriterion("monthly_orders >", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersGreaterThanOrEqualTo(String value) {
+            addCriterion("monthly_orders >=", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersLessThan(String value) {
+            addCriterion("monthly_orders <", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersLessThanOrEqualTo(String value) {
+            addCriterion("monthly_orders <=", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersLike(String value) {
+            addCriterion("monthly_orders like", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersNotLike(String value) {
+            addCriterion("monthly_orders not like", value, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersIn(List<String> values) {
+            addCriterion("monthly_orders in", values, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersNotIn(List<String> values) {
+            addCriterion("monthly_orders not in", values, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersBetween(String value1, String value2) {
+            addCriterion("monthly_orders between", value1, value2, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andMonthlyOrdersNotBetween(String value1, String value2) {
+            addCriterion("monthly_orders not between", value1, value2, "monthlyOrders");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeIsNull() {
+            addCriterion("login_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeIsNotNull() {
+            addCriterion("login_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeEqualTo(Integer value) {
+            addCriterion("login_type =", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeNotEqualTo(Integer value) {
+            addCriterion("login_type <>", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeGreaterThan(Integer value) {
+            addCriterion("login_type >", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeGreaterThanOrEqualTo(Integer value) {
+            addCriterion("login_type >=", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeLessThan(Integer value) {
+            addCriterion("login_type <", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeLessThanOrEqualTo(Integer value) {
+            addCriterion("login_type <=", value, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeIn(List<Integer> values) {
+            addCriterion("login_type in", values, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeNotIn(List<Integer> values) {
+            addCriterion("login_type not in", values, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeBetween(Integer value1, Integer value2) {
+            addCriterion("login_type between", value1, value2, "loginType");
+            return (Criteria) this;
+        }
+
+        public Criteria andLoginTypeNotBetween(Integer value1, Integer value2) {
+            addCriterion("login_type not between", value1, value2, "loginType");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

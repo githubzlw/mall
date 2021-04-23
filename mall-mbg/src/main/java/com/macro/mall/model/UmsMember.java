@@ -60,6 +60,15 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "历史积分数量")
     private Integer historyIntegration;
 
+    @ApiModelProperty(value = "组织名")
+    private String organizationname;
+
+    @ApiModelProperty(value = "月订单")
+    private String monthlyOrders;
+
+    @ApiModelProperty(value = "第三方标识")
+    private Integer loginType;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -214,6 +223,30 @@ public class UmsMember implements Serializable {
         this.historyIntegration = historyIntegration;
     }
 
+    public String getOrganizationname() {
+        return organizationname;
+    }
+
+    public void setOrganizationname(String organizationname) {
+        this.organizationname = organizationname;
+    }
+
+    public String getMonthlyOrders() {
+        return monthlyOrders;
+    }
+
+    public void setMonthlyOrders(String monthlyOrders) {
+        this.monthlyOrders = monthlyOrders;
+    }
+
+    public Integer getLoginType() {
+        return loginType;
+    }
+
+    public void setLoginType(Integer loginType) {
+        this.loginType = loginType;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -239,6 +272,9 @@ public class UmsMember implements Serializable {
         sb.append(", growth=").append(growth);
         sb.append(", luckeyCount=").append(luckeyCount);
         sb.append(", historyIntegration=").append(historyIntegration);
+        sb.append(", organizationname=").append(organizationname);
+        sb.append(", monthlyOrders=").append(monthlyOrders);
+        sb.append(", loginType=").append(loginType);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
