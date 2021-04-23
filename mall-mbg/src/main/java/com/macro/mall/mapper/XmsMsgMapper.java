@@ -1,16 +1,36 @@
 package com.macro.mall.mapper;
 
-import com.macro.mall.entity.XmsMsg;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.macro.mall.model.XmsMsg;
+import com.macro.mall.model.XmsMsgExample;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * <p>
- * 公告表 Mapper 接口
- * </p>
- *
- * @author jack.luo
- * @since 2021-04-22
- */
-public interface XmsMsgMapper extends BaseMapper<XmsMsg> {
+public interface XmsMsgMapper {
+    long countByExample(XmsMsgExample example);
 
+    int deleteByExample(XmsMsgExample example);
+
+    int deleteByPrimaryKey(Integer id);
+
+    int insert(XmsMsg record);
+
+    int insertSelective(XmsMsg record);
+
+    List<XmsMsg> selectByExampleWithBLOBs(XmsMsgExample example);
+
+    List<XmsMsg> selectByExample(XmsMsgExample example);
+
+    XmsMsg selectByPrimaryKey(Integer id);
+
+    int updateByExampleSelective(@Param("record") XmsMsg record, @Param("example") XmsMsgExample example);
+
+    int updateByExampleWithBLOBs(@Param("record") XmsMsg record, @Param("example") XmsMsgExample example);
+
+    int updateByExample(@Param("record") XmsMsg record, @Param("example") XmsMsgExample example);
+
+    int updateByPrimaryKeySelective(XmsMsg record);
+
+    int updateByPrimaryKeyWithBLOBs(XmsMsg record);
+
+    int updateByPrimaryKey(XmsMsg record);
 }
