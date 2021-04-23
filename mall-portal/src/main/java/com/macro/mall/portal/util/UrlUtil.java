@@ -49,7 +49,7 @@ public class UrlUtil {
         //sample:http://192.168.1.71:18013/googleAuth?site=IMPORTX&idTokenString=111
 
         JSONObject jsonObject =
-                this.callUrlByGet(url + "/googleAuth?site=IMPORTX&idTokenString=" +idTokenString );
+                this.callUrlByGet(url + "/googleAuth?idTokenString=" +idTokenString );
         CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
         if(commonResult.getCode() !=CommonResult.SUCCESS){
             throw new IllegalStateException("googleAuth() return value is error. commonResult="+commonResult);
@@ -76,7 +76,7 @@ public class UrlUtil {
         //sample:http://192.168.1.71:18013/facebookAuth?site=IMPORTX&code=1111
 
         JSONObject jsonObject =
-                this.callUrlByGet(url + "/facebookAuth?site=IMPORTX&code=" +code );
+                this.callUrlByGet(url + "/facebookAuth?code=" +code );
         CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
         LOGGER.info("call result:[{}]",commonResult);
         if(commonResult.getCode() !=CommonResult.SUCCESS){
