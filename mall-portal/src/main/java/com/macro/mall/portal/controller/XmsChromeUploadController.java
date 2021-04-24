@@ -1,5 +1,6 @@
 package com.macro.mall.portal.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
@@ -10,8 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 谷歌扩展插件抓取内容上传Controller
@@ -40,10 +39,10 @@ public class XmsChromeUploadController {
     @ApiOperation("显示上传列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<XmsChromeUpload>> list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                                    @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
+    public CommonResult<Page<XmsChromeUpload>> list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                          @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
 
-        List<XmsChromeUpload> result = xmsChromeUploadService.list(umsMemberService.getCurrentMember().getId(), pageNum, pageSize);
+        Page<XmsChromeUpload> result = xmsChromeUploadService.list(umsMemberService.getCurrentMember().getId(), pageNum, pageSize);
         return CommonResult.success(result);
     }
 

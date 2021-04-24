@@ -1,10 +1,9 @@
 package com.macro.mall.portal.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
-
-import java.util.List;
 
 /**
  * <p>
@@ -24,5 +23,5 @@ public interface IXmsChromeUploadService extends IService<XmsChromeUpload> {
     /**
      * 显示上传列表
      */
-    List<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize);
+    Page<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize);
 }

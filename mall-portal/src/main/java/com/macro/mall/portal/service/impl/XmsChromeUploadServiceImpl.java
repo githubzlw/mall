@@ -1,6 +1,5 @@
 package com.macro.mall.portal.service.impl;
 
-import cn.hutool.core.util.ArrayUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -69,7 +68,7 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
     }
 
     @Override
-    public List<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize) {
+    public Page<XmsChromeUpload> list(Long memberId, Integer pageNum, Integer pageSize) {
 
         Page<XmsChromeUpload> page = new Page<>(pageNum, pageSize);
 
@@ -77,7 +76,7 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
         LambdaQueryWrapper<XmsChromeUpload> query
                 = Wrappers.<XmsChromeUpload>lambdaQuery().eq(XmsChromeUpload::getMemberId, memberId).orderByDesc(XmsChromeUpload::getUpdateTime);
         Page<XmsChromeUpload> xmsChromeUploadPage = xmsChromeUploadMapper.selectPage(page, query);
-        return xmsChromeUploadPage.getRecords();
+        return xmsChromeUploadPage;
 
     }
 }
