@@ -1,0 +1,328 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><script src="../js/vue.js"></script><link rel="stylesheet" href="../css/commonHeadFoot.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>ImportExpress Mail Received </title>
+  <style type="text/css">
+
+  *{margin:0;padding:0;font-family: Helvetica, Arial, sans-serif;}
+  img{max-width: 100%;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;}
+  .image-fix{display:block;}
+  .collapse{margin:0;padding:0;}
+  body{-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:none;width: 100%!important;height: 100%;text-align: center;color: #747474;background-color: #ffffff;}
+  h1,h2,h3,h4,h5,h6{font-family: Helvetica, Arial, sans-serif;line-height: 1.1;}
+  h1 small, h2 small, h3 small, h4 small, h5 small, h6 small{font-size: 60%;line-height: 0;text-transform: none;}
+  h1{font-weight:200;font-size: 44px;}
+  h2{font-weight:200;font-size: 32px;margin-bottom: 14px;}
+  h3{font-weight:500;font-size: 27px;}
+  h4{font-weight:500;font-size: 23px;}
+  h5{font-weight:900;font-size: 17px;}
+  h6{font-weight:900;font-size: 14px;text-transform: uppercase;}
+  .collapse{margin:0!important;}
+  td, div{font-family: Helvetica, Arial, sans-serif;text-align: center;}
+  p, ul{margin-bottom: 10px;font-weight: normal;font-size:14px;line-height:1.6;}
+  p.lead{font-size:17px;}
+  p.last{margin-bottom:0px;}
+  i{ font-style: normal;}
+  ul, ol,li { list-style:none; }
+  a{color: #747474;text-decoration: none;}
+  a img{border: none;}
+  .clearfix:before,.clearfix:after{content:"";display:table;}
+  .clearfix:after{clear:both;}
+  .clearfix{zoom:1;}
+  .head-wrap{width: 100%;margin: 0 auto;background-color: #f9f8f8;border-bottom: 1px solid #d8d8d8;}
+  .head-wrap *{margin: 0;padding: 0;}
+  .header-background{background: repeat-x url(https://www.filepicker.io/api/file/wUGKTIOZTDqV2oJx5NCh) left bottom; height: 60px;}
+  .header{height: 42px;}
+  .header .content{padding: 0;}
+  .header .brand{font-size: 16px;line-height: 42px;font-weight: bold;}
+  .header .brand a{color: #464646;}
+  .header .brand a img{ padding:3% 0; }
+  .body-wrap{width: 505px;margin: 0 auto;background-color: #ffffff;}
+  .soapbox .soapbox-title{font-size: 30px;color: #464646;padding-top: 25px; text-align: left; }
+  .content .status-container.single .status-padding{width: 80px;}
+  .content .status{width: 90%;}
+  .content .status-container.single .status{width: 300px;}
+  .status{border-collapse: collapse;margin-left: 15px;color: #656565;}
+  .status .status-cell{border: 1px solid #b3b3b3;height: 50px;}
+  .status .status-cell.success, .status .status-cell.active{height: 65px;}
+  .status .status-cell.success{background: #f2ffeb;color: #51da42;}
+  .status .status-cell.success .status-title{font-size: 15px;}
+  .status .status-cell.active{background: #fffde0;width: 135px;}
+  .status .status-title{font-size: 16px;font-weight: bold;line-height: 23px;}
+  .status .status-image{vertical-align: text-bottom;}
+  .body .body-padded, .body .body-padding{padding-top: 20px;}
+  .body .body-padding{}
+  .body-padded, .body-title{text-align: left;}
+  .body .body-title{font-weight: bold;font-size: 16px;color: #464646;}
+  .body .body-text .body-text-cell{text-align: left;font-size: 14px;line-height: 1.6;padding: 10px 0 10px;}
+
+  .received_box{ width: 100%; text-align: left; margin: 15px auto 0; }
+  .rece_shop{ border: 1px solid #d8d8d8; padding: 8px; font-size: 13px; }
+  .rece_shop a{color:#01a4ef;}
+  .track a{color:#01a4ef;  font-size: 16px; font-weight: bold;}
+  .rece_shop a:hover,.track a:hover,.rece_phone a:hover,.please_note p a:hover{ text-decoration: underline;}
+  .shipping_to { margin-top: 5px; color: #333; width: 100%; text-align: left; overflow: hidden; }
+  .track{ color: #333; font-size: 18px;}
+  .shipping_to .shipp_left{ text-align: left;}
+  .shipping_to .shipp_left p{  font-size: 14px; font-weight: bold; margin-bottom: 0; }
+  .shipping_to .shipp_left p sapn{ font-weight: 300;}
+  .shipping_to .shipp_right{ text-align: left;  overflow: hidden; }
+  .shipping_to .shipp_right p{font-size: 14px; margin-bottom: 0;text-align: left; margin-left: 20px;}
+  .rece_phone{ color:#333; margin-bottom: 5px; text-align: left; }
+  .rece_phone_02{ margin-bottom: 0;}
+  .rece_phone a,.please_note p a{ color:#01a4ef;  }
+  .rece_note{ font-size: 12px; color:#999; text-align: left; }
+  .rece_order{color:#01a4ef;}
+  .rece_list{ border: 1px solid #9d9d9d; border-left:none; border-right: none; text-align: left; color: #333; }
+  .rece_date{ margin-bottom: 0px; }
+  .rece_ul{ width:98%; margin:0 auto; padding:0 1%; overflow:hidden; }
+  .rece_ul li{ clear: both;}
+  .rece_img{ float: left; width: 50px; height: 50px; text-align: left; background-color: #fff;overflow: hidden; }
+  .rece_img img{ max-width: 50px; max-height: 50px; vertical-align: middle; line-height: 50px;}
+  .rece_dateil{ float: left;text-align: left; margin-left: 5px;width: 79%; overflow: hidden;}
+  .rece_dateil p{ margin-bottom: 5px; font-size: 13px; width: 360px; height: 22px; white-space: nowrap;
+    text-overflow: ellipsis;overflow: hidden;}
+  .rece_dateil i{ text-align: left;}
+  .rece_dateil span{ border:1px solid #e1e1e1; margin-right: 5px; padding: 2px 3px;  }
+  .rece_right{ float: right; width: 6%;overflow: hidden;text-align: left;}
+  .rece_right p{ margin-bottom: 0; text-align: left; }
+  .amount{ float: right; margin-right:2%; text-align: right; }
+  .amount_usd{font-weight: bold; margin-bottom: 0;}
+
+
+  .body .body-signature-block .body-signature-cell{padding: 15px 0;text-align: left;}
+  .body .body-signature{font-family: "Comic Sans MS", Textile, cursive;font-weight: bold;}
+  .footer-wrap{width: 100%;margin: 0 auto;clear: both !important;background-color: #e5e5e5;border-top: 1px solid #b3b3b3;font-size: 12px;color: #656565;line-height: 30px;}
+  .thanks_so{ margin-bottom: 5px; }
+  .please_note{ width: 96%; padding: 1%; border: 1px solid #dfdfdf; background-color: #f6f6f6; text-align:left; color: #555;}
+  .please_note h3{ font-size: 14px; font-weight:bold; margin-bottom: 5px;}
+  .please_note p{ color: #666; font-size: 13px; margin-bottom:0;}
+  .footer-wrap .container{padding: 14px 0;}
+  .footer-wrap .container .content{padding: 0;}
+  .footer-wrap .container .footer-lead{font-size: 14px;}
+  .footer-wrap .container .footer-lead a{font-size: 14px;font-weight: bold;color: #535353;}
+  .footer-wrap .container a{font-size: 12px;color: #656565;}
+  .footer-wrap .container a.last{margin-right: 0;}
+  .footer-wrap .footer-group{display: inline-block;}
+  .container{display: block !important;max-width: 505px !important;clear: both !important;}
+  .content{padding: 0;max-width: 505px;margin: 0 auto;display: block;}
+  .content table{width: 100%; margin:0 auto; }
+  .clear{display: block;clear: both;}
+  table.full-width-gmail-android{width: 100% !important;}
+
+  @media (min-width: 414px) and (max-width:750px){
+    .rece_dateil{ width:60%;}
+    .rece_dateil p{ width: 200px;}
+  }
+  @media (min-width: 320px) and (max-width:413px){
+    .rece_dateil{ width:50%;}
+    .rece_dateil p{ width:150px;}
+  }
+
+  </style>
+
+  <style type="text/css" media="only screen">
+
+  @media only screen {
+
+    table[class*="head-wrap"],
+    table[class*="body-wrap"],
+    table[class*="footer-wrap"] {
+      width: 100% !important;
+    }
+
+    td[class*="container"] {
+      margin: 0 auto !important;
+    }
+
+  }
+
+  @media only screen and (max-width: 505px) {
+
+    *[class*="w320"] {
+      width: 320px !important;
+    }
+
+    table[class="status"] td[class*="status-cell"],
+    table[class="status"] td[class*="status-cell"].active {
+      display: block !important;
+      width: auto !important;
+    }
+
+    table[class="status-container single"] table[class="status"] {
+      width: 270px !important;
+      margin-left: 0;
+    }
+
+    table[class="status"] td[class*="status-cell"],
+    table[class="status"] td[class*="status-cell"].active,
+    table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+      line-height: 65px !important;
+      font-size: 18px !important;
+    }
+
+    table[class="status-container single"] table[class="status"] td[class*="status-cell"],
+    table[class="status-container single"] table[class="status"] td[class*="status-cell"].active,
+    table[class="status-container single"] table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+      line-height: 51px !important;
+    }
+
+    table[class="status"] td[class*="status-cell"].active [class*="status-title"] {
+      display: inline !important;
+    }
+    .rece_dateil p{ line-height: 14px; }
+
+  }
+  </style>
+  <link rel="stylesheet" href="../public/online/css/colorStyle.css">
+</head>
+
+<body bgcolor="#ffffff">
+
+  <div align="center">
+    <table class="head-wrap w320 full-width-gmail-android" bgcolor="#f9f8f8" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td background="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC" bgcolor="#ffffff" width="100%" height="8" valign="top">
+          <!--[if gte mso 9]>
+          <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;height:8px;">
+            <v:fill type="tile" src="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC" color="#ffffff" />
+            <v:textbox inset="0,0,0,0">
+          <![endif]-->
+          <div height="8">
+          </div>
+          <!--[if gte mso 9]>
+            </v:textbox>
+          </v:rect>
+          <![endif]-->
+        </td>
+      </tr>
+      <tr class="header-background">
+        <td class="header container" align="center">
+          <div class="content">
+            <span class="brand" th:switch="${logoUrl}">
+               <a href="/">
+                <img th:case ="'1'" src="https://img.import-express.com/importcsvimg/webpic/newindex/img/logo.png" >
+                <img th:case ="'2'" style="width: 240px;padding:1% 0;" src="https://img.kidsproductwholesale.com/importcsvimg/webpic/newindex/img/kids_logo.png" >
+                  <img th:case ="'4'"  src="https://img.kidsproductwholesale.com/importcsvimg/webpic/img/wh89/pet/pet_logo.png" >
+               </a>
+            </span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="body-wrap w320">
+      <tr>
+        <td></td>
+        <td class="container">
+          <div class="content">
+            <table cellspacing="0">
+              <tr>
+                <td>
+                  <table class="soapbox">
+                    <tr>
+                      <td class="soapbox-title">Your order is received !</td>
+                    </tr>
+                  </table>
+
+                  <table class="body">
+                    <tr>
+                      <td class="body-padding"></td>
+                      <td class="body-padded">
+                        <div class="body-title">Hey <span th:text="${name}">{{ first_name }}</span>,</div>
+
+                        <div class="received_box">
+                          <p class="rece_shop">Thanks for shopping from us at <a  href="/" th:href="${showUrl}" th:text="${showUrl}"></a>.We have received your order and it will take 24 hours for us to verify your payment. Once verified, we will process your order promptly.</p>
+                          <h3 class="track">Track shipping</h3>
+                          <div class="shipping_to">
+                              <div class="shipp_left">
+                                <p>Shipping To:<span th:text="${orderAddressEmailInfo.recipients}"></span></p>
+                              </div>
+                              <div class="shipp_right clearfix">
+                                 <p th:text="${orderAddressEmailInfo.address}">1231</p>
+                                 <p th:text="${orderAddressEmailInfo.street}">1231</p>
+                                 <p th:text="${orderAddressEmailInfo.country}">1231</p>
+                                 <p>
+                                   <span th:text="${orderAddressEmailInfo.address2}">123123</span>
+                                   <span th:text="${orderAddressEmailInfo.statename}">Alaska</span>
+                                   <span th:text="${orderAddressEmailInfo.zipcode}">12312</span>
+                                 </p>
+                              </div>
+                          </div>
+                          <div class="clearfix"></div>
+                          <p class="rece_phone"><strong>Phone:</strong><span th:text="${orderAddressEmailInfo.phoneNumber}">1234567</span></p>
+                          <p class="rece_phone"><strong>Order#: </strong><a href="" th:text="${orderAddressEmailInfo.orderno}">QA18474027512271</a></p>
+                          <div class=" clearfix">
+                            <p class="rece_phone rece_phone_02"><strong>Estimated ship out date:</strong><sapn class="rece_phone"
+                                                                                                  th:text="${estimatedShipOutDate}">2018-10-25</sapn></p>
+                            <p class="rece_note">(Note: In most cases, we ship out in 3-5 business days.The time could be extended to 10 days if an order contains more than dozens  items from different categories. Thanks for your understanding!)</p>
+                          </div>
+
+                          <p class="rece_phone"><strong>International ShippingTime Selected: </strong><span th:text="${transport}">9-15</span> days</p>
+                          <p class="rece_phone"><strong>Shipping Method:</strong><span th:text="${shippingMethod}">9-15</span></p>
+                          <p class="rece_phone"><strong>Order Detail</strong></p>
+                          <div class="rece_list clearfix">
+                             <p class="rece_date">Order Created Date:<span th:text="${orderAddressEmailInfo.create_time}">2018-10-18 05:25:29.0</span> </p>
+                             <ul class="rece_ul clearfix">
+                               <li class="clearfix" th:each="orderEmailBean:${orderEmailBeans}">
+                                 <div class="rece_img"><img src="https://img.kidsproductwholesale.com/importcsvimg/coreimg/551980320740/4265409132_785208899.60x60.jpg" th:src="${orderEmailBean.car_img}"></div>
+                                 <div class="rece_dateil">
+                                    <p th:text="${orderEmailBean.goodsname}">Sex Womanth:each 's Mark West Club Red Bandage DressesSex</p>
+                                    <i th:if="${orderEmailBean.car_type} != null"
+                                       th:each="carType : ${#strings.arraySplit(orderEmailBean.car_type,',')}">
+                                      <font th:if="${carType} != null">
+                                        <span th:text="${#strings.arraySplit(carType,'@')[0]}">Size:S</span>
+                                      </font>
+                                       <!--<div class="car_type clearfix" th:if="${#strings.arraySplit(orderEmailBean.car_type,'@')} !=null">
+                                         <i th:if="${#strings.arraySplit(orderEmailBean.car_type,'@')[0]} != null">
+                                           <span th:text="${#strings.arraySplit(orderEmailBean.car_type,'@')[0]}">Color:Red</span>
+                                         </i>
+                                         <i th:if="${#strings.arraySplit(orderEmailBean.car_type,',')[1]} != null">
+                                           <font th:if="${#strings.arraySplit(#strings.arraySplit(orderEmailBean.car_type,',')[1],'@')[0]} != null">
+                                             <span th:text="${#strings.arraySplit(#strings.arraySplit(orderEmailBean.car_type,',')[1],'@')[0]}">Size:S</span>
+                                           </font>
+                                         </i>
+                                      </div>-->
+                                    </i>
+                                 </div>
+                                 <div class="rece_right"><p><sapn th:text="${orderEmailBean.yourorder}">1</sapn>pc</p></div>
+                               </li>
+                             </ul>
+                             <div class="amount">
+                              <p class="amount_usd">Amount paid:  <span th:text="${orderAddressEmailInfo.currency}">USD</span> <span th:text="${orderAddressEmailInfo.pay_price}">30.26</span></p>
+                             </div>
+                          </div>
+                        </div>
+                        <table class="body-signature-block">
+                          <tr>
+                            <td class="body-signature-cell">
+                              <p class="thanks_so">Thanks so much,</p>
+                              <div class="please_note">
+                                <h3>PLEASE NOTE:</h3>
+                                <p>This email message was sent from a notification-only address that cannot accept incoming email. PLEASE DO NOT REPLY to this message. If you have any question or concern
+                                  , access your account <a href="/user/loginNew" th:href="${here}">here</a>.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </td>
+        <td></td>
+      </tr>
+    </table>
+
+
+  </div>
+
+</body>
+</html>

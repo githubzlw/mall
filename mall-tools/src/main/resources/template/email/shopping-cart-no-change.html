@@ -1,0 +1,308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title th:text="${title}">ImportExpress ShopCart Show</title>
+  <style type="text/css">
+
+    *{margin:0;padding:0;font-family: Helvetica, Arial, sans-serif;}
+    img{max-width: 100%;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;}
+    .image-fix{display:block;}
+    .collapse{margin:0;padding:0;}
+    body{-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:none;width: 100%!important;height: 100%;text-align: center;color: #747474;background-color: #ffffff;}
+    h1,h2,h3,h4,h5,h6{font-family: Helvetica, Arial, sans-serif;line-height: 1.1;}
+    h1 small, h2 small, h3 small, h4 small, h5 small, h6 small{font-size: 60%;line-height: 0;text-transform: none;}
+    h1{font-weight:200;font-size: 44px;}
+    h2{font-weight:200;font-size: 32px;margin-bottom: 14px;}
+    h3{font-weight:500;font-size: 27px;}
+    h4{font-weight:500;font-size: 23px;}
+    h5{font-weight:900;font-size: 17px;}
+    h6{font-weight:900;font-size: 14px;text-transform: uppercase;}
+    .collapse{margin:0!important;}
+    i,em{ font-style: normal;}
+
+    td, div{font-family: Helvetica, Arial, sans-serif;text-align: center;}
+    p, ul{margin-bottom: 10px;font-weight: normal;font-size:14px;line-height:1.6;}
+    p.lead{font-size:17px;}
+    p.last{margin-bottom:0px;}
+    ul,ol,dl,li{ list-style:none; }
+    a{color: #747474;text-decoration: none;}
+    a img{border: none;}
+    .clearfix:before,.clearfix:after{content:"";display:table;}
+    .clearfix:after{clear:both;}
+    .clearfix{zoom:1;}
+    .head-wrap{width: 100%;margin: 0 auto;background-color: #f9f8f8;border-bottom: 1px solid #d8d8d8;}
+    .head-wrap *{margin: 0;padding: 0;}
+    .header-background{background: repeat-x url(https://www.filepicker.io/api/file/wUGKTIOZTDqV2oJx5NCh) left bottom; height: 78px;}
+    .header{height: 42px;}
+    .header .content{padding: 0;}
+    .header .brand{font-size: 16px;line-height: 42px;font-weight: bold;}
+    .header .brand a{color: #464646;}
+    .header .brand a img{ padding:2% 0 1%; }
+    .body-wrap{width: 505px;margin: 0 auto;background-color: #ffffff;}
+    .soapbox .soapbox-title{font-size: 30px;color: #464646;padding-top: 25px; text-align: left; }
+    .content .status-container.single .status-padding{width: 80px;}
+    .content .status{width: 90%;}
+    .content .status-container.single .status{width: 300px;}
+    .status{border-collapse: collapse;margin-left: 15px;color: #656565;}
+    .status .status-cell{border: 1px solid #b3b3b3;height: 50px;}
+    .status .status-cell.success, .status .status-cell.active{height: 65px;}
+    .status .status-cell.success{background: #f2ffeb;color: #51da42;}
+    .status .status-cell.success .status-title{font-size: 15px;}
+    .status .status-cell.active{background: #fffde0;width: 135px;}
+    .status .status-title{font-size: 16px;font-weight: bold;line-height: 23px;}
+    .status .status-image{vertical-align: text-bottom;}
+    .body .body-padded, .body .body-padding{padding-top: 20px;}
+    .body .body-padding{}
+    .body-padded, .body-title{text-align: left;}
+    .body .body-title{font-weight: bold;font-size: 16px;color: #464646;}
+    .body .body-text .body-text-cell{text-align: left;font-size: 14px;line-height: 1.6;padding: 10px 0 10px;}
+    /* dismantling */
+    .rece_shop{ color: #333; font-size: 14px; margin: 10px 0; text-align: left; }
+    .rece_shop a{ color: #00B1FF; }
+    .rece_shop a:hover{ text-decoration: underline;}
+    .rece_shop p{ margin-bottom: 0;}
+    .estima_time{ margin-bottom: 0px; text-align: left;color: #333;}
+    .estima_time_color{ font-weight: bold; font-size: 18px;}
+    .estima_time_color a{ padding: 4px 8px; text-align: center; background-color: #3e9eea; color: #fff;
+      border-radius: 4px; font-size: 16px; font-weight: 400; text-transform: uppercase; margin-left: 10px;}
+    .order_off i{ text-decoration: line-through; margin-left: 5px; color: #999;}
+    .dismantling_box{ width: 100%; text-align: left; margin: 0px auto 0; }
+    .order_number{ background-color: #e7e7e7; color: #333; font-weight: bold; padding-left: 5px; text-align: left; font-size: 16px;}
+    .order_first{ width: 100%; margin: 0 auto 15px; }
+    .order_first2{ margin: 0 auto 0;}
+    .order_first ul{ width: 100%; margin: 0 auto; overflow: hidden;box-sizing:border-box;}
+    .order_li{ float: left; width:225px;border:1px solid #e5e5e5; margin: 2% 2% 2% 0; color: #333; padding: 5px;
+        list-style:none; height: 338px; overflow:hidden;text-align: center;box-sizing:border-box;}
+    .order_img{ max-width:213px; max-height: 213px; overflow: hidden; cursor: pointer; }
+    .a6S{opacity: 0.01; left: 163px; top: 380.406px; position: absolute; font-weight: normal;}
+    .order_title{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; margin: 0 auto; text-align:left;}
+    .order_size{ text-align: left; width: 98%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      word-break: break-all; }
+    .order_size span{border:1px solid #e1e1e1;}
+    .order_pr{ margin: 0; text-align: left; }
+    .order_usd{ text-align: left; color: #333; margin-bottom: 5px; }
+    .order_usd strong{ font-size: 14px; }
+    .order_usd_due{ margin: 0px 0 10px; border-top: 2px solid #ffc167; padding-top: 5px;}
+    .order_usd_due p{ margin-bottom: 0px;}
+    .order_remark{ width: 100%; margin-top: 5px; }
+    .order_rem_p{ text-align: left; margin: 10px 0 0; color:#333;  }
+    .refund_amount{font-weight: bold;border-top: 1px  dashed #AAABAF;margin-top: 5px; text-align: left;}
+    .refund_amount h3{ font-size: 16px; font-weight: bold; margin: 8px 0;}
+    .order_pr strong{ color: red;}
+    .order_pr span{ text-decoration: line-through; color: #999;}
+
+
+    .body .body-signature-block .body-signature-cell{padding: 15px 0;text-align: left;}
+    .body .body-signature{font-family: "Comic Sans MS", Textile, cursive;font-weight: bold;}
+    .footer-wrap{width: 100%;margin: 0 auto;clear: both !important;background-color: #e5e5e5;border-top: 1px solid #b3b3b3;font-size: 12px;color: #656565;line-height: 30px;}
+    .thanks_so{ margin-bottom: 5px; color: #333; }
+    .thanks_so a{ color: #01a4ef; font-weight: bold; text-decoration: underline; font-size: 18px;}
+    .please_note{ width: 96%; padding: 1%; border: 1px solid #dfdfdf; background-color: #f6f6f6; text-align:left; color: #555;}
+    .please_note h3{ font-size: 14px; font-weight:bold; margin-bottom: 5px;}
+    .please_note p{ color: #666; font-size: 13px; margin-bottom:0;}
+    .please_note p a{color:#01a4ef; }
+    .please_note p a:hover{text-decoration: underline; }
+    .footer-wrap .container{padding: 14px 0;}
+    .footer-wrap .container .content{padding: 0;}
+    .footer-wrap .container .footer-lead{font-size: 14px;}
+    .footer-wrap .container .footer-lead a{font-size: 14px;font-weight: bold;color: #535353;}
+    .footer-wrap .container a{font-size: 12px;color: #656565;}
+    .footer-wrap .container a.last{margin-right: 0;}
+    .footer-wrap .footer-group{display: inline-block;}
+    .container{display: block !important;max-width: 505px !important;clear: both !important;}
+    .content{padding: 0;max-width: 505px;margin: 0 auto;display: block;}
+    .content table{width: 100%; margin:0 auto; }
+    .clear{display: block;clear: both;}
+    table.full-width-gmail-android{width: 100% !important;}
+
+    @media (min-width: 377px) and (max-width: 415px) {
+      .order_li{ height: 300px;}
+
+    }
+    @media (min-width: 320px) and (max-width: 376px) {
+      .order_li{ height: 275px;}
+
+    }
+  </style>
+
+  <style type="text/css" media="only screen">
+
+    @media only screen {
+
+      table[class*="head-wrap"],
+      table[class*="body-wrap"],
+      table[class*="footer-wrap"] {
+        width: 100% !important;
+      }
+
+      td[class*="container"] {
+        margin: 0 auto !important;
+      }
+
+    }
+
+    @media only screen and (max-width: 505px) {
+
+      *[class*="w320"] {
+        width: 320px !important;
+      }
+
+      table[class="status"] td[class*="status-cell"],
+      table[class="status"] td[class*="status-cell"].active {
+        display: block !important;
+        width: auto !important;
+      }
+
+      table[class="status-container single"] table[class="status"] {
+        width: 270px !important;
+        margin-left: 0;
+      }
+
+      table[class="status"] td[class*="status-cell"],
+      table[class="status"] td[class*="status-cell"].active,
+      table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+        line-height: 65px !important;
+        font-size: 18px !important;
+      }
+
+      table[class="status-container single"] table[class="status"] td[class*="status-cell"],
+      table[class="status-container single"] table[class="status"] td[class*="status-cell"].active,
+      table[class="status-container single"] table[class="status"] td[class*="status-cell"] [class*="status-title"] {
+        line-height: 51px !important;
+      }
+
+      table[class="status"] td[class*="status-cell"].active [class*="status-title"] {
+        display: inline !important;
+      }
+      .rece_dateil p{ line-height: 14px; }
+
+    }
+  </style>
+</head>
+
+<body bgcolor="#ffffff">
+
+<div align="center">
+  <table class="head-wrap w320 full-width-gmail-android" bgcolor="#f9f8f8" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td background="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC" bgcolor="#ffffff" width="100%" height="8" valign="top">
+        <!--[if gte mso 9]>
+        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;height:8px;">
+          <v:fill type="tile" src="https://www.filepicker.io/api/file/UOesoVZTFObSHCgUDygC" color="#ffffff" />
+          <v:textbox inset="0,0,0,0">
+        <![endif]-->
+        <div height="8">
+        </div>
+        <!--[if gte mso 9]>
+        </v:textbox>
+        </v:rect>
+        <![endif]-->
+      </td>
+    </tr>
+    <tr class="header-background">
+      <td class="header container" align="center">
+        <div class="content">
+            <span class="brand">
+              <a href="/" th:switch="${websiteType}">
+                <img th:case ="'1'" src="https://img.import-express.com/importcsvimg/webpic/newindex/img/logo.png" >
+                <img th:case ="'2'" style="width: 240px;padding:1% 0;" src="https://img.kidsproductwholesale.com/importcsvimg/webpic/newindex/img/kids_logo.png" >
+                <img th:case ="'3'"  src="https://img.kidsproductwholesale.com/importcsvimg/webpic/img/wh89/pet/pet_logo.png?v=1" >
+              </a>
+            </span>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <table class="body-wrap w320">
+    <tr>
+      <td></td>
+      <td class="container">
+        <div class="content">
+          <table cellspacing="0">
+            <tr>
+              <td>
+                <table class="soapbox">
+                  <tr>
+                    <td class="soapbox-title">You Have Made Some Wonderful Selections!</td>
+                  </tr>
+                </table>
+
+                <table class="body">
+                  <tr>
+                    <td class="body-padding"></td>
+                    <td class="body-padded">
+                      <div class="body-title">Dear customer,</div>
+                      <div class="dismantling_box" >
+                        <div class="order_first">
+                          <div class="rece_shop" th:switch="${websiteType}">
+                            <p>I'm <strong th:text="${adminNameFirst}">Lena Wu</strong>, Marketing Manager of
+                              <span th:case ="'1'">Import Express.</span>
+                              <span th:case ="'2'">Kids Product Wholesale.</span>
+                              <span th:case ="'3'">Pet Store Inc.</span></p>
+                            <p>I noticed that you were about to buy some products from our website but haven't completed your order yet.</p>
+                            <p>Is there anything I could help you with?</p>
+                            <p>Here's your shopping cart list.</p>
+                          </div>
+                          <ul class="clearfix">
+
+                            <li class="order_li" th:each="carInfo:${sourceList}">
+
+                              <img th:src="${carInfo.googsImg}" src="https://img.import-express.com/importcsvimg/img/527048933132/2760309121_1271534044.220x220.jpg" class="order_img CToWUd" tabindex="0">
+                               <p class="order_title" th:title="${carInfo.goodsTitle}" th:text="${carInfo.goodsTitle}" title="Sex Woman 's Mark West Club Red Bandage Dresses">Sex Woman 's Mark West Club Red Bandage Dresses</p>
+
+                              <div th:if="${not #lists.isEmpty(carInfo.typeList)}" th:each="typeStr:${carInfo.typeList}">
+                                <div class="order_size">
+                                  <span th:title="${typeStr}" th:text="${typeStr}">Size:S</span>
+                                </div>
+                              </div>
+
+                               <p class="order_pr"><em th:text="${carInfo.googsNumber}">1</em>&nbsp;&nbsp;<i th:text="${carInfo.goodsunit}">pc</i></p>
+                              <p class="order_pr"><strong><em>USD</em> <em th:text="${carInfo.googsPrice}">5.58</em></strong>
+                                <!--<span><em>USD</em> <em th:text="${carInfo.price1}">6.58</em></span>--></p>
+                             </li>
+                           </ul>
+                          <p class="order_rem_p">If there were any reasons why you didn't complete your purchase, please don't hesitate to let me know by responding to this Email, our team will absolutely try every effort to meet your satisfaction!</p>
+                          <p class="order_rem_p" th:switch="${websiteType}">
+                            <strong th:case ="'1'">Import Express CHINA</strong>
+                            <strong th:case ="'2'">Kids Product Wholesale CHINA</strong>
+                            <strong th:case ="'3'">Pet Store Inc CHINA</strong><br/>
+                            Best product source for small business!</p>
+                        </div>
+                      </div>
+                      <table class="body-signature-block">
+                        <tr>
+                          <td class="body-signature-cell order_cart_bottom" th:switch="${websiteType}">
+                            <p class="thanks_so">Yours Sincerely,</p>
+                              <p class="thanks_so"> <strong th:text="${adminName}">Lena</strong> | Marketing Manager</p>
+                            <p class="thanks_so"> Marketing Department</p>
+                            <p class="thanks_so"> Email: <strong th:text="${adminEmail}">lenawu@import-express.com</strong></p>
+                            <p class="thanks_so">WhatsApp: <strong th:text="${whatsApp}">+86 18717701974</strong></p>
+                            <p class="thanks_so" th:case ="'1'"><a href="https://www.import-express.com" target="_blank">www.import-express.com</a></p>
+                            <p class="thanks_so" th:case ="'2'"><a href="https://www.kidsproductwholesale.com" target="_blank">https://www.kidsproductwholesale.com</a></p>
+                            <p class="thanks_so" th:case ="'3'"><a href="https://www.petstoreinc.com" target="_blank">https://www.petstoreinc.com</a></p>
+                            <span style="display:none;"><img th:src="${emailFollowUrl}" src="https://www.import-express.com/followMe/index.do?fmc=110119911"/></span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+      <td></td>
+    </tr>
+  </table>
+
+
+</div>
+
+</body>
+</html>

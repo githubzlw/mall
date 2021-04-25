@@ -16,6 +16,7 @@
         <module>mall-admin</module>
         <module>mall-search</module>
         <module>mall-portal</module>
+        <module>mall-tools</module>
     </modules>
 
     <parent>
@@ -50,6 +51,7 @@
         <minio.version>7.1.0</minio.version>
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
+        <mall-tools.version>1.0-SNAPSHOT</mall-tools.version>
         <mall-security.version>1.0-SNAPSHOT</mall-security.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <fastjson.version>1.2.13</fastjson.version>
@@ -98,6 +100,12 @@
                 <groupId>com.macro.mall</groupId>
                 <artifactId>mall-mbg</artifactId>
                 <version>${mall-mbg.version}</version>
+            </dependency>
+            <!--mall中Tools生成模块-->
+            <dependency>
+                <groupId>com.macro.mall</groupId>
+                <artifactId>mall-tools</artifactId>
+                <version>${mall-tools.version}</version>
             </dependency>
             <!--mall安全模块-->
             <dependency>
