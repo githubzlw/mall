@@ -1,30 +1,17 @@
 package com.macro.mall.mapper;
 
-import com.macro.mall.model.XmsMsgrecycle;
-import com.macro.mall.model.XmsMsgrecycleExample;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
+import com.macro.mall.entity.XmsMsgrecycle;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-public interface XmsMsgrecycleMapper {
-    long countByExample(XmsMsgrecycleExample example);
 
-    int deleteByExample(XmsMsgrecycleExample example);
+/**
+ * <p>
+ * chrome插件导入表 Mapper 接口
+ * </p>
+ *
+ * @author jack.luo
+ * @since 2021-04-22
+ */
+public interface XmsMsgrecycleMapper extends BaseMapper<XmsMsgrecycle> {
 
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(XmsMsgrecycle record);
-
-    int insertSelective(XmsMsgrecycle record);
-
-    List<XmsMsgrecycle> selectByExample(XmsMsgrecycleExample example);
-
-    XmsMsgrecycle selectByPrimaryKey(Integer id);
-
-    int updateByExampleSelective(@Param("record") XmsMsgrecycle record, @Param("example") XmsMsgrecycleExample example);
-
-    int updateByExample(@Param("record") XmsMsgrecycle record, @Param("example") XmsMsgrecycleExample example);
-
-    int updateByPrimaryKeySelective(XmsMsgrecycle record);
-
-    int updateByPrimaryKey(XmsMsgrecycle record);
 }
