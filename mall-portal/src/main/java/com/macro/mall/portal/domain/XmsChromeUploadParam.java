@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 生成订单时传入的参数
+ * chrome插件传入的参数
  * Created by jack.luo on 2021/4/15.
  */
 
