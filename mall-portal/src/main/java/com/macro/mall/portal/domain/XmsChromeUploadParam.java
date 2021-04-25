@@ -1,5 +1,6 @@
 package com.macro.mall.portal.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,12 @@ public class XmsChromeUploadParam {
 
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
+
+    @ApiModelProperty(value = "抓取的产品详情")
+    private String productDetail;
+
+    @ApiModelProperty(value = "抓取的产品描述")
+    private String productDescription;
 
     @ApiModelProperty(value = "抓取的运费")
     private String shippingFee;

@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-22
+ * @since 2021-04-25
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -58,12 +58,10 @@ public class XmsChromeUpload implements Serializable {
     private String sku;
 
     @ApiModelProperty(value = "抓取的产品详情")
-    @TableField("productDetail")
-    private String productdetail;
+    private String productDetail;
 
     @ApiModelProperty(value = "抓取的产品描述")
-    @TableField("productDescription")
-    private String productdescription;
+    private String productDescription;
 
     @ApiModelProperty(value = "抓取的运费")
     private String shippingFee;
