@@ -55,7 +55,7 @@
         <mall-security.version>1.0-SNAPSHOT</mall-security.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <fastjson.version>1.2.13</fastjson.version>
-
+        <mail.version>1.4.7</mail.version>
     </properties>
 
     <dependencies>
