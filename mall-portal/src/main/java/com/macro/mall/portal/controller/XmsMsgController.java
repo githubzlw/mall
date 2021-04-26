@@ -2,7 +2,6 @@ package com.macro.mall.portal.controller;
 
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsMsg;
-import com.macro.mall.entity.XmsMsgrecycle;
 import com.macro.mall.portal.domain.XmsMsgParam;
 import com.macro.mall.portal.service.IXmsMsgService;
 import com.macro.mall.portal.service.IXmsMsgrecycleService;
@@ -29,15 +28,35 @@ public class XmsMsgController {
     @Autowired
     private IXmsMsgService xmsMsgService;
 
-//    @ApiOperation("已读用户消息记录")
-//    @RequestMapping(value = "/readMsgList", method = RequestMethod.POST)
-//    @ResponseBody
-//    public CommonResult<List<XmsMsg>> readMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
-//
-//        List<XmsMsg> msgList = xmsMsgService.readMsgList(xmsMsgParam);
-//        return CommonResult.success(msgList);
-//    }
+    @ApiOperation("用户新消息插入")
+    @RequestMapping(value = "/insetMsgList", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult insetMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
 
+        xmsMsgService.insetMsgList(xmsMsgParam);
+        return CommonResult.success(null,"插入成功");
+    }
+
+    @ApiOperation("用户已读消息插入")
+    @RequestMapping(value = "/insetMsgRecycle", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult insetMsgRecycle(@RequestParam String mail,
+                                            @RequestParam Integer id) {
+
+        xmsMsgrecycleService.insetMsgRecycle(mail,id);
+        return CommonResult.success(null,"插入成功");
+    }
+
+
+    @ApiOperation("删除消息")
+    @RequestMapping(value = "/updateMsgRecycle", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult updateMsgRecycle(@RequestParam String mail,
+                                        @RequestParam Integer id) {
+
+        xmsMsgrecycleService.updateMsgRecycle(mail,id);
+        return CommonResult.success(null,"删除更新成功");
+    }
 
     @ApiOperation("已读用户消息记录")
     @RequestMapping(value = "/readMsgList", method = RequestMethod.GET)

@@ -3,6 +3,7 @@ package com.macro.mall.portal.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.macro.mall.entity.XmsMsg;
 import com.macro.mall.entity.XmsMsgrecycle;
+import com.macro.mall.portal.domain.XmsMsgParam;
 
 import java.util.List;
 
@@ -17,9 +18,13 @@ import java.util.List;
 public interface IXmsMsgrecycleService extends IService<XmsMsgrecycle> {
 
     /**
-     * 已读的用户消息记录
+     * 插入用户已读消息记录
      */
-//    List<XmsMsg> readMsgList(String userName);
+    void insetMsgRecycle(String uid,Integer msgid);
 
 
+    /**
+     * 删除消息
+     */
+    void updateMsgRecycle(String uid,Integer msgid);
 }

@@ -1,5 +1,6 @@
 package com.macro.mall.portal.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.macro.mall.entity.XmsMsgrecycle;
 import com.macro.mall.mapper.XmsMsgrecycleMapper;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
  *  服务实现类
  * </p>
  *
- * @author jack.luo
+ * @author zlw
  * @since 2021-04-22
  */
 @Service
@@ -21,14 +22,22 @@ public class XmsMsgrecycleServiceImpl extends ServiceImpl<XmsMsgrecycleMapper, X
     @Autowired
     private XmsMsgrecycleMapper xmsMsgrecycleMapper;
 
+    @Override
+    public void insetMsgRecycle(String uid, Integer msgid) {
 
-//    @Override
-//    public List<XmsMsgrecycle> readMsgList(String mail) {
-//
-//        //封装查询条件
-//        LambdaQueryWrapper<XmsMsgrecycle> query
-//                = Wrappers.<XmsMsgrecycle>lambdaQuery().eq(XmsMsgrecycle::getUid, mail).eq(XmsMsgrecycle::getIsread,1).eq(XmsMsgrecycle::getIsdelete,0);
-//
-//        return xmsMsgrecycleMapper.selectList(query);
-//    }
+        XmsMsgrecycle xmsMsgrecycle = new XmsMsgrecycle();
+        xmsMsgrecycle.setUid(uid);
+        xmsMsgrecycle.setMsgid(msgid);
+        xmsMsgrecycleMapper.insert(xmsMsgrecycle);
+    }
+
+    @Override
+    public void updateMsgRecycle(String uid, Integer msgid) {
+
+        UpdateWrapper<XmsMsgrecycle> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("uid",uid).eq("msgid",msgid).set("isdelete", 1);
+
+        xmsMsgrecycleMapper.update(null,updateWrapper);
+    }
+
 }

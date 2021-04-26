@@ -40,7 +40,6 @@ secure:
       - /product/**
       - /brand/**
       - /chrome/upload
-      - /msg/**
 
 # 自定义redis key
 redis:
