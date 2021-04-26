@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-25
+ * @since 2021-04-26
  */
 public interface XmsChromeUploadMapper extends BaseMapper<XmsChromeUpload> {
 

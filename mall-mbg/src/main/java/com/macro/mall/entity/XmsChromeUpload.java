@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-25
+ * @since 2021-04-26
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -47,6 +47,9 @@ public class XmsChromeUpload implements Serializable {
 
     @ApiModelProperty(value = "抓取的moq")
     private String moq;
+
+    @ApiModelProperty(value = "抓取的交期")
+    private String leadTime;
 
     @ApiModelProperty(value = "抓取的橱窗图")
     private String images;
@@ -82,6 +85,9 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
+
+    @ApiModelProperty(value = "清洗标识 -1 无效数据 0未清洗 1清洗中 2清洗完成")
+    private Integer clearFlag;
 
 
 }
