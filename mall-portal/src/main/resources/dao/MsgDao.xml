@@ -20,6 +20,7 @@
         LEFT JOIN xms_msgrecycle mr ON m.id = mr.msgid
         WHERE
             m.mail = #{mail}
+        AND m.type=#{type}
         AND mr.id IS NULL;
     </select>
 
@@ -31,6 +32,7 @@
         LEFT JOIN xms_msgrecycle mr ON m.id = mr.msgid
         WHERE
             m.mail = #{mail}
+        AND m.type=#{type}
         AND mr.isread=1
 		AND mr.isdelete=0;
     </select>

@@ -18,12 +18,14 @@ class XmsMsgServiceTest {
 
     @Test
     void unreadMsgList() {
-        XmsMsgParam xmsMsgParam = new XmsMsgParam();
-        xmsMsgParam.setType(0);
-        System.out.println(service.unreadMsgList(xmsMsgParam));
+        System.out.println(service.unreadMsgList("test@qq.com",0));
     }
 
     @Test
     void readMsgList() {
+//        XmsMsgParam xmsMsgParam = new XmsMsgParam();
+//        xmsMsgParam.setEmail("test@163.com");
+//        System.out.println(service.readMsgList(xmsMsgParam));
+        System.out.println(service.readMsgList("test@163.com",0));
     }
 }

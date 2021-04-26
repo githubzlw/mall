@@ -14,10 +14,10 @@ public interface MsgDao {
     /**
      * 没有读过的用户消息记录
      */
-    List<XmsMsg> unreadMsgList(@Param("mail") String mail);
+    List<XmsMsg> unreadMsgList(@Param("mail") String mail,@Param("type") Integer type);
 
     /**
      * 已读过的用户消息记录
      */
-    List<XmsMsg> readMsgList(@Param("mail") String mail);
+    List<XmsMsg> readMsgList(@Param("mail") String mail,@Param("type") Integer type);
 }

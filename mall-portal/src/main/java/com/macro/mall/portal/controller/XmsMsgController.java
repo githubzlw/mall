@@ -29,19 +29,32 @@ public class XmsMsgController {
     @Autowired
     private IXmsMsgService xmsMsgService;
 
+//    @ApiOperation("已读用户消息记录")
+//    @RequestMapping(value = "/readMsgList", method = RequestMethod.POST)
+//    @ResponseBody
+//    public CommonResult<List<XmsMsg>> readMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
+//
+//        List<XmsMsg> msgList = xmsMsgService.readMsgList(xmsMsgParam);
+//        return CommonResult.success(msgList);
+//    }
+
+
     @ApiOperation("已读用户消息记录")
-    @RequestMapping(value = "/readMsgList", method = RequestMethod.POST)
+    @RequestMapping(value = "/readMsgList", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> readMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
-        List<XmsMsg> msgList = xmsMsgService.readMsgList(xmsMsgParam);
+    public CommonResult<List<XmsMsg>> readMsgList(@RequestParam String mail,
+                                                  @RequestParam Integer type) {
+
+        List<XmsMsg> msgList = xmsMsgService.readMsgList(mail,type);
         return CommonResult.success(msgList);
     }
 
     @ApiOperation("消息回收站表没有读过的用户消息记录")
-    @RequestMapping(value = "/unreadMsgList", method = RequestMethod.POST)
+    @RequestMapping(value = "/unreadMsgList", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> unreadMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
-        List<XmsMsg> unMsgList = xmsMsgService.unreadMsgList(xmsMsgParam);
+    public CommonResult<List<XmsMsg>> unreadMsgList(@RequestParam String mail,
+                                                    @RequestParam Integer type) {
+        List<XmsMsg> unMsgList = xmsMsgService.unreadMsgList(mail,type);
         return CommonResult.success(unMsgList);
     }
 
