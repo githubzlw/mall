@@ -5,7 +5,7 @@ import com.macro.mall.entity.XmsMsg;
 
 /**
  * <p>
- * chrome插件导入表 Mapper 接口
+ * 插件导入表 Mapper 接口
  * </p>
  *
  * @author jack.luo
