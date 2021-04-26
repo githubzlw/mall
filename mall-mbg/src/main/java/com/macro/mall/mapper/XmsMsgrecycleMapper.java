@@ -3,9 +3,10 @@ package com.macro.mall.mapper;
 import com.macro.mall.entity.XmsMsgrecycle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+
 /**
  * <p>
- *  Mapper 接口
+ * 消息回收站表 Mapper 接口
  * </p>
  *
  * @author jack.luo

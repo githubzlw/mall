@@ -1,11 +1,11 @@
 package com.macro.mall.mapper;
 
-import com.macro.mall.entity.XmsMsg;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.macro.mall.entity.XmsMsg;
 
 /**
  * <p>
- * 公告表 Mapper 接口
+ * 消息表 Mapper 接口
  * </p>
  *
  * @author jack.luo
