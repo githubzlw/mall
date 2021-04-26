@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.macro.mall.entity.XmsMsg;
 import com.macro.mall.entity.XmsMsgrecycle;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public interface IXmsMsgrecycleService extends IService<XmsMsgrecycle> {
     /**
      * 已读的用户消息记录
      */
-    List<XmsMsgrecycle> readMsgList(String userName);
+//    List<XmsMsg> readMsgList(String userName);
 
 
 }

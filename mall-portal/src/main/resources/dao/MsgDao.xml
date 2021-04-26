@@ -2,7 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.macro.mall.portal.dao.MsgDao">
 
-    <select id="unreadMsgList" resultMap="com.macro.mall.mapper.XmsMsgMapper.BaseResultMap">
+    <resultMap id="BaseResultMap" type="com.macro.mall.mapper.XmsMsgMapper">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="mail" jdbcType="VARCHAR" property="mail" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="content" jdbcType="LONGVARCHAR" property="content" />
+        <result column="type" jdbcType="INTEGER" property="type" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <select id="unreadMsgList" resultMap="BaseResultMap">
         SELECT
             m.*
         FROM
@@ -11,6 +21,18 @@
         WHERE
             m.mail = #{mail}
         AND mr.id IS NULL;
+    </select>
+
+    <select id="readMsgList" resultMap="BaseResultMap">
+        SELECT
+            m.*
+        FROM
+            xms_msg m
+        LEFT JOIN xms_msgrecycle mr ON m.id = mr.msgid
+        WHERE
+            m.mail = #{mail}
+        AND mr.isread=1
+		AND mr.isdelete=0;
     </select>
 
 </mapper>

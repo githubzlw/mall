@@ -39,6 +39,9 @@ public class XmsMsg implements Serializable {
     @ApiModelProperty(value = "内容")
     private String content;
 
+    @ApiModelProperty(value = "消息类型")
+    private Integer type;
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.macro.mall.entity.XmsMsg;
 import com.macro.mall.mapper.XmsMsgMapper;
 import com.macro.mall.portal.dao.MsgDao;
+import com.macro.mall.portal.domain.XmsMsgParam;
 import com.macro.mall.portal.service.IXmsMsgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,15 @@ public class XmsMsgServiceImpl extends ServiceImpl<XmsMsgMapper, XmsMsg> impleme
     @Autowired
     private MsgDao msgDao;
     @Override
-    public List<XmsMsg> unreadMsgList(String userName) {
-        return msgDao.unreadMsgList(userName);
+    public List<XmsMsg> unreadMsgList(XmsMsgParam xmsMsgParam) {
+
+        return msgDao.unreadMsgList(xmsMsgParam.getEmail());
     }
+
+    @Override
+    public List<XmsMsg> readMsgList(XmsMsgParam xmsMsgParam) {
+
+        return msgDao.readMsgList(xmsMsgParam.getEmail());
+    }
+
 }
