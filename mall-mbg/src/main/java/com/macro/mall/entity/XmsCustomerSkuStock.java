@@ -1,5 +1,6 @@
 package com.macro.mall.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -14,21 +15,21 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * sourcing表
+ * 客户的库存
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-20
+ * @since 2021-04-28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsSourcingList对象", description="sourcing表")
-public class XmsSourcingList implements Serializable {
+@ApiModel(value="XmsCustomerSkuStock对象", description="客户的库存")
+public class XmsCustomerSkuStock implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     @ApiModelProperty(value = "会员ID")
     private Long memberId;
@@ -36,29 +37,34 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "会员登录名（邮箱）")
     private String username;
 
-    @ApiModelProperty(value = "网址")
-    private String url;
+    @ApiModelProperty(value = "生成我司ID")
+    private Long productId;
 
-    @ApiModelProperty(value = "标题")
-    private String title;
+    @ApiModelProperty(value = "sku编码")
+    private String skuCode;
 
-    @ApiModelProperty(value = "价格")
-    private String price;
+    private BigDecimal price;
 
-    @ApiModelProperty(value = "运输方式")
-    private String shipping;
+    @ApiModelProperty(value = "库存")
+    private Integer stock;
 
-    @ApiModelProperty(value = "橱窗图")
-    private String images;
+    @ApiModelProperty(value = "预警库存")
+    private Integer lowStock;
 
-    @ApiModelProperty(value = "费用")
-    private String cost;
+    @ApiModelProperty(value = "展示图片")
+    private String pic;
 
-    @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
-    private Integer status;
+    @ApiModelProperty(value = "销量")
+    private Integer sale;
 
-    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;11 shopify")
-    private Integer siteType;
+    @ApiModelProperty(value = "单品促销价格")
+    private BigDecimal promotionPrice;
+
+    @ApiModelProperty(value = "锁定库存")
+    private Integer lockStock;
+
+    @ApiModelProperty(value = "商品销售属性，json格式")
+    private String spData;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -68,14 +74,8 @@ public class XmsSourcingList implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
-    @ApiModelProperty(value = "sku的json数据")
-    private String skuJson;
-
-    @ApiModelProperty(value = "生成我司ID")
-    private Long productId;
-
-    @ApiModelProperty(value = "货源链接")
-    private String sourceLink;
+    @ApiModelProperty(value = "库存表ID")
+    private Integer skuStockId;
 
 
 }

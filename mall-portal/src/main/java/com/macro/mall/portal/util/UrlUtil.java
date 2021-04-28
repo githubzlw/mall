@@ -5,9 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.CharMatcher;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +13,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 public class UrlUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UrlUtil.class);
+
+    public final static String ZUUL_ALI_1688 = "/ali1688-service/";
 
     /**
      * singleton
@@ -39,6 +40,12 @@ public class UrlUtil {
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .build();
+
+    private final OkHttpClient clientLongTime = new OkHttpClient.Builder()
+            .connectTimeout(300, TimeUnit.SECONDS)
+            .readTimeout(300, TimeUnit.SECONDS)
+            .build();
+
     /**
      * call googleAuth
      * @return
@@ -148,6 +155,25 @@ public class UrlUtil {
             throw new IOException("call url is not successful");
         }
 
+        return response.body() != null ?
+                JSON.parseObject(response.body().string()) : null;
+    }
+
+    public JSONObject postFile(File originFile, String paramFileName, String accessUrl) throws IOException {
+        String imageType = "image/jpeg";
+        if (originFile.getName().endsWith(".png")) {
+            imageType = "image/png";
+        }
+        System.err.println("accessUrl:" + accessUrl);
+        RequestBody formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart(paramFileName, originFile.getName(),
+                        RequestBody.create(MediaType.parse(imageType), originFile)).build();
+        Request request = new Request.Builder().url(accessUrl).post(formBody).build();
+        Response response = clientLongTime.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            LOGGER.error("originFile:[{}],url:[{}],postFile error", originFile, accessUrl);
+            throw new IOException("response is not successful");
+        }
         return response.body() != null ?
                 JSON.parseObject(response.body().string()) : null;
     }
