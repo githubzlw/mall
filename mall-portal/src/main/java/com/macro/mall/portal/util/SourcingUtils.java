@@ -3,10 +3,10 @@ package com.macro.mall.portal.util;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.SiteSourcing;
-import com.macro.mall.portal.domain.XmsChromeUploadParam;
 import com.macro.mall.portal.service.IXmsChromeUploadService;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -214,7 +214,7 @@ public class SourcingUtils {
      */
     private void changeToUploadParamAndSave(SiteSourcing siteSourcing, JSONObject jsonObject) {
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
-            XmsChromeUploadParam uploadParam = new XmsChromeUploadParam();
+            XmsChromeUpload uploadParam = new XmsChromeUpload();
             uploadParam.setImages(siteSourcing.getImg());
             uploadParam.setUsername(siteSourcing.getUserName());
             uploadParam.setUrl(siteSourcing.getUrl());
@@ -223,9 +223,22 @@ public class SourcingUtils {
             uploadParam.setSku(jsonObject.getString("sku"));
             uploadParam.setProductDetail(jsonObject.toJSONString());
             uploadParam.setProductDescription(jsonObject.getString("desc"));
-            xmsChromeUploadService.upload(uploadParam);
+            uploadParam.setSiteType(siteSourcing.getSiteFlag());
+            uploadParam.setCreateTime(new Date());
+            uploadParam.setUpdateTime(new Date());
+            xmsChromeUploadService.save(uploadParam);
         }
+    }
 
+
+    public void saveSourcingImgInfo(SiteSourcing siteSourcing) {
+        XmsChromeUpload uploadParam = new XmsChromeUpload();
+        uploadParam.setImages(siteSourcing.getImg());
+        uploadParam.setUsername(siteSourcing.getUserName());
+        uploadParam.setSiteType(siteSourcing.getSiteFlag());
+        uploadParam.setCreateTime(new Date());
+        uploadParam.setUpdateTime(new Date());
+        xmsChromeUploadService.save(uploadParam);
     }
 
 
@@ -563,9 +576,6 @@ public class SourcingUtils {
             }
         }
     }
-
-
-
 
 
     public void deleteRedisCar(String sessionId, int useId, String cookieId) {

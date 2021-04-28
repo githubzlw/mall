@@ -100,6 +100,9 @@ public class BuyForMeController {
             // 添加到购物车
             sourcingUtils.addBfmCart(siteSourcing);
 
+            // 添加到sourcingList
+            sourcingUtils.saveSourcingImgInfo(siteSourcing);
+
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
