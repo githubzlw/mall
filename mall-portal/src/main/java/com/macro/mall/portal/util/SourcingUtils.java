@@ -316,7 +316,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + instance.ZUUL_ALI_1688 + "aliExpress/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "aliExpress/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -338,7 +338,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + instance.ZUUL_ALI_1688 + "searchimg/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "searchimg/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -359,7 +359,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + instance.ZUUL_ALI_1688 + "amazon/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "amazon/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
