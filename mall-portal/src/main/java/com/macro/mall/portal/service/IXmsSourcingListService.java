@@ -1,9 +1,10 @@
-package com.macro.mall.service;
+package com.macro.mall.portal.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.macro.mall.dto.XmsSourcingInfoParam;
+import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsSourcingList;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.macro.mall.portal.domain.XmsSourcingInfoParam;
 
 /**
  * <p>
@@ -11,12 +12,12 @@ import com.macro.mall.entity.XmsSourcingList;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-20
+ * @since 2021-04-28
  */
 public interface IXmsSourcingListService extends IService<XmsSourcingList> {
 
     Page<XmsSourcingList> list(XmsSourcingInfoParam sourcingParam);
 
-    void updateSourceLink(XmsSourcingList sourcingInfo);
+    boolean checkHasXmsCustomerProduct(XmsCustomerProduct product);
 
 }

@@ -1,13 +1,15 @@
-package com.macro.mall.service.impl;
+package com.macro.mall.portal.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.macro.mall.dto.XmsSourcingInfoParam;
+import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsSourcingList;
+import com.macro.mall.mapper.XmsCustomerProductMapper;
 import com.macro.mall.mapper.XmsSourcingListMapper;
-import com.macro.mall.service.IXmsSourcingListService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.macro.mall.portal.domain.XmsSourcingInfoParam;
+import com.macro.mall.portal.service.IXmsSourcingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +19,17 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-20
+ * @since 2021-04-28
  */
 @Service
 public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMapper, XmsSourcingList> implements IXmsSourcingListService {
 
+
     @Autowired
     private XmsSourcingListMapper xmsSourcingListMapper;
+
+    @Autowired
+    private XmsCustomerProductMapper xmsCustomerProductMapper;
 
 
     public Page<XmsSourcingList> list(XmsSourcingInfoParam sourcingParam) {
@@ -39,13 +45,12 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
     }
 
     @Override
-    public void updateSourceLink(XmsSourcingList sourcingInfo) {
+    public boolean checkHasXmsCustomerProduct(XmsCustomerProduct product) {
 
-        XmsSourcingList selectById = this.xmsSourcingListMapper.selectById(sourcingInfo.getId());
-        if (null != selectById) {
-            selectById.setSourceLink(sourcingInfo.getSourceLink());
-            this.xmsSourcingListMapper.updateById(sourcingInfo);
-        }
+        LambdaQueryWrapper<XmsCustomerProduct> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.eq(XmsCustomerProduct::getUsername, product.getUsername())
+                .eq(XmsCustomerProduct::getSourcingId, product.getSourcingId());
+        return this.xmsCustomerProductMapper.selectCount(lambdaQuery) > 0;
     }
 
 }

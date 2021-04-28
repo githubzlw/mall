@@ -16,21 +16,21 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * sourcing表
+ * 客户的产品表
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-20
+ * @since 2021-04-28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsSourcingList对象", description="sourcing表")
-public class XmsSourcingList implements Serializable {
+@ApiModel(value="XmsCustomerProduct对象", description="客户的产品表")
+public class XmsCustomerProduct implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     @ApiModelProperty(value = "会员ID")
     private Long memberId;
@@ -38,29 +38,20 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "会员登录名（邮箱）")
     private String username;
 
-    @ApiModelProperty(value = "网址")
-    private String url;
+    @ApiModelProperty(value = "生成我司ID")
+    private Long productId;
 
-    @ApiModelProperty(value = "标题")
-    private String title;
+    @ApiModelProperty(value = "sourcing list表ID")
+    private Integer sourcingId;
 
-    @ApiModelProperty(value = "价格")
-    private String price;
+    @ApiModelProperty(value = "货源链接")
+    private String sourceLink;
 
-    @ApiModelProperty(value = "运输方式")
-    private String shipping;
-
-    @ApiModelProperty(value = "橱窗图")
-    private String images;
-
-    @ApiModelProperty(value = "费用")
-    private String cost;
-
-    @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
+    @ApiModelProperty(value = "状态：0-已确认；1-推送shopify；-1:无效数据 9 从shopfi同步")
     private Integer status;
 
-    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;11 shopify")
-    private Integer siteType;
+    @ApiModelProperty(value = "sku的json数据")
+    private String skuJson;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -72,14 +63,15 @@ public class XmsSourcingList implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
-    @ApiModelProperty(value = "sku的json数据")
-    private String skuJson;
+    @ApiModelProperty(value = "从shopfi同步过来的时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date syncTime;
 
-    @ApiModelProperty(value = "生成我司ID")
-    private Long productId;
+    @ApiModelProperty(value = "我司提供给客户的价格(成本价格)")
+    private String costPrice;
 
-    @ApiModelProperty(value = "货源链接")
-    private String sourceLink;
+    @ApiModelProperty(value = "shopify的价格")
+    private String shopifyPrice;
 
 
 }

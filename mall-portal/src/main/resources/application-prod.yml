@@ -46,3 +46,9 @@ logging:
 logstash:
   host: logstash
 
+import:
+  microService:
+    api:
+      url: http://127.0.0.1:18005/api
+      exchangeRate: ${import.microService.api.url}/utils-service/fx
+
