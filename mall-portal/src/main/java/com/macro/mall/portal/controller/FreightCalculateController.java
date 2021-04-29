@@ -189,7 +189,7 @@ public class FreightCalculateController {
             List<XmsFbaFreightUnit> fbaFreightUnitList = fbaFreightUtils.getProductShippingCost(freightUnit);
             if (CollectionUtil.isNotEmpty(fbaFreightUnitList)) {
                 XmsFbaFreightUnit tempUtil = fbaFreightUnitList.get(0);
-                fbaFreightUnitList.get(0).setTotalPrice(BigDecimalUtil.truncateDouble(tempUtil.getTotalPrice() / tempUtil.getRbmRate(), 2));
+                fbaFreightUnitList.get(0).setTotalPrice(BigDecimalUtil.truncateDouble(tempUtil.getTotalPrice() / tempUtil.getRmbRate(), 2));
                 estimatedCostResult.setFreightUnit(fbaFreightUnitList.get(0));
                 fbaFreightUnitList.clear();
             }
