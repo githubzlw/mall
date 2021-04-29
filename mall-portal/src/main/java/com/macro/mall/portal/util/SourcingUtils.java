@@ -3,11 +3,12 @@ package com.macro.mall.portal.util;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.SiteSourcing;
-import com.macro.mall.portal.domain.XmsChromeUploadParam;
 import com.macro.mall.portal.service.IXmsChromeUploadService;
+import com.macro.mall.portal.service.IXmsSourcingListService;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.jsoup.Jsoup;
@@ -75,6 +76,9 @@ public class SourcingUtils {
     @Autowired
     private IXmsChromeUploadService xmsChromeUploadService;
 
+    @Autowired
+    private IXmsSourcingListService xmsSourcingListService;
+
     private String imgUploadPath = null;
 
     static {
@@ -118,30 +122,18 @@ public class SourcingUtils {
     public void checkAndLoadDataAsync(SiteSourcing siteSourcing) {
         String userId = String.valueOf(siteSourcing.getUserId());
         try {
-
-            Map<String, Object> objectMap = this.getCarToRedis(userId);
-            if (null == objectMap) {
-                objectMap = new HashMap<>();
+            if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
+                CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
+                this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
+                this.saveSourcingImgInfo(siteSourcing);
+            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+                // TAOBAO
+                CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
+                this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
+                this.saveSourcingImgInfo(siteSourcing);
+            } else {
+                this.saveSourcingImgInfo(siteSourcing);
             }
-            String pidKey = siteSourcing.getPid() + "_" + siteSourcing.getSiteFlag();
-            if (objectMap.containsKey(pidKey)) {
-                SiteSourcing tempBfm = JSONObject.parseObject(objectMap.get(pidKey).toString(), SiteSourcing.class);
-
-                if (StrUtil.isEmpty(tempBfm.getImg())) {
-                    // 判断ALIEXPRESS
-                    if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
-                        CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
-                        this.setSiteBuyForMeInfo(jsonResult, siteSourcing, userId);
-
-                    } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
-                        // TAOBAO
-                        CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
-                        this.setSiteBuyForMeInfo(jsonResult, siteSourcing, userId);
-                    }
-                }
-            }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             log.error("checkAndLoadDataAsync,siteBuyForMe[{}],userId[{}],error", siteSourcing, userId, e);
@@ -174,7 +166,6 @@ public class SourcingUtils {
                     siteSourcing.setName(title);
                 }
             }
-            this.changeToUploadParamAndSave(siteSourcing, jsonObject);
             // 更新购物车
             this.setSiteBuyForMeCartInfo(siteSourcing, userId);
         }
@@ -212,20 +203,39 @@ public class SourcingUtils {
      *
      * @param siteSourcing
      */
-    private void changeToUploadParamAndSave(SiteSourcing siteSourcing, JSONObject jsonObject) {
+    /*private void changeToUploadParamAndSave(SiteSourcing siteSourcing, JSONObject jsonObject) {
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
             XmsChromeUploadParam uploadParam = new XmsChromeUploadParam();
             uploadParam.setImages(siteSourcing.getImg());
             uploadParam.setUsername(siteSourcing.getUserName());
             uploadParam.setUrl(siteSourcing.getUrl());
             uploadParam.setTitle(siteSourcing.getName());
-            uploadParam.setPrice(jsonObject.getString("price"));
-            uploadParam.setSku(jsonObject.getString("sku"));
-            uploadParam.setProductDetail(jsonObject.toJSONString());
-            uploadParam.setProductDescription(jsonObject.getString("desc"));
+            if (null != jsonObject) {
+                uploadParam.setPrice(jsonObject.getString("price"));
+                uploadParam.setSku(jsonObject.getString("sku"));
+                uploadParam.setProductDetail(jsonObject.toJSONString());
+                uploadParam.setProductDescription(jsonObject.getString("desc"));
+            }
             xmsChromeUploadService.upload(uploadParam);
         }
+    }*/
 
+
+    public void saveSourcingImgInfo(SiteSourcing siteSourcing) {
+
+
+        XmsSourcingList xmsSourcingList = new XmsSourcingList();
+        xmsSourcingList.setMemberId(siteSourcing.getUserId());
+        xmsSourcingList.setUsername(siteSourcing.getUserName());
+        xmsSourcingList.setCreateTime(new Date());
+        xmsSourcingList.setUpdateTime(new Date());
+        xmsSourcingList.setImages(siteSourcing.getImg());
+        xmsSourcingList.setTitle(siteSourcing.getName());
+        xmsSourcingList.setStatus(0);
+        xmsSourcingList.setSiteType(9);
+        xmsSourcingList.setUrl("");
+
+        xmsSourcingListService.save(xmsSourcingList);
     }
 
 
@@ -287,7 +297,7 @@ public class SourcingUtils {
     public boolean imgSearchByTaoBao(File file, String uuid, String today) {
         boolean isSu = false;
         try {
-            String url = microServiceConfig.getUrl() + instance.ZUUL_ALI_1688.replace("18005", "18003")
+            String url = microServiceConfig.getUrl() + instance.MICRO_SERVICE_1688.replace("18005", "18003")
                     .replace("api/ali1688-service/", "");
             JSONObject json = instance.postFile(file, "file", url + "searchimg/upload");
 
@@ -316,7 +326,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "aliExpress/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -338,7 +348,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "searchimg/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -359,7 +369,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.ZUUL_ALI_1688 + "amazon/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -563,9 +573,6 @@ public class SourcingUtils {
             }
         }
     }
-
-
-
 
 
     public void deleteRedisCar(String sessionId, int useId, String cookieId) {

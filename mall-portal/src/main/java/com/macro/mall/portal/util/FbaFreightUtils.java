@@ -59,7 +59,7 @@ public class FbaFreightUtils {
 
         double currencyRate = exchangeRateUtils.getUsdToCnyRate();
         // 过滤 国家和ZIP
-        fbaParam.setRbmRate(currencyRate);
+        fbaParam.setRmbRate(currencyRate);
 
         List<XmsFbaFreightUnit> list = new ArrayList<>();
         List<XmsFbaFreightUnit> tmList = new ArrayList<>();
@@ -75,7 +75,7 @@ public class FbaFreightUtils {
         if (CollectionUtil.isNotEmpty(list)) {
             list.forEach(e -> {
 
-                e.setRbmRate(currencyRate);
+                e.setRmbRate(currencyRate);
                 // 保留原始数据
                 e.setWeight(fbaParam.getWeight());
                 e.setVolume(fbaParam.getVolume());
@@ -152,7 +152,7 @@ public class FbaFreightUtils {
      */
     public void getTransportTotalPrice(XmsFbaFreightUnit fbaFreightUnit, double currencyRate) {
         checkAndInit();
-        fbaFreightUnit.setRbmRate(this.exchangeRateUtils.getUsdToCnyRate());
+        fbaFreightUnit.setRmbRate(this.exchangeRateUtils.getUsdToCnyRate());
         if (this.fbaFreightUnitMap.containsKey(fbaFreightUnit.getCountryId())) {
             filterTransportAndCalculate(fbaFreightUnit, currencyRate);
         }

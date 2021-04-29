@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,7 +27,8 @@ public class UrlUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UrlUtil.class);
 
-    public final static String ZUUL_ALI_1688 = "/ali1688-service/";
+    public final static String MICRO_SERVICE_1688 = "/ali1688-service/";
+    public final static String MICRO_SERVICE_PAY = "/pay-service/";
 
     /**
      * singleton
@@ -176,6 +178,35 @@ public class UrlUtil {
         }
         return response.body() != null ?
                 JSON.parseObject(response.body().string()) : null;
+    }
+
+    /**
+     * Post调用
+     * @param url
+     * @param params
+     * @return
+     * @throws IOException
+     */
+    public JSONObject postURL(String url, Map<String, String> params) throws IOException {
+
+        // Create okhttp3 form body builder.
+        FormBody.Builder bodyBuilder = new FormBody.Builder();
+
+        // Add form parameters
+        params.forEach((k, v) -> {
+            if (v != null) bodyBuilder.add(k, v);
+        });
+
+        // Build form body.
+        FormBody body = bodyBuilder.build();
+
+        // Create a http request object.
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+
+        return executeCall(url, request);
     }
 
     /**

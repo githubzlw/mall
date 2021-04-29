@@ -91,7 +91,7 @@ public class XmsFbaFreightUnit implements Serializable {
     private int productFlag;// 是否是产品单页查询
     private double weight;// 重量
     private double volume;// 体积
-    private double rbmRate;// 人名币汇率
+    private double rmbRate;// 人名币汇率
     private double packingFee;//打包费
     private double productCost;//总商品费用
     private double totalPrice;// 总运费
