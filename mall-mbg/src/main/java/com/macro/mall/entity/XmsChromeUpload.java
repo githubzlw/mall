@@ -60,6 +60,9 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
 
+    @ApiModelProperty(value = "抓取的type")
+    private String type;
+
     @ApiModelProperty(value = "抓取的产品详情")
     private String productDetail;
 

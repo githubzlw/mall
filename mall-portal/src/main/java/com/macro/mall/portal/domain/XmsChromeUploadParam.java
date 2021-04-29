@@ -38,6 +38,9 @@ public class XmsChromeUploadParam {
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
 
+    @ApiModelProperty(value = "抓取的type")
+    private String type;
+
     @ApiModelProperty(value = "抓取的交期")
     private String leadTime;
 
