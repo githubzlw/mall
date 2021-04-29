@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class ProductUtils {
             chromeUpload.setClearFlag(-2);
             // 获取商品数据列表
             QueryWrapper<XmsChromeUpload> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsChromeUpload::getStatus, 0L);
+            queryWrapper.lambda().eq(XmsChromeUpload::getClearFlag, 0L);
             List<XmsChromeUpload> chromeUploadList = this.xmsChromeUploadMapper.selectList(queryWrapper);
             if (CollectionUtil.isNotEmpty(chromeUploadList)) {
                 chromeUploadList.forEach(this::cleaningSingleData);
@@ -79,6 +80,7 @@ public class ProductUtils {
         try {
 
             updateChromeUpload.setClearFlag(1);
+            updateChromeUpload.setUpdateTime(new Date());
             this.xmsChromeUploadMapper.updateById(updateChromeUpload);
 
             XmsSourcingList sourcingInfo = new XmsSourcingList();
@@ -133,14 +135,18 @@ public class ProductUtils {
 
             sourcingInfo.setSiteType(chromeUpload.getSiteType());
             sourcingInfo.setStatus(chromeUpload.getStatus());
+            sourcingInfo.setCreateTime(new Date());
+            sourcingInfo.setUpdateTime(new Date());
             this.xmsSourcingListMapper.insert(sourcingInfo);
 
             updateChromeUpload.setClearFlag(2);
+            updateChromeUpload.setUpdateTime(new Date());
             this.xmsChromeUploadMapper.updateById(updateChromeUpload);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("cleaningSingleData,error:", e);
             updateChromeUpload.setClearFlag(-1);
+            updateChromeUpload.setUpdateTime(new Date());
             this.xmsChromeUploadMapper.updateById(updateChromeUpload);
         }
     }

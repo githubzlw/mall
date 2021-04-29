@@ -18,6 +18,9 @@ public class SiteSourcingParam {
     @ApiModelProperty("BFM的图片链接")
     private String img;
 
+    @ApiModelProperty("BFM的商品名称")
+    private String name;
+
     @ApiModelProperty("平均每日订单量")
     private Integer averageDailyOrder;
     @ApiModelProperty("仅一次订单量")
