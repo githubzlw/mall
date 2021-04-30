@@ -19,7 +19,7 @@ spring:
     mongodb:
       host: 192.168.1.153
       port: 27017
-      database: mall-port
+      database: mall
   redis:
     host: 192.168.1.31 # Redis服务器地址
     database: 0 # Redis数据库索引（默认为0）

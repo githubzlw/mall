@@ -1,6 +1,8 @@
 package com.macro.mall.common.exception;
 
 import com.macro.mall.common.api.CommonResult;
+import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * Created by macro on 2020/2/27.
  */
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ResponseBody
@@ -23,6 +26,14 @@ public class GlobalExceptionHandler {
             return CommonResult.failed(e.getErrorCode());
         }
         return CommonResult.failed(e.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = MysqlDataTruncation.class)
+    public CommonResult handle(MysqlDataTruncation e) {
+        log.error("catch MysqlDataTruncation",e);
+        return CommonResult.failed("字段过长，插入数据库报错。");
+
     }
 
     @ResponseBody
