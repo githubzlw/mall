@@ -78,7 +78,7 @@ public class ProductUtils {
             XmsChromeUpload chromeUpload = new XmsChromeUpload();
             // 获取商品数据列表
             QueryWrapper<XmsChromeUpload> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsChromeUpload::getClearFlag, -1L);
+            queryWrapper.lambda().eq(XmsChromeUpload::getClearFlag, 0L);
             List<XmsChromeUpload> chromeUploadList = this.xmsChromeUploadMapper.selectList(queryWrapper);
 
             // 产品关联表插入
@@ -280,23 +280,6 @@ public class ProductUtils {
 
     }
 
-
-
-//    public String getSkuInfo(String sku){
-//
-//        JSONArray jsonArr = JSONArray.parseArray(sku);
-//        if (jsonArr != null && jsonArr.size() > 0) {
-//            for (int i = 0; i < jsonArr.size(); i++) {
-//                JSONObject json = jsonArr.getJSONObject(i);
-////                String pid = json.getJSONObject("item").getString("num_iid");
-//                String spDate = json.getString("properties_name");
-//                String pic = json.getString("img");
-//                String price = json.getString("price");
-//                String skuId = json.getString("sku_id");
-//            }
-//        }
-//        return "";
-//    }
 
     // 规格清洗
     public String cleaningCType(String cType,int site) {
