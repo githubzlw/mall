@@ -109,6 +109,21 @@ public class PmsProduct implements Serializable {
     @ApiModelProperty(value = "商品分类名称")
     private String productCategoryName;
 
+    @ApiModelProperty(value = "抓取的交期(新加字段)")
+    private String leadTime;
+
+    @ApiModelProperty(value = "抓取价格(新加字段)")
+    private String priceXj;
+
+    @ApiModelProperty(value = "抓取url(新加字段)")
+    private String url;
+
+    @ApiModelProperty(value = "抓取价格(新加字段)")
+    private String moq;
+
+    @ApiModelProperty(value = "货源价格(新加字段)")
+    private BigDecimal sourcePrice;
+
     @ApiModelProperty(value = "商品描述")
     private String description;
 
@@ -426,6 +441,46 @@ public class PmsProduct implements Serializable {
         this.productCategoryName = productCategoryName;
     }
 
+    public String getLeadTime() {
+        return leadTime;
+    }
+
+    public void setLeadTime(String leadTime) {
+        this.leadTime = leadTime;
+    }
+
+    public String getPriceXj() {
+        return priceXj;
+    }
+
+    public void setPriceXj(String priceXj) {
+        this.priceXj = priceXj;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMoq() {
+        return moq;
+    }
+
+    public void setMoq(String moq) {
+        this.moq = moq;
+    }
+
+    public BigDecimal getSourcePrice() {
+        return sourcePrice;
+    }
+
+    public void setSourcePrice(BigDecimal sourcePrice) {
+        this.sourcePrice = sourcePrice;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -502,6 +557,11 @@ public class PmsProduct implements Serializable {
         sb.append(", promotionType=").append(promotionType);
         sb.append(", brandName=").append(brandName);
         sb.append(", productCategoryName=").append(productCategoryName);
+        sb.append(", leadTime=").append(leadTime);
+        sb.append(", priceXj=").append(priceXj);
+        sb.append(", url=").append(url);
+        sb.append(", moq=").append(moq);
+        sb.append(", sourcePrice=").append(sourcePrice);
         sb.append(", description=").append(description);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);

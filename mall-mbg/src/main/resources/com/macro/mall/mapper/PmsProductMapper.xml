@@ -40,6 +40,11 @@
     <result column="promotion_type" jdbcType="INTEGER" property="promotionType" />
     <result column="brand_name" jdbcType="VARCHAR" property="brandName" />
     <result column="product_category_name" jdbcType="VARCHAR" property="productCategoryName" />
+    <result column="lead_time" jdbcType="VARCHAR" property="leadTime" />
+    <result column="price_xj" jdbcType="VARCHAR" property="priceXj" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="moq" jdbcType="VARCHAR" property="moq" />
+    <result column="source_price" jdbcType="DECIMAL" property="sourcePrice" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.macro.mall.model.PmsProduct">
     <result column="description" jdbcType="LONGVARCHAR" property="description" />
@@ -111,7 +116,8 @@
     verify_status, sort, sale, price, promotion_price, gift_growth, gift_point, use_point_limit, 
     sub_title, original_price, stock, low_stock, unit, weight, preview_status, service_ids, 
     keywords, note, album_pics, detail_title, promotion_start_time, promotion_end_time, 
-    promotion_per_limit, promotion_type, brand_name, product_category_name
+    promotion_per_limit, promotion_type, brand_name, product_category_name, lead_time, 
+    price_xj, url, moq, source_price
   </sql>
   <sql id="Blob_Column_List">
     description, detail_desc, detail_html, detail_mobile_html
@@ -180,8 +186,10 @@
       keywords, note, album_pics, 
       detail_title, promotion_start_time, promotion_end_time, 
       promotion_per_limit, promotion_type, brand_name, 
-      product_category_name, description, detail_desc, 
-      detail_html, detail_mobile_html)
+      product_category_name, lead_time, price_xj, 
+      url, moq, source_price, 
+      description, detail_desc, detail_html, 
+      detail_mobile_html)
     values (#{brandId,jdbcType=BIGINT}, #{productCategoryId,jdbcType=BIGINT}, #{feightTemplateId,jdbcType=BIGINT}, 
       #{productAttributeCategoryId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{pic,jdbcType=VARCHAR}, 
       #{productSn,jdbcType=VARCHAR}, #{deleteStatus,jdbcType=INTEGER}, #{publishStatus,jdbcType=INTEGER}, 
@@ -194,8 +202,10 @@
       #{keywords,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}, #{albumPics,jdbcType=VARCHAR}, 
       #{detailTitle,jdbcType=VARCHAR}, #{promotionStartTime,jdbcType=TIMESTAMP}, #{promotionEndTime,jdbcType=TIMESTAMP}, 
       #{promotionPerLimit,jdbcType=INTEGER}, #{promotionType,jdbcType=INTEGER}, #{brandName,jdbcType=VARCHAR}, 
-      #{productCategoryName,jdbcType=VARCHAR}, #{description,jdbcType=LONGVARCHAR}, #{detailDesc,jdbcType=LONGVARCHAR}, 
-      #{detailHtml,jdbcType=LONGVARCHAR}, #{detailMobileHtml,jdbcType=LONGVARCHAR})
+      #{productCategoryName,jdbcType=VARCHAR}, #{leadTime,jdbcType=VARCHAR}, #{priceXj,jdbcType=VARCHAR}, 
+      #{url,jdbcType=VARCHAR}, #{moq,jdbcType=VARCHAR}, #{sourcePrice,jdbcType=DECIMAL}, 
+      #{description,jdbcType=LONGVARCHAR}, #{detailDesc,jdbcType=LONGVARCHAR}, #{detailHtml,jdbcType=LONGVARCHAR}, 
+      #{detailMobileHtml,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsProduct">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -313,6 +323,21 @@
       </if>
       <if test="productCategoryName != null">
         product_category_name,
+      </if>
+      <if test="leadTime != null">
+        lead_time,
+      </if>
+      <if test="priceXj != null">
+        price_xj,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="moq != null">
+        moq,
+      </if>
+      <if test="sourcePrice != null">
+        source_price,
       </if>
       <if test="description != null">
         description,
@@ -438,6 +463,21 @@
       </if>
       <if test="productCategoryName != null">
         #{productCategoryName,jdbcType=VARCHAR},
+      </if>
+      <if test="leadTime != null">
+        #{leadTime,jdbcType=VARCHAR},
+      </if>
+      <if test="priceXj != null">
+        #{priceXj,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="moq != null">
+        #{moq,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcePrice != null">
+        #{sourcePrice,jdbcType=DECIMAL},
       </if>
       <if test="description != null">
         #{description,jdbcType=LONGVARCHAR},
@@ -576,6 +616,21 @@
       <if test="record.productCategoryName != null">
         product_category_name = #{record.productCategoryName,jdbcType=VARCHAR},
       </if>
+      <if test="record.leadTime != null">
+        lead_time = #{record.leadTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.priceXj != null">
+        price_xj = #{record.priceXj,jdbcType=VARCHAR},
+      </if>
+      <if test="record.url != null">
+        url = #{record.url,jdbcType=VARCHAR},
+      </if>
+      <if test="record.moq != null">
+        moq = #{record.moq,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcePrice != null">
+        source_price = #{record.sourcePrice,jdbcType=DECIMAL},
+      </if>
       <if test="record.description != null">
         description = #{record.description,jdbcType=LONGVARCHAR},
       </if>
@@ -633,6 +688,11 @@
       promotion_type = #{record.promotionType,jdbcType=INTEGER},
       brand_name = #{record.brandName,jdbcType=VARCHAR},
       product_category_name = #{record.productCategoryName,jdbcType=VARCHAR},
+      lead_time = #{record.leadTime,jdbcType=VARCHAR},
+      price_xj = #{record.priceXj,jdbcType=VARCHAR},
+      url = #{record.url,jdbcType=VARCHAR},
+      moq = #{record.moq,jdbcType=VARCHAR},
+      source_price = #{record.sourcePrice,jdbcType=DECIMAL},
       description = #{record.description,jdbcType=LONGVARCHAR},
       detail_desc = #{record.detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{record.detailHtml,jdbcType=LONGVARCHAR},
@@ -680,7 +740,12 @@
       promotion_per_limit = #{record.promotionPerLimit,jdbcType=INTEGER},
       promotion_type = #{record.promotionType,jdbcType=INTEGER},
       brand_name = #{record.brandName,jdbcType=VARCHAR},
-      product_category_name = #{record.productCategoryName,jdbcType=VARCHAR}
+      product_category_name = #{record.productCategoryName,jdbcType=VARCHAR},
+      lead_time = #{record.leadTime,jdbcType=VARCHAR},
+      price_xj = #{record.priceXj,jdbcType=VARCHAR},
+      url = #{record.url,jdbcType=VARCHAR},
+      moq = #{record.moq,jdbcType=VARCHAR},
+      source_price = #{record.sourcePrice,jdbcType=DECIMAL}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -799,6 +864,21 @@
       <if test="productCategoryName != null">
         product_category_name = #{productCategoryName,jdbcType=VARCHAR},
       </if>
+      <if test="leadTime != null">
+        lead_time = #{leadTime,jdbcType=VARCHAR},
+      </if>
+      <if test="priceXj != null">
+        price_xj = #{priceXj,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="moq != null">
+        moq = #{moq,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcePrice != null">
+        source_price = #{sourcePrice,jdbcType=DECIMAL},
+      </if>
       <if test="description != null">
         description = #{description,jdbcType=LONGVARCHAR},
       </if>
@@ -853,6 +933,11 @@
       promotion_type = #{promotionType,jdbcType=INTEGER},
       brand_name = #{brandName,jdbcType=VARCHAR},
       product_category_name = #{productCategoryName,jdbcType=VARCHAR},
+      lead_time = #{leadTime,jdbcType=VARCHAR},
+      price_xj = #{priceXj,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      moq = #{moq,jdbcType=VARCHAR},
+      source_price = #{sourcePrice,jdbcType=DECIMAL},
       description = #{description,jdbcType=LONGVARCHAR},
       detail_desc = #{detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{detailHtml,jdbcType=LONGVARCHAR},
@@ -897,7 +982,12 @@
       promotion_per_limit = #{promotionPerLimit,jdbcType=INTEGER},
       promotion_type = #{promotionType,jdbcType=INTEGER},
       brand_name = #{brandName,jdbcType=VARCHAR},
-      product_category_name = #{productCategoryName,jdbcType=VARCHAR}
+      product_category_name = #{productCategoryName,jdbcType=VARCHAR},
+      lead_time = #{leadTime,jdbcType=VARCHAR},
+      price_xj = #{priceXj,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      moq = #{moq,jdbcType=VARCHAR},
+      source_price = #{sourcePrice,jdbcType=DECIMAL}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

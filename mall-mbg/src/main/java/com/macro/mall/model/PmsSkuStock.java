@@ -35,6 +35,27 @@ public class PmsSkuStock implements Serializable {
     @ApiModelProperty(value = "商品销售属性，json格式")
     private String spData;
 
+    @ApiModelProperty(value = "最小批量价格（新加字段）")
+    private BigDecimal minPrice;
+
+    @ApiModelProperty(value = "最大批量价格（新加字段）")
+    private BigDecimal maxPrice;
+
+    @ApiModelProperty(value = "原价格批量（新加字段）")
+    private Integer moq;
+
+    @ApiModelProperty(value = "最小价格批量（新加字段）")
+    private Integer minMoq;
+
+    @ApiModelProperty(value = "最大价格批量（新加字段）")
+    private Integer maxMoq;
+
+    @ApiModelProperty(value = "重量（新加字段）")
+    private BigDecimal weight;
+
+    @ApiModelProperty(value = "体积（新加字段）")
+    private String volume;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -125,6 +146,62 @@ public class PmsSkuStock implements Serializable {
         this.spData = spData;
     }
 
+    public BigDecimal getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(BigDecimal minPrice) {
+        this.minPrice = minPrice;
+    }
+
+    public BigDecimal getMaxPrice() {
+        return maxPrice;
+    }
+
+    public void setMaxPrice(BigDecimal maxPrice) {
+        this.maxPrice = maxPrice;
+    }
+
+    public Integer getMoq() {
+        return moq;
+    }
+
+    public void setMoq(Integer moq) {
+        this.moq = moq;
+    }
+
+    public Integer getMinMoq() {
+        return minMoq;
+    }
+
+    public void setMinMoq(Integer minMoq) {
+        this.minMoq = minMoq;
+    }
+
+    public Integer getMaxMoq() {
+        return maxMoq;
+    }
+
+    public void setMaxMoq(Integer maxMoq) {
+        this.maxMoq = maxMoq;
+    }
+
+    public BigDecimal getWeight() {
+        return weight;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
+    }
+
+    public String getVolume() {
+        return volume;
+    }
+
+    public void setVolume(String volume) {
+        this.volume = volume;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -142,6 +219,13 @@ public class PmsSkuStock implements Serializable {
         sb.append(", promotionPrice=").append(promotionPrice);
         sb.append(", lockStock=").append(lockStock);
         sb.append(", spData=").append(spData);
+        sb.append(", minPrice=").append(minPrice);
+        sb.append(", maxPrice=").append(maxPrice);
+        sb.append(", moq=").append(moq);
+        sb.append(", minMoq=").append(minMoq);
+        sb.append(", maxMoq=").append(maxMoq);
+        sb.append(", weight=").append(weight);
+        sb.append(", volume=").append(volume);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
