@@ -245,17 +245,18 @@ public class ProductUtils {
             sourcingInfo.setImages(chromeUpload.getImages());
         }
         // 处理价格
-        // US $9.86 - 13.50 US $12.33 - 16.88-20%
-        if (StrUtil.isNotEmpty(chromeUpload.getPrice())) {
-            // .replace("$", "@")
-            String tempPrice = chromeUpload.getPrice().trim();
-            if (tempPrice.indexOf("US") == 0) {
-                String[] priceArr = tempPrice.substring(2).split("US");
-                sourcingInfo.setPrice(priceArr[0].trim());
-            } else {
-                sourcingInfo.setPrice(chromeUpload.getPrice().trim());
-            }
-        }
+//        // US $9.86 - 13.50 US $12.33 - 16.88-20%
+//        if (StrUtil.isNotEmpty(chromeUpload.getPrice())) {
+//            // .replace("$", "@")
+//            String tempPrice = chromeUpload.getPrice().trim();
+//            if (tempPrice.indexOf("US") == 0) {
+//                String[] priceArr = tempPrice.substring(2).split("US");
+//                sourcingInfo.setPrice(priceArr[0].trim());
+//            } else {
+//                sourcingInfo.setPrice(chromeUpload.getPrice().trim());
+//            }
+//        }
+        sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()));
         // 处理 shippingFee
         // Shipping: US $5.14
         if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
@@ -304,6 +305,53 @@ public class ProductUtils {
         }
 
         return result;
+    }
+
+
+
+    // price clean
+    // 价格
+    public static String cleaningPrice(String price,int site) {
+
+        if(StrUtil.isEmpty(price)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        Document doc = Jsoup.parse(price);
+        //ebay
+        if(site==6){
+            // 价格
+            Elements element1 = doc.select("span.notranslate");
+
+            if(element1.size()>0){
+                result.append(element1.get(0).text());
+            }
+            //aliexpress esalipress
+        }else if(site == 2 || site == 3){
+            Elements element1 = doc.select("span.product-price-value");
+
+            if(element1.size()==1){
+                result.append(element1.get(0).text());
+            }
+            if(element1.size()==2){
+                result.append(element1.get(0).text());
+                result.append(";");
+                result.append(element1.get(1).text());
+            }
+
+            //walmart
+        }else if(site == 7){
+            Elements element1 = doc.select("span.price-characteristic");
+
+            result.append(element1.attr("content"));
+        }
+
+        //正常价格
+        if(StrUtil.isEmpty(result.toString())){
+            result.append(price);
+        }
+
+        return result.toString();
     }
 
     // AliExpress
