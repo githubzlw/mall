@@ -51,7 +51,9 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
             pmsProductAttributeCategory.setParamCount(pmsProductAttributeCategory.getParamCount()+1);
         }
         productAttributeCategoryMapper.updateByPrimaryKey(pmsProductAttributeCategory);
-        return count;
+//        return count;
+        int maxId = pmsProductAttribute.getId().intValue();
+        return maxId;
     }
 
     @Override

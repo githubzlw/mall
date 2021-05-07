@@ -27,7 +27,9 @@ public class PmsProductAttributeCategoryServiceImpl implements PmsProductAttribu
     public int create(String name) {
         PmsProductAttributeCategory productAttributeCategory = new PmsProductAttributeCategory();
         productAttributeCategory.setName(name);
-        return productAttributeCategoryMapper.insertSelective(productAttributeCategory);
+//        return productAttributeCategoryMapper.insertSelective(productAttributeCategory);
+        int count = productAttributeCategoryMapper.insertSelective(productAttributeCategory);
+        return productAttributeCategory.getId().intValue();
     }
 
     @Override

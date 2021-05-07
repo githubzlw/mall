@@ -794,6 +794,436 @@ public class PmsSkuStockExample {
             addCriterion("sp_data not between", value1, value2, "spData");
             return (Criteria) this;
         }
+
+        public Criteria andMinPriceIsNull() {
+            addCriterion("min_price is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceIsNotNull() {
+            addCriterion("min_price is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceEqualTo(BigDecimal value) {
+            addCriterion("min_price =", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceNotEqualTo(BigDecimal value) {
+            addCriterion("min_price <>", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceGreaterThan(BigDecimal value) {
+            addCriterion("min_price >", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceGreaterThanOrEqualTo(BigDecimal value) {
+            addCriterion("min_price >=", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceLessThan(BigDecimal value) {
+            addCriterion("min_price <", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceLessThanOrEqualTo(BigDecimal value) {
+            addCriterion("min_price <=", value, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceIn(List<BigDecimal> values) {
+            addCriterion("min_price in", values, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceNotIn(List<BigDecimal> values) {
+            addCriterion("min_price not in", values, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("min_price between", value1, value2, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinPriceNotBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("min_price not between", value1, value2, "minPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceIsNull() {
+            addCriterion("max_price is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceIsNotNull() {
+            addCriterion("max_price is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceEqualTo(BigDecimal value) {
+            addCriterion("max_price =", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceNotEqualTo(BigDecimal value) {
+            addCriterion("max_price <>", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceGreaterThan(BigDecimal value) {
+            addCriterion("max_price >", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceGreaterThanOrEqualTo(BigDecimal value) {
+            addCriterion("max_price >=", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceLessThan(BigDecimal value) {
+            addCriterion("max_price <", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceLessThanOrEqualTo(BigDecimal value) {
+            addCriterion("max_price <=", value, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceIn(List<BigDecimal> values) {
+            addCriterion("max_price in", values, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceNotIn(List<BigDecimal> values) {
+            addCriterion("max_price not in", values, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("max_price between", value1, value2, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxPriceNotBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("max_price not between", value1, value2, "maxPrice");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqIsNull() {
+            addCriterion("moq is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqIsNotNull() {
+            addCriterion("moq is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqEqualTo(Integer value) {
+            addCriterion("moq =", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqNotEqualTo(Integer value) {
+            addCriterion("moq <>", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqGreaterThan(Integer value) {
+            addCriterion("moq >", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqGreaterThanOrEqualTo(Integer value) {
+            addCriterion("moq >=", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqLessThan(Integer value) {
+            addCriterion("moq <", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqLessThanOrEqualTo(Integer value) {
+            addCriterion("moq <=", value, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqIn(List<Integer> values) {
+            addCriterion("moq in", values, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqNotIn(List<Integer> values) {
+            addCriterion("moq not in", values, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqBetween(Integer value1, Integer value2) {
+            addCriterion("moq between", value1, value2, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMoqNotBetween(Integer value1, Integer value2) {
+            addCriterion("moq not between", value1, value2, "moq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqIsNull() {
+            addCriterion("min_moq is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqIsNotNull() {
+            addCriterion("min_moq is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqEqualTo(Integer value) {
+            addCriterion("min_moq =", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqNotEqualTo(Integer value) {
+            addCriterion("min_moq <>", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqGreaterThan(Integer value) {
+            addCriterion("min_moq >", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqGreaterThanOrEqualTo(Integer value) {
+            addCriterion("min_moq >=", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqLessThan(Integer value) {
+            addCriterion("min_moq <", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqLessThanOrEqualTo(Integer value) {
+            addCriterion("min_moq <=", value, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqIn(List<Integer> values) {
+            addCriterion("min_moq in", values, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqNotIn(List<Integer> values) {
+            addCriterion("min_moq not in", values, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqBetween(Integer value1, Integer value2) {
+            addCriterion("min_moq between", value1, value2, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMinMoqNotBetween(Integer value1, Integer value2) {
+            addCriterion("min_moq not between", value1, value2, "minMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqIsNull() {
+            addCriterion("max_moq is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqIsNotNull() {
+            addCriterion("max_moq is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqEqualTo(Integer value) {
+            addCriterion("max_moq =", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqNotEqualTo(Integer value) {
+            addCriterion("max_moq <>", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqGreaterThan(Integer value) {
+            addCriterion("max_moq >", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqGreaterThanOrEqualTo(Integer value) {
+            addCriterion("max_moq >=", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqLessThan(Integer value) {
+            addCriterion("max_moq <", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqLessThanOrEqualTo(Integer value) {
+            addCriterion("max_moq <=", value, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqIn(List<Integer> values) {
+            addCriterion("max_moq in", values, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqNotIn(List<Integer> values) {
+            addCriterion("max_moq not in", values, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqBetween(Integer value1, Integer value2) {
+            addCriterion("max_moq between", value1, value2, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andMaxMoqNotBetween(Integer value1, Integer value2) {
+            addCriterion("max_moq not between", value1, value2, "maxMoq");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightIsNull() {
+            addCriterion("weight is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightIsNotNull() {
+            addCriterion("weight is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightEqualTo(BigDecimal value) {
+            addCriterion("weight =", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightNotEqualTo(BigDecimal value) {
+            addCriterion("weight <>", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightGreaterThan(BigDecimal value) {
+            addCriterion("weight >", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightGreaterThanOrEqualTo(BigDecimal value) {
+            addCriterion("weight >=", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightLessThan(BigDecimal value) {
+            addCriterion("weight <", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightLessThanOrEqualTo(BigDecimal value) {
+            addCriterion("weight <=", value, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightIn(List<BigDecimal> values) {
+            addCriterion("weight in", values, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightNotIn(List<BigDecimal> values) {
+            addCriterion("weight not in", values, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("weight between", value1, value2, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andWeightNotBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("weight not between", value1, value2, "weight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeIsNull() {
+            addCriterion("volume is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeIsNotNull() {
+            addCriterion("volume is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeEqualTo(String value) {
+            addCriterion("volume =", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeNotEqualTo(String value) {
+            addCriterion("volume <>", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeGreaterThan(String value) {
+            addCriterion("volume >", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeGreaterThanOrEqualTo(String value) {
+            addCriterion("volume >=", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeLessThan(String value) {
+            addCriterion("volume <", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeLessThanOrEqualTo(String value) {
+            addCriterion("volume <=", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeLike(String value) {
+            addCriterion("volume like", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeNotLike(String value) {
+            addCriterion("volume not like", value, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeIn(List<String> values) {
+            addCriterion("volume in", values, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeNotIn(List<String> values) {
+            addCriterion("volume not in", values, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeBetween(String value1, String value2) {
+            addCriterion("volume between", value1, value2, "volume");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeNotBetween(String value1, String value2) {
+            addCriterion("volume not between", value1, value2, "volume");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

@@ -13,6 +13,13 @@
     <result column="promotion_price" jdbcType="DECIMAL" property="promotionPrice" />
     <result column="lock_stock" jdbcType="INTEGER" property="lockStock" />
     <result column="sp_data" jdbcType="VARCHAR" property="spData" />
+    <result column="min_price" jdbcType="DECIMAL" property="minPrice" />
+    <result column="max_price" jdbcType="DECIMAL" property="maxPrice" />
+    <result column="moq" jdbcType="INTEGER" property="moq" />
+    <result column="min_moq" jdbcType="INTEGER" property="minMoq" />
+    <result column="max_moq" jdbcType="INTEGER" property="maxMoq" />
+    <result column="weight" jdbcType="DECIMAL" property="weight" />
+    <result column="volume" jdbcType="VARCHAR" property="volume" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -74,7 +81,7 @@
   </sql>
   <sql id="Base_Column_List">
     id, product_id, sku_code, price, stock, low_stock, pic, sale, promotion_price, lock_stock, 
-    sp_data
+    sp_data, min_price, max_price, moq, min_moq, max_moq, weight, volume
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.PmsSkuStockExample" resultMap="BaseResultMap">
     select
@@ -113,11 +120,15 @@
     insert into pms_sku_stock (product_id, sku_code, price, 
       stock, low_stock, pic, 
       sale, promotion_price, lock_stock, 
-      sp_data)
+      sp_data, min_price, max_price, 
+      moq, min_moq, max_moq, 
+      weight, volume)
     values (#{productId,jdbcType=BIGINT}, #{skuCode,jdbcType=VARCHAR}, #{price,jdbcType=DECIMAL}, 
       #{stock,jdbcType=INTEGER}, #{lowStock,jdbcType=INTEGER}, #{pic,jdbcType=VARCHAR}, 
       #{sale,jdbcType=INTEGER}, #{promotionPrice,jdbcType=DECIMAL}, #{lockStock,jdbcType=INTEGER}, 
-      #{spData,jdbcType=VARCHAR})
+      #{spData,jdbcType=VARCHAR}, #{minPrice,jdbcType=DECIMAL}, #{maxPrice,jdbcType=DECIMAL}, 
+      #{moq,jdbcType=INTEGER}, #{minMoq,jdbcType=INTEGER}, #{maxMoq,jdbcType=INTEGER}, 
+      #{weight,jdbcType=DECIMAL}, #{volume,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsSkuStock">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -155,6 +166,27 @@
       <if test="spData != null">
         sp_data,
       </if>
+      <if test="minPrice != null">
+        min_price,
+      </if>
+      <if test="maxPrice != null">
+        max_price,
+      </if>
+      <if test="moq != null">
+        moq,
+      </if>
+      <if test="minMoq != null">
+        min_moq,
+      </if>
+      <if test="maxMoq != null">
+        max_moq,
+      </if>
+      <if test="weight != null">
+        weight,
+      </if>
+      <if test="volume != null">
+        volume,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="productId != null">
@@ -186,6 +218,27 @@
       </if>
       <if test="spData != null">
         #{spData,jdbcType=VARCHAR},
+      </if>
+      <if test="minPrice != null">
+        #{minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="maxPrice != null">
+        #{maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="moq != null">
+        #{moq,jdbcType=INTEGER},
+      </if>
+      <if test="minMoq != null">
+        #{minMoq,jdbcType=INTEGER},
+      </if>
+      <if test="maxMoq != null">
+        #{maxMoq,jdbcType=INTEGER},
+      </if>
+      <if test="weight != null">
+        #{weight,jdbcType=DECIMAL},
+      </if>
+      <if test="volume != null">
+        #{volume,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -231,6 +284,27 @@
       <if test="record.spData != null">
         sp_data = #{record.spData,jdbcType=VARCHAR},
       </if>
+      <if test="record.minPrice != null">
+        min_price = #{record.minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="record.maxPrice != null">
+        max_price = #{record.maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="record.moq != null">
+        moq = #{record.moq,jdbcType=INTEGER},
+      </if>
+      <if test="record.minMoq != null">
+        min_moq = #{record.minMoq,jdbcType=INTEGER},
+      </if>
+      <if test="record.maxMoq != null">
+        max_moq = #{record.maxMoq,jdbcType=INTEGER},
+      </if>
+      <if test="record.weight != null">
+        weight = #{record.weight,jdbcType=DECIMAL},
+      </if>
+      <if test="record.volume != null">
+        volume = #{record.volume,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -248,7 +322,14 @@
       sale = #{record.sale,jdbcType=INTEGER},
       promotion_price = #{record.promotionPrice,jdbcType=DECIMAL},
       lock_stock = #{record.lockStock,jdbcType=INTEGER},
-      sp_data = #{record.spData,jdbcType=VARCHAR}
+      sp_data = #{record.spData,jdbcType=VARCHAR},
+      min_price = #{record.minPrice,jdbcType=DECIMAL},
+      max_price = #{record.maxPrice,jdbcType=DECIMAL},
+      moq = #{record.moq,jdbcType=INTEGER},
+      min_moq = #{record.minMoq,jdbcType=INTEGER},
+      max_moq = #{record.maxMoq,jdbcType=INTEGER},
+      weight = #{record.weight,jdbcType=DECIMAL},
+      volume = #{record.volume,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -286,6 +367,27 @@
       <if test="spData != null">
         sp_data = #{spData,jdbcType=VARCHAR},
       </if>
+      <if test="minPrice != null">
+        min_price = #{minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="maxPrice != null">
+        max_price = #{maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="moq != null">
+        moq = #{moq,jdbcType=INTEGER},
+      </if>
+      <if test="minMoq != null">
+        min_moq = #{minMoq,jdbcType=INTEGER},
+      </if>
+      <if test="maxMoq != null">
+        max_moq = #{maxMoq,jdbcType=INTEGER},
+      </if>
+      <if test="weight != null">
+        weight = #{weight,jdbcType=DECIMAL},
+      </if>
+      <if test="volume != null">
+        volume = #{volume,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -300,7 +402,14 @@
       sale = #{sale,jdbcType=INTEGER},
       promotion_price = #{promotionPrice,jdbcType=DECIMAL},
       lock_stock = #{lockStock,jdbcType=INTEGER},
-      sp_data = #{spData,jdbcType=VARCHAR}
+      sp_data = #{spData,jdbcType=VARCHAR},
+      min_price = #{minPrice,jdbcType=DECIMAL},
+      max_price = #{maxPrice,jdbcType=DECIMAL},
+      moq = #{moq,jdbcType=INTEGER},
+      min_moq = #{minMoq,jdbcType=INTEGER},
+      max_moq = #{maxMoq,jdbcType=INTEGER},
+      weight = #{weight,jdbcType=DECIMAL},
+      volume = #{volume,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>
