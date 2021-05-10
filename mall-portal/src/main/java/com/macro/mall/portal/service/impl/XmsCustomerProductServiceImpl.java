@@ -11,6 +11,8 @@ import com.macro.mall.portal.service.IXmsCustomerProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 客户的产品表 服务实现类
@@ -34,6 +36,13 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         lambdaQuery.eq(XmsCustomerProduct::getUsername, productParam.getUsername());
         lambdaQuery.orderByDesc(XmsCustomerProduct::getCreateTime);
         return this.xmsCustomerProductMapper.selectPage(page, lambdaQuery);
+    }
+
+    @Override
+    public List<XmsCustomerProduct> queryByUserInfo(String userName , Long memberId) {
+        LambdaQueryWrapper<XmsCustomerProduct> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.eq(XmsCustomerProduct::getUsername, userName);
+        return this.xmsCustomerProductMapper.selectList(lambdaQuery);
     }
 
 

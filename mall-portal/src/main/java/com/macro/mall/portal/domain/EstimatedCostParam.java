@@ -12,23 +12,19 @@ import lombok.Data;
 @Data
 public class EstimatedCostParam {
 
-    @ApiModelProperty("原始价格")
-    private Double originalPrice;
-
-    @ApiModelProperty("运费")
+    @ApiModelProperty("原始运费")
     private Double originalShippingFee;
 
     @ApiModelProperty("原始价格")
-    private Double originalWeight;
+    private Double originalProductPrice;
 
-    @ApiModelProperty("原始价格")
-    private Double productPrice;
-
-    @ApiModelProperty("国家ID")
+    @ApiModelProperty("国家ID-必填")
     private Integer countryId;
 
+    @ApiModelProperty("重量-必填")
     private Double weight;
 
+    @ApiModelProperty("体积-必填")
     private Double volume;
 
 

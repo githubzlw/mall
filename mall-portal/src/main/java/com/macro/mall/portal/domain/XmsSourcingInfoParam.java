@@ -36,4 +36,7 @@ public class XmsSourcingInfoParam implements Serializable {
     @ApiModelProperty(value = "分页行数")
     private Integer pageSize;
 
+    @ApiModelProperty(value = "productId")
+    private Long productId;
+
 }

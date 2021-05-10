@@ -5,11 +5,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.macro.mall.dto.XmsSourcingInfoParam;
+import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsSourcingList;
+import com.macro.mall.mapper.XmsChromeUploadMapper;
 import com.macro.mall.mapper.XmsSourcingListMapper;
 import com.macro.mall.service.IXmsSourcingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -24,6 +28,9 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
 
     @Autowired
     private XmsSourcingListMapper xmsSourcingListMapper;
+
+    @Autowired
+    private XmsChromeUploadMapper xmsChromeUploadMapper;
 
 
     public Page<XmsSourcingList> list(XmsSourcingInfoParam sourcingParam) {
@@ -45,7 +52,33 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         if (null != selectById) {
             selectById.setSourceLink(sourcingInfo.getSourceLink());
             this.xmsSourcingListMapper.updateById(sourcingInfo);
+
+            // 添加货源后，加入到Upload表中清洗
+            LambdaQueryWrapper<XmsChromeUpload> lambdaQuery = Wrappers.lambdaQuery();
+            lambdaQuery.eq(XmsChromeUpload::getUsername, selectById.getUsername());
+            lambdaQuery.eq(XmsChromeUpload::getSourcingId, sourcingInfo.getId());
+            XmsChromeUpload chromeUpload = this.xmsChromeUploadMapper.selectOne(lambdaQuery);
+            if (null != chromeUpload) {
+                chromeUpload.setUrl(sourcingInfo.getSourceLink());
+                chromeUpload.setClearFlag(0);
+                chromeUpload.setSourceFlag(2);
+                chromeUpload.setUpdateTime(new Date());
+                this.xmsChromeUploadMapper.updateById(chromeUpload);
+            } else {
+                chromeUpload = new XmsChromeUpload();
+                chromeUpload.setId(null);
+                chromeUpload.setUsername(selectById.getUsername());
+                chromeUpload.setMemberId(selectById.getMemberId());
+                chromeUpload.setUrl(sourcingInfo.getSourceLink());
+                chromeUpload.setClearFlag(0);
+                chromeUpload.setSourceFlag(2);
+                chromeUpload.setCreateTime(new Date());
+                chromeUpload.setUpdateTime(new Date());
+                this.xmsChromeUploadMapper.insert(chromeUpload);
+            }
+
         }
+
     }
 
 }

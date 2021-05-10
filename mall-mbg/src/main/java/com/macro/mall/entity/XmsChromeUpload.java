@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-26
+ * @since 2021-04-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -57,6 +57,9 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "抓取的折扣")
     private String off;
 
+    @ApiModelProperty(value = "抓取的type")
+    private String type;
+
     @ApiModelProperty(value = "抓取的sku")
     private String sku;
 
@@ -91,6 +94,12 @@ public class XmsChromeUpload implements Serializable {
 
     @ApiModelProperty(value = "清洗标识 -1 无效数据 0未清洗 1清洗中 2清洗完成")
     private Integer clearFlag;
+
+    @ApiModelProperty(value = "0:插件，1：url(api) 2 货源录入")
+    private Integer sourceFlag;
+
+    @ApiModelProperty(value = "货源录入关联的Sourcing表ID")
+    private Integer sourcingId;
 
 
 }

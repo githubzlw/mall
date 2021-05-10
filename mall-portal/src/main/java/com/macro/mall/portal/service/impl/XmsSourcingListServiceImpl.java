@@ -53,4 +53,12 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         return this.xmsCustomerProductMapper.selectCount(lambdaQuery) > 0;
     }
 
+    @Override
+    public XmsSourcingList querySingleSourcingList(XmsSourcingInfoParam sourcingParam) {
+        LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.eq(XmsSourcingList::getUsername, sourcingParam.getUsername())
+                .eq(XmsSourcingList::getProductId, sourcingParam.getProductId());
+        return this.xmsSourcingListMapper.selectOne(lambdaQuery);
+    }
+
 }

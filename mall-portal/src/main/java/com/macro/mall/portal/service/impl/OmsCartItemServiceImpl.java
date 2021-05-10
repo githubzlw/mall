@@ -112,6 +112,15 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
     }
 
     @Override
+    public int selectProducts(Long memberId, List<Long> ids, Integer checkFlag) {
+        OmsCartItem record = new OmsCartItem();
+        record.setCheckFlag(checkFlag);
+        OmsCartItemExample example = new OmsCartItemExample();
+        example.createCriteria().andIdIn(ids).andMemberIdEqualTo(memberId);
+        return cartItemMapper.updateByExampleSelective(record, example);
+    }
+
+    @Override
     public CartProduct getCartProduct(Long productId) {
         return productDao.getCartProduct(productId);
     }

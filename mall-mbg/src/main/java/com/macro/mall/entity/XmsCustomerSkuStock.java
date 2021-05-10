@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-28
+ * @since 2021-05-07
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -76,6 +76,12 @@ public class XmsCustomerSkuStock implements Serializable {
 
     @ApiModelProperty(value = "库存表ID")
     private Integer skuStockId;
+
+    @ApiModelProperty(value = "0 默认 1购买中 2 可使用 3无效库存")
+    private Integer status;
+
+    @ApiModelProperty(value = "下单的订单号")
+    private String orderNo;
 
 
 }

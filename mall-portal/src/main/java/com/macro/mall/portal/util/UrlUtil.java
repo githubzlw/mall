@@ -30,6 +30,8 @@ public class UrlUtil {
     public final static String MICRO_SERVICE_1688 = "/ali1688-service/";
     public final static String MICRO_SERVICE_PAY = "/pay-service/";
 
+    public final static String MICRO_SERVICE_SHOPIFY = "/shopify-service/";
+
     /**
      * singleton
      */

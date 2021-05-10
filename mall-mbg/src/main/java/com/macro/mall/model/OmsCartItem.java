@@ -54,6 +54,9 @@ public class OmsCartItem implements Serializable {
     @ApiModelProperty(value = "商品销售属性:[{'key':'颜色','value':'颜色'},{'key':'容量','value':'4G'}]")
     private String productAttr;
 
+    @ApiModelProperty(value = "0 未勾选 1勾选")
+    private Integer checkFlag;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -200,6 +203,14 @@ public class OmsCartItem implements Serializable {
         this.productAttr = productAttr;
     }
 
+    public Integer getCheckFlag() {
+        return checkFlag;
+    }
+
+    public void setCheckFlag(Integer checkFlag) {
+        this.checkFlag = checkFlag;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -224,6 +235,7 @@ public class OmsCartItem implements Serializable {
         sb.append(", productBrand=").append(productBrand);
         sb.append(", productSn=").append(productSn);
         sb.append(", productAttr=").append(productAttr);
+        sb.append(", checkFlag=").append(checkFlag);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

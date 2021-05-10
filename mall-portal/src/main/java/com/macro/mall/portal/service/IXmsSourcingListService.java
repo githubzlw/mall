@@ -20,4 +20,6 @@ public interface IXmsSourcingListService extends IService<XmsSourcingList> {
 
     boolean checkHasXmsCustomerProduct(XmsCustomerProduct product);
 
+    XmsSourcingList querySingleSourcingList(XmsSourcingInfoParam sourcingParam);
+
 }

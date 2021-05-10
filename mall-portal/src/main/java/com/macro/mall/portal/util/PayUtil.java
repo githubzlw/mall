@@ -6,9 +6,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.entity.XmsPayment;
 import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.config.PayConfig;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.portal.domain.SiteEnum;
+import com.macro.mall.portal.service.IXmsPaymentService;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.RelatedResources;
 import com.paypal.api.payments.Sale;
@@ -24,16 +27,12 @@ import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 支付util
@@ -45,6 +44,12 @@ public class PayUtil {
     @Autowired
     private MicroServiceConfig microServiceConfig;
 
+    @Autowired
+    private IXmsPaymentService xmsPaymentService;
+
+    @Autowired
+    private PayConfig payConfig;
+
     /**
      * getPayPalRedirectUtlByPayInfo
      *
@@ -52,12 +57,12 @@ public class PayUtil {
      */
     public CommonResult getPayPalRedirectUtlByPayInfo(PayPalParam payPalParam) {
         Map<String, String> requestMap = new HashMap<>();
-        requestMap.put("cancelUrlType", String.valueOf(payPalParam.getCancelUrlType()));
+        requestMap.put("cancelUrlType", String.valueOf(payConfig.getCancelUrlType()));
         requestMap.put("total", String.valueOf(payPalParam.getTotalAmount()));
         requestMap.put("orderNo", payPalParam.getOrderNo());
         requestMap.put("customMsg", payPalParam.getCustomMsg());
-        requestMap.put("successUrl", payPalParam.getSuccessUrl());
-        requestMap.put("cancelUrl", payPalParam.getCancelUrl());
+        requestMap.put("successUrl", payConfig.getSuccessUrl());
+        requestMap.put("cancelUrl", payConfig.getCancelUrl());
         try {
             String resUrl = microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_PAY + "paypal/" + payPalParam.getSiteName() + "/create/";
             JSONObject jsonObject = instance.postURL(resUrl, requestMap);
@@ -446,110 +451,46 @@ public class PayUtil {
     }
 
 
-    public synchronized void pay1(HttpServletRequest request, HttpServletResponse response, String payflag, String str, String str2, String itemNumber, int state_balance, double product_cost) throws IOException {
+    public PayPalParam getPayPalParam(HttpServletRequest request, Long userId, String orderNo, Double totalAmount) {
+        PayPalParam payPalParam = new PayPalParam();
 
-        String appConfig_paypal_business = "584JZVFU6PPVU";
-        String appConfig_paypal_action = "https://www.paypal.com/cgi-bin/webscr";
-        SiteEnum siteEnum = SiteEnum.SOURCING;
-        // 检查是否重复支付
-        System.err.println("---paycontroller-----------payflag:" + payflag);
-        System.err.println("-----paycontroller----------str:" + str);
-        System.err.println("-----paycontroller----------str2:" + str2);
-        /*if (appConfig_paypal_business.contains("@")) {
-            TlsCheck.supportTls12();
-            TlsCheck.testTls12Connection();
-        }*/
-        // System.out.println("paypal validate info:" + str);
-        // 建议在此将接受到的信息 str 记录到日志文件中以确认是否收到 IPN 信息
-        // 将信息 POST 回给 PayPal 进行验证
-        // 设置 HTTP 的头信息
-        // 在 Sandbox 情况下，设置：
-        URL u = new URL(appConfig_paypal_action);
-        // 正式环境
-        // URL u = new URL("https://www.paypal.com/cgi-bin/webscr");
+        String paySID = UUID.randomUUID().toString();
 
-        URLConnection uc = u.openConnection();
-        uc.setDoOutput(true);
-        uc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        PrintWriter pw = new PrintWriter(uc.getOutputStream());
-        pw.println(str2);
-        pw.close();
-        // 接受 PayPal 对 IPN 回发的回复信息
-        BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-        String res = in.readLine();
-        System.err.println("-------paycontroller--------res:" + res);
-        in.close();
-        // 将 POST 信息分配给本地变量，可以根据您的需要添加
-        // 该付款明细所有变量可参考：
+        String appConfig_paypal_business = this.payConfig.getBusinessId();
+        // int userid = 15937;
+        String md = appConfig_paypal_business + userId + orderNo + totalAmount;
+        String sign = Md5Util.encoder(md);
+        String payflag = "O";
+        String isBalance = "0";
+        double credit = 0;
+        int dropshipflag = 0;
+        double productCost = totalAmount - 10;
+        double coupon_discount = 0;
 
-        // https://www.paypal.com/IntegrationCenter/ic_ipn-pdt-variable-reference.html
-        String itemName = request.getParameter("item_name");// 商品名
-        // --这里存入的是用户名
-        if (StrUtil.isNotEmpty(itemNumber)) {
-            itemNumber = request.getParameter("item_number");// 购买数量
-            // --这里存入的是订单号
-        }
-//		String itemNumber = request.getParameter("item_number");// 购买数量
-        // --这里存入的是订单号
-        String paymentStatus = request.getParameter("payment_status");// 交易状态
-        String paymentDate = request.getParameter("payment_date");// 交易时间
-        String paymentAmount = request.getParameter("mc_gross");// 交易钱数
-        String mc_fee = request.getParameter("mc_fee");// 费用
-        String paymentCurrency = request.getParameter("mc_currency");// 货币种类
-        String txnId = request.getParameter("txn_id");// 交易id
-        String receiverEmail = request.getParameter("receiver_email");// 收款人email
-        String payerEmail = request.getParameter("payer_email");// 付款人email
+        String customMsg = userId + "@" + paySID + "@" + sign + "@" + payflag + "@" + isBalance + "@" + credit + "@" + orderNo + "@" + dropshipflag + "@" + productCost + "@" + coupon_discount;
 
-        String address_status = request.getParameter("address_status");
-        String residence_country = request.getParameter("residence_country");
-        String address_country = request.getParameter("address_country");
-        String address_city = request.getParameter("address_city");
-        String address_country_code = request.getParameter("address_country_code");
-        String address_state = request.getParameter("address_state");
-        String address_name = request.getParameter("address_name");
-        String address_street = request.getParameter("address_street");
-        String case_type = request.getParameter("case_type");
-        String reason_code = request.getParameter("reason_code");
-        String memo = request.getParameter("buyer_additional_information");//rease
+        request.getSession().setAttribute("description", customMsg);
+
+        payPalParam.setOrderNo(orderNo);
+        payPalParam.setTotalAmount(totalAmount);
+        payPalParam.setSiteName(SiteEnum.SOURCING.getName());
+        payPalParam.setCustomMsg(customMsg);
+
+        return payPalParam;
+    }
 
 
-        Map<String, String> ipnAddressMap = new HashMap<String, String>();
-        ipnAddressMap.put("address_status", address_status);
-        ipnAddressMap.put("residence_country", residence_country);
-        ipnAddressMap.put("address_country", address_country);
-        ipnAddressMap.put("address_city", address_city);
-        ipnAddressMap.put("address_country_code", address_country_code);
-        ipnAddressMap.put("address_state", address_state);
-        ipnAddressMap.put("address_name", address_name);
-        ipnAddressMap.put("address_street", address_street);
-        ipnAddressMap.put("receiverEmail", receiverEmail);
-        String ipnAddressJson = new Gson().toJson(ipnAddressMap);
-        int userid = 0;
-        String paySID = "";
-        if (request.getParameter("custom") != null && request.getParameter("custom").indexOf("@") > 0) {
-            String[] custom = request.getParameter("custom").split("@");
-            userid = Integer.parseInt(custom[0]);// 付款人id
-            paySID = custom[1];
-        }
-        int paybtype = 1;// 1:paypal
-
-        if (res == null || res == "") res = "0";
-
-
-        if (res.equals("VERIFIED")) {
-            System.err.println("------paycontroller----------该订单号" + itemNumber + "支付成功");
-            // 检查付款状态
-            // 检查 txn_id 是否已经处理过
-            // 检查 receiver_email 是否是您的 PayPal 账户中的 EMAIL 地址
-            // 检查付款金额和货币单位是否正确
-            // 处理其他数据，包括写数据库
-
-        } else {
-            // 非法信息，可以将此记录到您的日志文件中以备调查
-            System.err.println("-----paycontroller-----------该订单号" + itemNumber + "支付成功，但支付信息存在问题");
-        }
-
-
+    public void insertPayment(String username, Long memberId, String orderNo, Double paymentAmount, Integer payStatus, String paymentId, String remark) {
+        XmsPayment xmsPayment = new XmsPayment();
+        xmsPayment.setUsername(username);
+        xmsPayment.setMemberId(memberId);
+        xmsPayment.setOrderNo(orderNo);
+        xmsPayment.setPaymentAmount(paymentAmount.floatValue());
+        xmsPayment.setPayStatus(payStatus);
+        xmsPayment.setPayType(0);
+        xmsPayment.setPaymentId(paymentId);
+        xmsPayment.setRemark(remark);
+        xmsPaymentService.save(xmsPayment);
     }
 
 }

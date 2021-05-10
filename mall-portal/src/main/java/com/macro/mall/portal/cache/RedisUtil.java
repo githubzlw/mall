@@ -26,6 +26,10 @@ public class RedisUtil {
 
     private final static org.slf4j.Logger logger = LoggerFactory.getLogger(RedisUtil.class);
 
+    public static final long EXPIRATION_TIME_7_DAY = 3600 * 24 * 7;
+    public static final long EXPIRATION_TIME_1_SECOND = 1;
+    public static final long EXPIRATION_TIME_1_DAY = 3600 * 24;
+
     private final StringRedisTemplate stringRedisTemplate;
 
     private final RedisTemplate redisTemplate;
