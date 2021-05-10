@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.macro.mall.dao.PmsSkuStockDao">
     <insert id="insertList">
-        INSERT INTO pms_sku_stock (product_id, sku_code, price, stock, low_stock, pic, sale, sp_data) VALUES
+        INSERT INTO pms_sku_stock (product_id, sku_code, price, stock, low_stock, pic, sale, sp_data,min_price,max_price,moq,min_moq,max_moq,weight,volume_lenght,volume_width,volume_height) VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.productId,jdbcType=BIGINT},
             #{item.skuCode,jdbcType=VARCHAR},
@@ -11,11 +11,20 @@
             #{item.lowStock,jdbcType=INTEGER},
             #{item.pic,jdbcType=VARCHAR},
             #{item.sale,jdbcType=INTEGER},
-            #{item.spData,jdbcType=VARCHAR})
+            #{item.spData,jdbcType=VARCHAR},
+            #{item.minPrice,jdbcType=DECIMAL},
+            #{item.maxPrice,jdbcType=DECIMAL},
+            #{item.moq,jdbcType=INTEGER},
+            #{item.minMoq,jdbcType=INTEGER},
+            #{item.maxMoq,jdbcType=INTEGER},
+            #{item.weight,jdbcType=DECIMAL},
+            #{item.volumeLenght,jdbcType=INTEGER},
+            #{item.volumeWidth,jdbcType=INTEGER},
+            #{item.volumeHeight,jdbcType=INTEGER})
         </foreach>
     </insert>
     <insert id="replaceList">
-        REPLACE INTO pms_sku_stock (id,product_id, sku_code, price, stock, low_stock,pic, sale, sp_data) VALUES
+        REPLACE INTO pms_sku_stock (id,product_id, sku_code, price, stock, low_stock,pic, sale, sp_data,min_price,max_price,moq,min_moq,max_moq,weight,volume_lenght,volume_width,volume_height) VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.id,jdbcType=BIGINT},
             #{item.productId,jdbcType=BIGINT},
@@ -25,7 +34,16 @@
             #{item.lowStock,jdbcType=INTEGER},
             #{item.pic,jdbcType=VARCHAR},
             #{item.sale,jdbcType=INTEGER},
-            #{item.spData,jdbcType=VARCHAR})
+            #{item.spData,jdbcType=VARCHAR},
+            #{item.minPrice,jdbcType=DECIMAL},
+            #{item.maxPrice,jdbcType=DECIMAL},
+            #{item.moq,jdbcType=INTEGER},
+            #{item.minMoq,jdbcType=INTEGER},
+            #{item.maxMoq,jdbcType=INTEGER},
+            #{item.weight,jdbcType=DECIMAL},
+            #{item.volumeLenght,jdbcType=INTEGER},
+            #{item.volumeWidth,jdbcType=INTEGER},
+            #{item.volumeHeight,jdbcType=INTEGER})
         </foreach>
     </insert>
 </mapper>

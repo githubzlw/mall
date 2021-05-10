@@ -1155,73 +1155,183 @@ public class PmsSkuStockExample {
             return (Criteria) this;
         }
 
-        public Criteria andVolumeIsNull() {
-            addCriterion("volume is null");
+        public Criteria andVolumeLenghtIsNull() {
+            addCriterion("volume_lenght is null");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeIsNotNull() {
-            addCriterion("volume is not null");
+        public Criteria andVolumeLenghtIsNotNull() {
+            addCriterion("volume_lenght is not null");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeEqualTo(String value) {
-            addCriterion("volume =", value, "volume");
+        public Criteria andVolumeLenghtEqualTo(Integer value) {
+            addCriterion("volume_lenght =", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeNotEqualTo(String value) {
-            addCriterion("volume <>", value, "volume");
+        public Criteria andVolumeLenghtNotEqualTo(Integer value) {
+            addCriterion("volume_lenght <>", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeGreaterThan(String value) {
-            addCriterion("volume >", value, "volume");
+        public Criteria andVolumeLenghtGreaterThan(Integer value) {
+            addCriterion("volume_lenght >", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeGreaterThanOrEqualTo(String value) {
-            addCriterion("volume >=", value, "volume");
+        public Criteria andVolumeLenghtGreaterThanOrEqualTo(Integer value) {
+            addCriterion("volume_lenght >=", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLessThan(String value) {
-            addCriterion("volume <", value, "volume");
+        public Criteria andVolumeLenghtLessThan(Integer value) {
+            addCriterion("volume_lenght <", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLessThanOrEqualTo(String value) {
-            addCriterion("volume <=", value, "volume");
+        public Criteria andVolumeLenghtLessThanOrEqualTo(Integer value) {
+            addCriterion("volume_lenght <=", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLike(String value) {
-            addCriterion("volume like", value, "volume");
+        public Criteria andVolumeLenghtIn(List<Integer> values) {
+            addCriterion("volume_lenght in", values, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeNotLike(String value) {
-            addCriterion("volume not like", value, "volume");
+        public Criteria andVolumeLenghtNotIn(List<Integer> values) {
+            addCriterion("volume_lenght not in", values, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeIn(List<String> values) {
-            addCriterion("volume in", values, "volume");
+        public Criteria andVolumeLenghtBetween(Integer value1, Integer value2) {
+            addCriterion("volume_lenght between", value1, value2, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeNotIn(List<String> values) {
-            addCriterion("volume not in", values, "volume");
+        public Criteria andVolumeLenghtNotBetween(Integer value1, Integer value2) {
+            addCriterion("volume_lenght not between", value1, value2, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeBetween(String value1, String value2) {
-            addCriterion("volume between", value1, value2, "volume");
+        public Criteria andVolumeWidthIsNull() {
+            addCriterion("volume_width is null");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeNotBetween(String value1, String value2) {
-            addCriterion("volume not between", value1, value2, "volume");
+        public Criteria andVolumeWidthIsNotNull() {
+            addCriterion("volume_width is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthEqualTo(Integer value) {
+            addCriterion("volume_width =", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthNotEqualTo(Integer value) {
+            addCriterion("volume_width <>", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthGreaterThan(Integer value) {
+            addCriterion("volume_width >", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthGreaterThanOrEqualTo(Integer value) {
+            addCriterion("volume_width >=", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthLessThan(Integer value) {
+            addCriterion("volume_width <", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthLessThanOrEqualTo(Integer value) {
+            addCriterion("volume_width <=", value, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthIn(List<Integer> values) {
+            addCriterion("volume_width in", values, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthNotIn(List<Integer> values) {
+            addCriterion("volume_width not in", values, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthBetween(Integer value1, Integer value2) {
+            addCriterion("volume_width between", value1, value2, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeWidthNotBetween(Integer value1, Integer value2) {
+            addCriterion("volume_width not between", value1, value2, "volumeWidth");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightIsNull() {
+            addCriterion("volume_height is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightIsNotNull() {
+            addCriterion("volume_height is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightEqualTo(Integer value) {
+            addCriterion("volume_height =", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightNotEqualTo(Integer value) {
+            addCriterion("volume_height <>", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightGreaterThan(Integer value) {
+            addCriterion("volume_height >", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightGreaterThanOrEqualTo(Integer value) {
+            addCriterion("volume_height >=", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightLessThan(Integer value) {
+            addCriterion("volume_height <", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightLessThanOrEqualTo(Integer value) {
+            addCriterion("volume_height <=", value, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightIn(List<Integer> values) {
+            addCriterion("volume_height in", values, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightNotIn(List<Integer> values) {
+            addCriterion("volume_height not in", values, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightBetween(Integer value1, Integer value2) {
+            addCriterion("volume_height between", value1, value2, "volumeHeight");
+            return (Criteria) this;
+        }
+
+        public Criteria andVolumeHeightNotBetween(Integer value1, Integer value2) {
+            addCriterion("volume_height not between", value1, value2, "volumeHeight");
             return (Criteria) this;
         }
     }
