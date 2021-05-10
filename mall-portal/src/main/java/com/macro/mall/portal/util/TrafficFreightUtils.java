@@ -2,7 +2,9 @@ package com.macro.mall.portal.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.*;
@@ -296,11 +298,11 @@ public class TrafficFreightUtils {
         List<TrafficFreightUnitShort> unitNewList = new ArrayList<>();
 
         // 过滤Ship Within China
-        TrafficFreightUnitShort unit1 = unitList.stream().filter(e -> FreightConstant.SHIP_CHINA.equalsIgnoreCase(e.getModeOfTransport())).findFirst().orElse(null);
+        /*TrafficFreightUnitShort unit1 = unitList.stream().filter(e -> FreightConstant.SHIP_CHINA.equalsIgnoreCase(e.getModeOfTransport())).findFirst().orElse(null);
         if (null != unit1) {
             unitList.clear();
             unitList.add(unit1);
-        }
+        }*/
 
         //过滤 包含保险费的与运输方式,不参与运输方式选择
         unitNewList.addAll(unitList);
@@ -844,8 +846,12 @@ public class TrafficFreightUtils {
         synchronized (TrafficFreightUtils.class) {
             // 初始化运费列表
             if (CollectionUtil.isEmpty(this.freightUnitList)) {
-                QueryWrapper<XmsTrafficFreightUnit> queryWrapper = new QueryWrapper<>();
-                this.freightUnitList = this.trafficFreightUnitMapper.selectList(queryWrapper);
+                LambdaQueryWrapper<XmsTrafficFreightUnit> lambdaQuery = Wrappers.lambdaQuery();
+                lambdaQuery.eq(XmsTrafficFreightUnit::getDel, 0)
+                        .or().eq(XmsTrafficFreightUnit::getDel, 2)
+                        .or().eq(XmsTrafficFreightUnit::getDel, 3);
+                // del = 0 or del = 2  or del = 3
+                this.freightUnitList = this.trafficFreightUnitMapper.selectList(lambdaQuery);
             }
             // 初始化运费Map
             if (null == this.trafficFreightMap || this.trafficFreightMap.size() == 0) {

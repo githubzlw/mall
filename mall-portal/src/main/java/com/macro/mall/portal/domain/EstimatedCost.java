@@ -12,7 +12,7 @@ import lombok.Data;
 public class EstimatedCost {
 
 
-    private double productPrice;
+    private double estimatedPrice;
     private int shippingByFlag;// 0ImportX Standard  1 importXPremium
 
     private double cost;

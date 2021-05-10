@@ -47,3 +47,9 @@ import:
       url: http://192.168.1.66:18005/api
       exchangeRate: ${import.microService.api.url}/utils-service/fx
 
+paypal:
+  cancelUrlType: 1
+  successUrl: http://192.168.1.67:8085/payment/paypalApiCalAndConfirm
+  cancelUrl: http://192.168.1.67:8087/myaccount
+  businessId: 584JZVFU6PPVU
+

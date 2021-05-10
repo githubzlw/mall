@@ -40,6 +40,9 @@ secure:
       - /product/**
       - /brand/**
       - /chrome/upload
+      - /payment/**
+      - /freight/**
+      - /shopify/**
 
 # 自定义redis key
 redis:

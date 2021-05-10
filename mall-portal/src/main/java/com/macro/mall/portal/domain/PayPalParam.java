@@ -20,12 +20,6 @@ public class PayPalParam {
     @ApiModelProperty(value = "消费信息")
     private String customMsg;
 
-    @ApiModelProperty(value = "取消链接")
-    private Integer cancelUrlType;
-    @ApiModelProperty(value = "支付成功后调用链接")
-    private String successUrl;
-    @ApiModelProperty(value = "取消后调用链接")
-    private String cancelUrl;
     @ApiModelProperty(value = "网站名称")
     private String siteName;
 }

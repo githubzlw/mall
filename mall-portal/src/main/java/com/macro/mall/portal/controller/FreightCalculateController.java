@@ -144,35 +144,37 @@ public class FreightCalculateController {
         try {
 
             EstimatedCostResult estimatedCostResult = new EstimatedCostResult();
-            if (null != estimatedCostParam.getOriginalPrice()) {
-                estimatedCostResult.setOriginalPrice(estimatedCostParam.getOriginalPrice());
+            if (null == estimatedCostParam.getOriginalProductPrice()) {
+                estimatedCostParam.setOriginalProductPrice(0D);
             }
-            if (null != estimatedCostParam.getOriginalShippingFee()) {
-                estimatedCostResult.setOriginalShippingFee(estimatedCostParam.getOriginalShippingFee());
-            }
+            estimatedCostResult.setOriginalProductPrice(estimatedCostParam.getOriginalProductPrice());
 
-            if (null != estimatedCostParam.getOriginalWeight()) {
-                estimatedCostResult.setOriginalWeight(estimatedCostParam.getOriginalWeight());
+            if (null == estimatedCostParam.getOriginalShippingFee()) {
+                estimatedCostParam.setOriginalShippingFee(0D);
             }
+            estimatedCostResult.setOriginalShippingFee(estimatedCostParam.getOriginalShippingFee());
+
+            estimatedCostResult.setOriginalWeight(estimatedCostParam.getWeight());
+            estimatedCostResult.setOriginalVolume(estimatedCostParam.getVolume());
 
 
             // 原商品的0.75
-            estimatedCostResult.setProductPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalPrice() * 0.75, 2));
+            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.75, 2));
 
             EstimatedCost importXStandard = new EstimatedCost();
             EstimatedCost importXPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setProductPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalPrice() * 0.95, 2));
-            importXPremium.setProductPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalPrice() * 0.95, 2));
+            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
+            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
 
 
             // importXStandard cost 照抄
             importXStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
             // importXPremium cost 集运价格-EUB
-            double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getOriginalWeight() * 1000);// EUB
-            double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getOriginalWeight());// 集运价格
+            double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
+            double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
             importXPremium.setCost(rsFreight);
 

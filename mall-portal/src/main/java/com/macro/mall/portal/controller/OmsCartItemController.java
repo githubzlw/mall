@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -79,6 +80,19 @@ public class OmsCartItemController {
     @ResponseBody
     public CommonResult updateAttr(@RequestBody OmsCartItem cartItem) {
         int count = cartItemService.updateAttr(cartItem);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
+
+    @ApiOperation("选中购物车中的某个商品")
+    @RequestMapping(value = "/selectProducts", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult selectProducts(@RequestParam("ids") List<Long> ids, @RequestParam("checkFlag") Integer checkFlag) {
+        Assert.isTrue(null != checkFlag && checkFlag >= 0, "checkFlag null");
+        int count = cartItemService.selectProducts(memberService.getCurrentMember().getId(), ids, checkFlag);
         if (count > 0) {
             return CommonResult.success(count);
         }

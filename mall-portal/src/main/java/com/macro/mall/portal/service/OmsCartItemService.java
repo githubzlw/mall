@@ -38,6 +38,8 @@ public interface OmsCartItemService {
      */
     int delete(Long memberId,List<Long> ids);
 
+    int selectProducts(Long memberId,List<Long> ids,Integer checkFlag);
+
     /**
      *获取购物车中用于选择商品规格的商品信息
      */

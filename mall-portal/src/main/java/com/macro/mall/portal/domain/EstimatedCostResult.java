@@ -13,22 +13,23 @@ import lombok.Data;
 @Data
 public class EstimatedCostResult {
 
-
-    @ApiModelProperty("原始价格")
-    private Double originalPrice;
-
-    @ApiModelProperty("运费")
-    private Double originalShippingFee;
-
-    @ApiModelProperty("原始价格")
-    private Double originalWeight;
-
-    @ApiModelProperty("原始价格")
-    private Double productPrice;
-
     @ApiModelProperty("国家ID")
     private Integer countryId;
 
+    @ApiModelProperty("原始运费")
+    private Double originalShippingFee;
+
+    @ApiModelProperty("原始价格")
+    private Double originalProductPrice;
+
+    @ApiModelProperty("原始重量")
+    private Double originalWeight;
+
+    @ApiModelProperty("原始体积")
+    private Double originalVolume;
+
+    @ApiModelProperty("预估价格")
+    private Double estimatedPrice;
 
     private XmsFbaFreightUnit freightUnit;
 
