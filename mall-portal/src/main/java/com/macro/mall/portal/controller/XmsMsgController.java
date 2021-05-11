@@ -61,19 +61,21 @@ public class XmsMsgController {
     @ApiOperation("已读用户消息记录")
     @RequestMapping(value = "/readMsgList", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> readMsgList(@RequestParam String mail,
-                                                  @RequestParam Integer type) {
+    public CommonResult<List<XmsMsg>> readMsgList(@RequestBody XmsMsgParam xmsMsgParam,
+                                                  @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                  @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize) {
 
-        List<XmsMsg> msgList = xmsMsgService.readMsgList(mail,type);
+        List<XmsMsg> msgList = xmsMsgService.readMsgList(xmsMsgParam,pageNum,pageSize);
         return CommonResult.success(msgList);
     }
 
     @ApiOperation("消息回收站表没有读过的用户消息记录")
     @RequestMapping(value = "/unreadMsgList", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> unreadMsgList(@RequestParam String mail,
-                                                    @RequestParam Integer type) {
-        List<XmsMsg> unMsgList = xmsMsgService.unreadMsgList(mail,type);
+    public CommonResult<List<XmsMsg>> unreadMsgList(@RequestBody XmsMsgParam xmsMsgParam,
+                                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                    @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize) {
+        List<XmsMsg> unMsgList = xmsMsgService.unreadMsgList(xmsMsgParam,pageNum,pageSize);
         return CommonResult.success(unMsgList);
     }
 

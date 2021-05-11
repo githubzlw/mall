@@ -29,15 +29,15 @@ public class XmsMsgServiceImpl extends ServiceImpl<XmsMsgMapper, XmsMsg> impleme
     private XmsMsgMapper xmsMsgMapper;
 
     @Override
-    public List<XmsMsg> unreadMsgList(String mail, Integer type) {
-
-        return msgDao.unreadMsgList(mail,type);
+    public List<XmsMsg> unreadMsgList(XmsMsgParam xmsMsgParam,Integer pageNum, Integer pageSize) {
+        int offset = pageSize * (pageNum - 1);
+        return msgDao.unreadMsgList(xmsMsgParam.getEmail(),xmsMsgParam.getType(),xmsMsgParam.getStartDate(),xmsMsgParam.getEndDate(),offset, pageSize);
     }
 
     @Override
-    public List<XmsMsg> readMsgList(String mail, Integer type) {
-
-        return msgDao.readMsgList(mail,type);
+    public List<XmsMsg> readMsgList(XmsMsgParam xmsMsgParam,Integer pageNum, Integer pageSize) {
+        int offset = pageSize * (pageNum - 1);
+        return msgDao.readMsgList(xmsMsgParam.getEmail(),xmsMsgParam.getType(),xmsMsgParam.getStartDate(),xmsMsgParam.getEndDate(),offset, pageSize);
     }
 
     @Override

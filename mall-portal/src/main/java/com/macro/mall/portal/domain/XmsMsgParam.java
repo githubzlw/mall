@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
+
 /**
  * 消息传入的参数
  * Created by zlw on 2021/4/26.
@@ -25,4 +27,9 @@ public class XmsMsgParam {
     @ApiModelProperty(value = "类型")
     private Integer type;
 
+    @ApiModelProperty(value = "开始时间")
+    private Date startDate;
+
+    @ApiModelProperty(value = "结束时间")
+    private Date endDate;
 }
