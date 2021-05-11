@@ -1611,6 +1611,136 @@ public class UmsMemberExample {
             addCriterion("balance not between", value1, value2, "balance");
             return (Criteria) this;
         }
+
+        public Criteria andShopifyNameIsNull() {
+            addCriterion("shopify_name is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameIsNotNull() {
+            addCriterion("shopify_name is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameEqualTo(String value) {
+            addCriterion("shopify_name =", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameNotEqualTo(String value) {
+            addCriterion("shopify_name <>", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameGreaterThan(String value) {
+            addCriterion("shopify_name >", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameGreaterThanOrEqualTo(String value) {
+            addCriterion("shopify_name >=", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameLessThan(String value) {
+            addCriterion("shopify_name <", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameLessThanOrEqualTo(String value) {
+            addCriterion("shopify_name <=", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameLike(String value) {
+            addCriterion("shopify_name like", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameNotLike(String value) {
+            addCriterion("shopify_name not like", value, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameIn(List<String> values) {
+            addCriterion("shopify_name in", values, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameNotIn(List<String> values) {
+            addCriterion("shopify_name not in", values, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameBetween(String value1, String value2) {
+            addCriterion("shopify_name between", value1, value2, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyNameNotBetween(String value1, String value2) {
+            addCriterion("shopify_name not between", value1, value2, "shopifyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagIsNull() {
+            addCriterion("shopify_flag is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagIsNotNull() {
+            addCriterion("shopify_flag is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagEqualTo(Integer value) {
+            addCriterion("shopify_flag =", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagNotEqualTo(Integer value) {
+            addCriterion("shopify_flag <>", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagGreaterThan(Integer value) {
+            addCriterion("shopify_flag >", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagGreaterThanOrEqualTo(Integer value) {
+            addCriterion("shopify_flag >=", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagLessThan(Integer value) {
+            addCriterion("shopify_flag <", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagLessThanOrEqualTo(Integer value) {
+            addCriterion("shopify_flag <=", value, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagIn(List<Integer> values) {
+            addCriterion("shopify_flag in", values, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagNotIn(List<Integer> values) {
+            addCriterion("shopify_flag not in", values, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagBetween(Integer value1, Integer value2) {
+            addCriterion("shopify_flag between", value1, value2, "shopifyFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyFlagNotBetween(Integer value1, Integer value2) {
+            addCriterion("shopify_flag not between", value1, value2, "shopifyFlag");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

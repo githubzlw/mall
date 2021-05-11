@@ -192,14 +192,12 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
-    public int updateBalance(Long id, Double amount) {
-        UmsMember record = memberMapper.selectByPrimaryKey(id);
-        if (null != record && null != amount && amount > 0) {
-            record.setBalance(record.getBalance() + amount);
-            return memberMapper.updateByPrimaryKeySelective(record);
-
-        }
-        return 0;
+    public int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag) {
+        UmsMember tempMember = new UmsMember();
+        tempMember.setId(id);
+        tempMember.setShopifyName(shopifyName);
+        tempMember.setShopifyFlag(shopifyFlag);
+        return this.memberMapper.updateByPrimaryKeySelective(tempMember);
     }
 
     //对输入的验证码进行校验

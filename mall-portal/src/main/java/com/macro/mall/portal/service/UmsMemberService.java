@@ -62,11 +62,13 @@ public interface UmsMemberService {
      */
     String refreshToken(String token);
 
+
     /**
-     * 更新客户余额
+     *更新客户的 shopify信息
      * @param id
-     * @param amount
+     * @param shopifyName
+     * @param shopifyFlag
      * @return
      */
-    int updateBalance(Long id, Double amount);
+    int updateShopifyInfo(Long id, String shopifyName,Integer shopifyFlag);
 }
