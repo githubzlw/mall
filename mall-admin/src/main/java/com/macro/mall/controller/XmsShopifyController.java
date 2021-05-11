@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * shopify
  */
 @RestController
-@Api(tags = "XmsSourcingController", description = "shopify")
+@Api(tags = "XmsShopifyController", description = "shopify")
 @RequestMapping("/shopify")
 @Slf4j
 public class XmsShopifyController {
@@ -34,16 +34,15 @@ public class XmsShopifyController {
     @ApiOperation("shopify铺货")
     @RequestMapping(value = "/addProduct", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult addProduct(@RequestParam Integer pid,@RequestParam String published) {
+    public CommonResult addProduct(@RequestParam String itemId,@RequestParam String published) {
 
 //        SiteEnum siteEnum = MultiSiteUtil.getSiteEnumByHost(request.getServerName());
 //        UserBean userBean = LoginHelp.getUserBean(request);
 //        if(userBean == null){
 //            return CommonResult.failed("NOT LOGIN");
 //        }
-        String shopname ="";
-        String skus ="";
-        String itemId= String.valueOf(pid);
+        String shopname ="akersjiang";
+        String skus ="color,red";
 
         if (StringUtils.isBlank(shopname)) {
             return CommonResult.failed("SHOPNAME IS NULL");
