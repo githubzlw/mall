@@ -61,4 +61,12 @@ public interface UmsMemberService {
      * 刷新token
      */
     String refreshToken(String token);
+
+    /**
+     * 更新客户余额
+     * @param id
+     * @param amount
+     * @return
+     */
+    int updateBalance(Long id, Double amount);
 }

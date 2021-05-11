@@ -28,6 +28,9 @@ public class OmsOrder implements Serializable {
     @ApiModelProperty(value = "应付金额（实际支付金额）")
     private BigDecimal payAmount;
 
+    @ApiModelProperty(value = "余额支付")
+    private Double balanceAmount;
+
     @ApiModelProperty(value = "运费金额")
     private BigDecimal freightAmount;
 
@@ -200,6 +203,14 @@ public class OmsOrder implements Serializable {
 
     public void setPayAmount(BigDecimal payAmount) {
         this.payAmount = payAmount;
+    }
+
+    public Double getBalanceAmount() {
+        return balanceAmount;
+    }
+
+    public void setBalanceAmount(Double balanceAmount) {
+        this.balanceAmount = balanceAmount;
     }
 
     public BigDecimal getFreightAmount() {
@@ -504,6 +515,7 @@ public class OmsOrder implements Serializable {
         sb.append(", memberUsername=").append(memberUsername);
         sb.append(", totalAmount=").append(totalAmount);
         sb.append(", payAmount=").append(payAmount);
+        sb.append(", balanceAmount=").append(balanceAmount);
         sb.append(", freightAmount=").append(freightAmount);
         sb.append(", promotionAmount=").append(promotionAmount);
         sb.append(", integrationAmount=").append(integrationAmount);

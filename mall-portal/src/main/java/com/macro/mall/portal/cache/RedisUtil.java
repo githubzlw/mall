@@ -294,6 +294,19 @@ public class RedisUtil {
         }
     }
 
+    public boolean hmsetObj(String key, String item, Object value,long time) {
+        try {
+            redisTemplate.opsForHash().put(key, item, value);
+            if (time > 0) {
+                expire(key + item, time);
+            }
+            return true;
+        } catch (Exception e) {
+            logger.error("hmset", e);
+            return false;
+        }
+    }
+
     /**
      * HashSet 并设置时间
      *

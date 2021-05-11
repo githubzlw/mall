@@ -191,6 +191,17 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return jwtTokenUtil.refreshHeadToken(token);
     }
 
+    @Override
+    public int updateBalance(Long id, Double amount) {
+        UmsMember record = memberMapper.selectByPrimaryKey(id);
+        if (null != record && null != amount && amount > 0) {
+            record.setBalance(record.getBalance() + amount);
+            return memberMapper.updateByPrimaryKeySelective(record);
+
+        }
+        return 0;
+    }
+
     //对输入的验证码进行校验
     private boolean verifyAuthCode(String authCode, String telephone){
         if(StringUtils.isEmpty(authCode)){

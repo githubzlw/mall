@@ -7,6 +7,7 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.portal.domain.SiteEnum;
 import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
 import com.paypal.api.payments.*;
@@ -43,7 +44,7 @@ public class PaymentController {
     private OrderUtils orderUtils;
 
 
-    @ApiOperation(value = "调用paypal支付", notes = "支付")
+    @ApiOperation(value = "正常订单调用paypal支付", notes = "支付")
     @PostMapping("/paypal")
     public CommonResult paypal(HttpServletRequest request, @RequestParam("orderNo") String orderNo, @RequestParam("totalAmount") Double totalAmount) {
         Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
@@ -51,8 +52,37 @@ public class PaymentController {
 
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
+
+            // 判断订单是否完成支付
+            boolean isPay = this.orderUtils.checkPayStatusByOrderNo(orderNo);
+            if (isPay) {
+                return CommonResult.failed("This order has been paid");
+            }
+
+            PayPalParam payPalParam = this.payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
+            this.payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "订单支付", 0);
+            CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
+            return commonResult;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("paypal,orderNo[{}],totalAmount[{}],error:", orderNo, totalAmount, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "充值余额调用paypal支付", notes = "支付")
+    @PostMapping("/topUpBalance")
+    public CommonResult topUpBalance(HttpServletRequest request, @RequestParam("totalAmount") Double totalAmount) {
+        Assert.isTrue(null != totalAmount && totalAmount > 0, "totalAmount null");
+
+        String orderNo = null;
+        try {
+            UmsMember currentMember = this.umsMemberService.getCurrentMember();
+            orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.Balance.getName());
+            // 生成订单信息
+            this.orderUtils.generateBalanceOrder(orderNo, totalAmount, currentMember.getId(), currentMember.getUsername());
             PayPalParam payPalParam = payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
-            payUtil.insertPayment(currentMember.getUsername(), currentMember.getId(), orderNo, totalAmount, 0, "", "单独支付");
+            payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "余额支付", 1);
             CommonResult commonResult = payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
             return commonResult;
         } catch (Exception e) {
@@ -88,11 +118,20 @@ public class PaymentController {
                 String itemNumber = payerInfoMap.get("itemId");
                 // 支付成功
                 if (payment.getState().equals("approved")) {
+                    // 将paymentId的数据和订单数据放入redis中，防止重复支付
+
                     //获取付款金额
                     String amount = payerInfoMap.get("totalAmount");
-                    this.payUtil.insertPayment(currentMember.getUsername(), currentMember.getId(), itemNumber, Double.parseDouble(amount), 0, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token);
+                    this.payUtil.insertPayment(currentMember, itemNumber, Double.parseDouble(amount), 1, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token, 0);
                     // 更新订单数据 更新库存状态
                     this.orderUtils.paySuccessUpdate(itemNumber, 1);
+
+                    // BL开头的订单，更新客户余额
+                    if (itemNumber.indexOf(OrderPrefixEnum.Balance.getName()) == 0) {
+                        synchronized (currentMember.getId()) {
+                            this.payUtil.payBalance(Double.parseDouble(amount), currentMember, 1);
+                        }
+                    }
                 } else {
                     this.orderUtils.paySuccessUpdate(itemNumber, 0);
                     log.error("paypalApiCalAndConfirm Bad response：" + payment.toJSON());

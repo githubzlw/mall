@@ -69,6 +69,9 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "第三方标识")
     private Integer loginType;
 
+    @ApiModelProperty(value = "客户余额")
+    private Double balance;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -247,6 +250,14 @@ public class UmsMember implements Serializable {
         this.loginType = loginType;
     }
 
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -275,6 +286,7 @@ public class UmsMember implements Serializable {
         sb.append(", organizationname=").append(organizationname);
         sb.append(", monthlyOrders=").append(monthlyOrders);
         sb.append(", loginType=").append(loginType);
+        sb.append(", balance=").append(balance);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
