@@ -31,14 +31,14 @@ public class XmsMsgController {
     @ApiOperation("用户新消息插入")
     @RequestMapping(value = "/insetMsgList", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult insetMsgList(@RequestBody XmsMsgParam xmsMsgParam) {
+    public CommonResult insetMsgList(XmsMsgParam xmsMsgParam) {
 
         xmsMsgService.insetMsgList(xmsMsgParam);
         return CommonResult.success(null,"插入成功");
     }
 
     @ApiOperation("用户已读消息插入")
-    @RequestMapping(value = "/insetMsgRecycle", method = RequestMethod.GET)
+    @RequestMapping(value = "/insetMsgRecycle", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult insetMsgRecycle(@RequestParam String mail,
                                             @RequestParam Integer id) {
@@ -49,7 +49,7 @@ public class XmsMsgController {
 
 
     @ApiOperation("删除消息")
-    @RequestMapping(value = "/updateMsgRecycle", method = RequestMethod.GET)
+    @RequestMapping(value = "/updateMsgRecycle", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult updateMsgRecycle(@RequestParam String mail,
                                         @RequestParam Integer id) {
@@ -59,9 +59,9 @@ public class XmsMsgController {
     }
 
     @ApiOperation("已读用户消息记录")
-    @RequestMapping(value = "/readMsgList", method = RequestMethod.GET)
+    @RequestMapping(value = "/readMsgList", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> readMsgList(@RequestBody XmsMsgParam xmsMsgParam,
+    public CommonResult<List<XmsMsg>> readMsgList(XmsMsgParam xmsMsgParam,
                                                   @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                   @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize) {
 
@@ -70,9 +70,9 @@ public class XmsMsgController {
     }
 
     @ApiOperation("消息回收站表没有读过的用户消息记录")
-    @RequestMapping(value = "/unreadMsgList", method = RequestMethod.GET)
+    @RequestMapping(value = "/unreadMsgList", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult<List<XmsMsg>> unreadMsgList(@RequestBody XmsMsgParam xmsMsgParam,
+    public CommonResult<List<XmsMsg>> unreadMsgList(XmsMsgParam xmsMsgParam,
                                                     @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                     @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize) {
         List<XmsMsg> unMsgList = xmsMsgService.unreadMsgList(xmsMsgParam,pageNum,pageSize);
