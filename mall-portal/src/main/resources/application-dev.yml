@@ -53,3 +53,7 @@ paypal:
   cancelUrl: http://192.168.1.67:8087/myaccount
   businessId: 584JZVFU6PPVU
 
+shopify:
+  callback:
+    url: http://guu8pd.natappfree.cc/shopify/auth/callback
+
