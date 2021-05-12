@@ -1,5 +1,6 @@
 package com.macro.mall.portal.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
@@ -125,14 +126,14 @@ public class SourcingUtils {
             if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
                 CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
-                this.saveSourcingImgInfo(siteSourcing);
+                this.saveSourcingInfo(siteSourcing);
             } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
                 // TAOBAO
                 CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
-                this.saveSourcingImgInfo(siteSourcing);
+                this.saveSourcingInfo(siteSourcing);
             } else {
-                this.saveSourcingImgInfo(siteSourcing);
+                this.saveSourcingInfo(siteSourcing);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -220,10 +221,12 @@ public class SourcingUtils {
     }*/
 
 
-    public void saveSourcingImgInfo(SiteSourcing siteSourcing) {
+    public void saveSourcingInfo(SiteSourcing siteSourcing) {
 
 
         XmsSourcingList xmsSourcingList = new XmsSourcingList();
+        BeanUtil.copyProperties(siteSourcing, xmsSourcingList);
+
         xmsSourcingList.setMemberId(siteSourcing.getUserId());
         xmsSourcingList.setUsername(siteSourcing.getUserName());
         xmsSourcingList.setCreateTime(new Date());
@@ -232,7 +235,6 @@ public class SourcingUtils {
         xmsSourcingList.setTitle(siteSourcing.getName());
         xmsSourcingList.setStatus(0);
         xmsSourcingList.setSiteType(9);
-        xmsSourcingList.setUrl("");
 
         xmsSourcingListService.save(xmsSourcingList);
     }
@@ -296,7 +298,7 @@ public class SourcingUtils {
     public boolean imgSearchByTaoBao(File file, String uuid, String today) {
         boolean isSu = false;
         try {
-            String url = microServiceConfig.getUrl() + instance.MICRO_SERVICE_1688.replace("18005", "18003")
+            String url = microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688.replace("18005", "18003")
                     .replace("api/ali1688-service/", "");
             JSONObject json = instance.postFile(file, "file", url + "searchimg/upload");
 
@@ -325,7 +327,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -347,7 +349,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -368,7 +370,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
