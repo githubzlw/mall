@@ -55,5 +55,45 @@
 		AND mr.isdelete=0
 		LIMIT #{offset}, #{limit};
     </select>
+    <select id="unreadMsgListCount" resultType="Integer">
+        SELECT
+        count(*)
+        FROM
+        xms_msg m
+        LEFT JOIN xms_msgrecycle mr ON m.id = mr.msgid
+        WHERE
+        m.mail = #{mail}
+        <if test="type!=null ">
+            AND m.type=#{type}
+        </if>
+        <if test="startDate!=null ">
+            AND m.create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate!=null ">
+            AND m.create_time &lt;= #{endDate}
+        </if>
+        AND mr.id IS NULL
 
+    </select>
+
+    <select id="readMsgListCount" resultType="Integer">
+        SELECT
+        count(*)
+        FROM
+        xms_msg m
+        LEFT JOIN xms_msgrecycle mr ON m.id = mr.msgid
+        WHERE
+        m.mail = #{mail}
+        <if test="type!=null ">
+            AND m.type=#{type}
+        </if>
+        <if test="startDate!=null ">
+            AND m.create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate!=null ">
+            AND m.create_time &lt;= #{endDate}
+        </if>
+        AND mr.isread=1
+        AND mr.isdelete=0
+    </select>
 </mapper>

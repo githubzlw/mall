@@ -79,6 +79,22 @@ public class XmsMsgController {
         return CommonResult.success(unMsgList);
     }
 
+    @ApiOperation("已读用户消息记录总数")
+    @RequestMapping(value = "/readMsgListCount", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult readMsgListCount(XmsMsgParam xmsMsgParam) {
+
+        int count = xmsMsgService.readMsgListCount(xmsMsgParam);
+        return CommonResult.success(count);
+    }
+
+    @ApiOperation("消息回收站表没有读过的用户消息总数")
+    @RequestMapping(value = "/unreadMsgListCount", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult unreadMsgListCount(XmsMsgParam xmsMsgParam) {
+        int count = xmsMsgService.unreadMsgListCount(xmsMsgParam);
+        return CommonResult.success(count);
+    }
 
 
 }
