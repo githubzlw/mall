@@ -58,3 +58,7 @@ paypal:
   cancelUrl: http://127.0.0.1:8087/myaccount
   businessId: 584JZVFU6PPVU
 
+shopify:
+  callback:
+    url: http://127.0.0.1:8085/shopify/auth/callback
+

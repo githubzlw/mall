@@ -5,16 +5,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
-import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.model.OmsCartItem;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
-import com.macro.mall.portal.domain.GenerateOrderParam;
-import com.macro.mall.portal.domain.OrderPayParam;
-import com.macro.mall.portal.domain.PayPalParam;
-import com.macro.mall.portal.domain.XmsCustomerProductParam;
+import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
+import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
 import io.swagger.annotations.Api;
@@ -28,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,11 +124,11 @@ public class YouLiveProductController {
 
             // 根据运输方式算运费
             double totalFreight = 0;
-            String orderNo = this.orderUtils.getOrderNoByRedis("LP");
+            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.LiveProduct.getName());
             // 订单处理
             GenerateOrderParam generateParam = GenerateOrderParam.builder().totalFreight(totalFreight).orderNo(orderNo)
                     .currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
-            double totalAmount = this.orderUtils.generateOrder(generateParam);
+            GenerateOrderResult orderResult = this.orderUtils.generateOrder(generateParam);
 
             cartItemList.clear();
             cartItemMap.clear();
@@ -141,12 +137,7 @@ public class YouLiveProductController {
             skuStockList.clear();
             pmsSkuStockList.clear();
 
-            // 发起支付流程
-            PayPalParam payPalParam = this.payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
-
-            this.payUtil.insertPayment(currentMember.getUsername(), currentMember.getId(), orderNo, totalAmount, 0, "", "支付前日志");
-            CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
-            return commonResult;
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("youLiveProducts,productParam[{}],error:", productParam, e);

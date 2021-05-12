@@ -69,6 +69,15 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "第三方标识")
     private Integer loginType;
 
+    @ApiModelProperty(value = "客户余额")
+    private Double balance;
+
+    @ApiModelProperty(value = "shopify的店铺名称")
+    private String shopifyName;
+
+    @ApiModelProperty(value = "shopify状态0未绑定 1 绑定成功 2取消绑定")
+    private Integer shopifyFlag;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -247,6 +256,30 @@ public class UmsMember implements Serializable {
         this.loginType = loginType;
     }
 
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
+    public String getShopifyName() {
+        return shopifyName;
+    }
+
+    public void setShopifyName(String shopifyName) {
+        this.shopifyName = shopifyName;
+    }
+
+    public Integer getShopifyFlag() {
+        return shopifyFlag;
+    }
+
+    public void setShopifyFlag(Integer shopifyFlag) {
+        this.shopifyFlag = shopifyFlag;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -275,6 +308,9 @@ public class UmsMember implements Serializable {
         sb.append(", organizationname=").append(organizationname);
         sb.append(", monthlyOrders=").append(monthlyOrders);
         sb.append(", loginType=").append(loginType);
+        sb.append(", balance=").append(balance);
+        sb.append(", shopifyName=").append(shopifyName);
+        sb.append(", shopifyFlag=").append(shopifyFlag);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
