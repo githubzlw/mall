@@ -14,6 +14,7 @@ import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
 import com.macro.mall.portal.service.IXmsChromeUploadService;
 import com.macro.mall.portal.service.mapstruct.XmsChromeUploadMapstruct;
+import com.macro.mall.security.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -33,6 +34,9 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
     private UmsMemberMapper memberMapper;
 
     @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
     private XmsChromeUploadMapper xmsChromeUploadMapper;
 
     @Autowired
@@ -43,7 +47,8 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
 
         //查询是否已有该用户
         UmsMemberExample example = new UmsMemberExample();
-        example.createCriteria().andUsernameEqualTo(xmsChromeUploadParam.getUsername());
+        String username = jwtTokenUtil.getUserNameFromToken(xmsChromeUploadParam.getToken());
+        example.createCriteria().andUsernameEqualTo(username);
         List<UmsMember> umsMembers = memberMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(umsMembers)) {
             Asserts.fail("用户不存在");
