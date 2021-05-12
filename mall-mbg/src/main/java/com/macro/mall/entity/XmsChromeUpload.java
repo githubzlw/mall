@@ -36,9 +36,6 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "会员登录名（邮箱）")
     private String username;
 
-    @ApiModelProperty(value = "token")
-    private String token;
-
     @ApiModelProperty(value = "抓取的网址")
     private String url;
 
