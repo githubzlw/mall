@@ -52,7 +52,6 @@ secure:
       - /admin/info
       - /admin/logout
       - /minio/upload
-      - /shopify/addProduct
 
 
 aliyun:
