@@ -66,6 +66,7 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
 
         xmsChromeUpload.setMemberId(umsMembers.get(0).getId());
         xmsChromeUpload.setStatus(1);
+        xmsChromeUpload.setUsername(username);
 
         boolean result = this.save(xmsChromeUpload);
         Asserts.isTrue(result, "插入数据库失败");
