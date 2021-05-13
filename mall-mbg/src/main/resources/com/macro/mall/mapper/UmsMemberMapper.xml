@@ -14,16 +14,18 @@
     <result column="gender" jdbcType="INTEGER" property="gender" />
     <result column="birthday" jdbcType="DATE" property="birthday" />
     <result column="city" jdbcType="VARCHAR" property="city" />
-    <result column="job" jdbcType="VARCHAR" property="job" />
-    <result column="personalized_signature" jdbcType="VARCHAR" property="personalizedSignature" />
-    <result column="source_type" jdbcType="INTEGER" property="sourceType" />
-    <result column="integration" jdbcType="INTEGER" property="integration" />
-    <result column="growth" jdbcType="INTEGER" property="growth" />
-    <result column="luckey_count" jdbcType="INTEGER" property="luckeyCount" />
-    <result column="history_integration" jdbcType="INTEGER" property="historyIntegration" />
-    <result column="organizationname" jdbcType="VARCHAR" property="organizationname" />
-    <result column="monthly_orders" jdbcType="VARCHAR" property="monthlyOrders" />
-    <result column="login_type" jdbcType="INTEGER" property="loginType" />
+    <result column="job" jdbcType="VARCHAR" property="job"/>
+    <result column="personalized_signature" jdbcType="VARCHAR" property="personalizedSignature"/>
+    <result column="source_type" jdbcType="INTEGER" property="sourceType"/>
+    <result column="integration" jdbcType="INTEGER" property="integration"/>
+    <result column="growth" jdbcType="INTEGER" property="growth"/>
+    <result column="luckey_count" jdbcType="INTEGER" property="luckeyCount"/>
+    <result column="history_integration" jdbcType="INTEGER" property="historyIntegration"/>
+    <result column="organizationname" jdbcType="VARCHAR" property="organizationname"/>
+    <result column="monthly_orders" jdbcType="VARCHAR" property="monthlyOrders"/>
+    <result column="login_type" jdbcType="INTEGER" property="loginType"/>
+    <result column="shopify_name" jdbcType="VARCHAR" property="shopifyName"/>
+    <result column="shopify_flag" jdbcType="INTEGER" property="shopifyFlag"/>
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -86,7 +88,8 @@
   <sql id="Base_Column_List">
     id, member_level_id, username, password, nickname, phone, status, create_time, icon, 
     gender, birthday, city, job, personalized_signature, source_type, integration, growth, 
-    luckey_count, history_integration, organizationname, monthly_orders, login_type
+    luckey_count, history_integration, organizationname, monthly_orders, login_type, shopify_name,
+    shopify_flag
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.UmsMemberExample" resultMap="BaseResultMap">
     select
