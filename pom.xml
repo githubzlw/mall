@@ -17,6 +17,7 @@
         <module>mall-search</module>
         <module>mall-portal</module>
         <module>mall-tools</module>
+        <module>mall-shopify</module>
     </modules>
 
     <parent>
