@@ -138,7 +138,6 @@ public class SourcingUtils {
             e.printStackTrace();
             log.error("checkAndLoadDataAsync,siteBuyForMe[{}],userId[{}],error", siteSourcing, userId, e);
         }
-
     }
 
 
@@ -239,18 +238,18 @@ public class SourcingUtils {
     }
 
 
-    public String checkAndLoadData(SiteSourcing siteSourcing) {
+    public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return jsonResult.getData().toString();
+                return JSONObject.parseObject(jsonResult.getData().toString());
             }
         } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return jsonResult.getData().toString();
+                return JSONObject.parseObject(jsonResult.getData().toString());
             }
         }
         return null;

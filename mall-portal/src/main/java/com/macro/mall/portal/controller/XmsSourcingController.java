@@ -6,13 +6,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
-import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
+import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
 import io.swagger.annotations.Api;
@@ -165,18 +165,16 @@ public class XmsSourcingController {
             pmsSkuStockList.forEach(e -> e.setStock(orderNumMap.getOrDefault(e.getProductId() + "_" + e.getSkuCode(), 0)));
             pmsSkuStockList = pmsSkuStockList.stream().filter(e -> e.getStock() > 0).collect(Collectors.toList());
 
-
-
             // 根据运输方式算运费
             double totalFreight = 0;
 
             // 生成订单和订单详情信息
-            String orderNo = this.orderUtils.getOrderNoByRedis("SL");
+            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.SourcingList.getName());
             OrderPayParam orderPayParam = new OrderPayParam();
             BeanUtil.copyProperties(sourcingPayParam, orderPayParam);
             // 生成订单并且计算总价格
             GenerateOrderParam generateOrderParam = GenerateOrderParam.builder().orderNo(orderNo).totalFreight(totalFreight).currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
-            double totalAmount = this.orderUtils.generateOrder(generateOrderParam);
+            GenerateOrderResult orderResult = this.orderUtils.generateOrder(generateOrderParam);
 
             skuCodeList.clear();
             productIdList.clear();
@@ -184,12 +182,7 @@ public class XmsSourcingController {
             pmsSkuStockList.clear();
             orderNumMap.clear();
 
-            // 发起支付流程
-            PayPalParam payPalParam = this.payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
-            this.payUtil.insertPayment(currentMember.getUsername(), currentMember.getId(), orderNo, totalAmount, 0, "", "支付前日志");
-            CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
-            // 回调完成后更新订单状态
-            return commonResult;
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("payBySourcingProduct,sourcingPayParam[{}],error:", sourcingPayParam, e);

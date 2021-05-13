@@ -7,8 +7,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsPayment;
+import com.macro.mall.entity.XmsRecordOfChangeInBalance;
+import com.macro.mall.mapper.UmsMemberMapper;
+import com.macro.mall.mapper.XmsRecordOfChangeInBalanceMapper;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.PayConfig;
+import com.macro.mall.portal.domain.GenerateOrderResult;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.portal.domain.SiteEnum;
 import com.macro.mall.portal.service.IXmsPaymentService;
@@ -29,10 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 支付util
@@ -41,6 +43,10 @@ import java.util.UUID;
 @Service
 public class PayUtil {
     private static UrlUtil instance = UrlUtil.getInstance();
+
+    @Autowired
+    private UmsMemberMapper memberMapper;
+
     @Autowired
     private MicroServiceConfig microServiceConfig;
 
@@ -49,6 +55,9 @@ public class PayUtil {
 
     @Autowired
     private PayConfig payConfig;
+
+    @Autowired
+    private XmsRecordOfChangeInBalanceMapper xmsRecordOfChangeInBalanceMapper;
 
     /**
      * getPayPalRedirectUtlByPayInfo
@@ -451,6 +460,72 @@ public class PayUtil {
     }
 
 
+    /**
+     * 判断是否余额支付和进行PayPal支付
+     *
+     * @param orderResult
+     * @param currentMember
+     * @param request
+     * @return
+     */
+    public CommonResult beforePayAndPay(GenerateOrderResult orderResult, UmsMember currentMember, HttpServletRequest request) {
+        // 针对订单结果，发起支付流程
+
+        // 1. 仅PayPal的支付 2. PayPal和余额混合支付 3. 仅余额支付
+        String remark = "";
+        double payAmount = orderResult.getPayAmount();
+        if (orderResult.getPayAmount() > 0) {
+            remark = "paypal支付前日志";
+            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 0);
+        }
+        if (orderResult.getBalanceAmount() > 0) {
+            remark = "余额支付前日志";
+            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 1);
+            // 扣除客户余额
+            this.payBalance(orderResult.getBalanceAmount(), currentMember, 0);
+        }
+        if (orderResult.getPayAmount() > 0) {
+            PayPalParam payPalParam = this.getPayPalParam(request, currentMember.getId(), orderResult.getOrderNo(), orderResult.getPayAmount());
+            return this.getPayPalRedirectUtlByPayInfo(payPalParam);
+        } else {
+            return CommonResult.success(orderResult, "Balance paid successfully");
+        }
+    }
+
+    /**
+     * 扣除客户的余额
+     *
+     * @param amount
+     * @param currentMember
+     * @return
+     */
+    public int payBalance(Double amount, UmsMember currentMember, Integer operatingType) {
+        synchronized (currentMember.getId()) {
+            UmsMember umsMember = this.memberMapper.selectByPrimaryKey(currentMember.getId());
+
+            UmsMember tempMember = new UmsMember();
+            tempMember.setId(umsMember.getId());
+            if (operatingType > 0) {
+                tempMember.setBalance(umsMember.getBalance() + amount);
+            } else {
+                tempMember.setBalance(umsMember.getBalance() - amount);
+            }
+
+            this.memberMapper.updateByPrimaryKeySelective(tempMember);
+            // 执行插入记录
+            XmsRecordOfChangeInBalance changeInBalance = new XmsRecordOfChangeInBalance();
+            changeInBalance.setCreateTime(new Date());
+            changeInBalance.setCurrentBalance(umsMember.getBalance());
+            changeInBalance.setOperatingValue(amount);
+            changeInBalance.setOperatingType(operatingType);
+            changeInBalance.setOperatingResult(tempMember.getBalance());
+            changeInBalance.setMemberId(currentMember.getId());
+            changeInBalance.setUsername(currentMember.getUsername());
+            return xmsRecordOfChangeInBalanceMapper.insert(changeInBalance);
+        }
+    }
+
+
     public PayPalParam getPayPalParam(HttpServletRequest request, Long userId, String orderNo, Double totalAmount) {
         PayPalParam payPalParam = new PayPalParam();
 
@@ -480,16 +555,27 @@ public class PayUtil {
     }
 
 
-    public void insertPayment(String username, Long memberId, String orderNo, Double paymentAmount, Integer payStatus, String paymentId, String remark) {
+    /**
+     * @param currentMember
+     * @param orderNo
+     * @param paymentAmount
+     * @param payStatus     : 付款状态 0 失败(Failed) 1 成功(Success) 2进行中(Pending)
+     * @param paymentId
+     * @param remark
+     * @param payType       : 0是paypal支付，1 余额支付
+     */
+    public void insertPayment(UmsMember currentMember, String orderNo, Double paymentAmount,
+                              Integer payStatus, String paymentId, String remark, Integer payType) {
         XmsPayment xmsPayment = new XmsPayment();
-        xmsPayment.setUsername(username);
-        xmsPayment.setMemberId(memberId);
+        xmsPayment.setUsername(currentMember.getUsername());
+        xmsPayment.setMemberId(currentMember.getId());
         xmsPayment.setOrderNo(orderNo);
         xmsPayment.setPaymentAmount(paymentAmount.floatValue());
         xmsPayment.setPayStatus(payStatus);
         xmsPayment.setPayType(0);
         xmsPayment.setPaymentId(paymentId);
         xmsPayment.setRemark(remark);
+        xmsPayment.setPayType(payType);
         xmsPaymentService.save(xmsPayment);
     }
 

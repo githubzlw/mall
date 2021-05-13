@@ -606,6 +606,66 @@ public class OmsOrderExample {
             return (Criteria) this;
         }
 
+        public Criteria andBalanceAmountIsNull() {
+            addCriterion("balance_amount is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountIsNotNull() {
+            addCriterion("balance_amount is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountEqualTo(Double value) {
+            addCriterion("balance_amount =", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountNotEqualTo(Double value) {
+            addCriterion("balance_amount <>", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountGreaterThan(Double value) {
+            addCriterion("balance_amount >", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountGreaterThanOrEqualTo(Double value) {
+            addCriterion("balance_amount >=", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountLessThan(Double value) {
+            addCriterion("balance_amount <", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountLessThanOrEqualTo(Double value) {
+            addCriterion("balance_amount <=", value, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountIn(List<Double> values) {
+            addCriterion("balance_amount in", values, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountNotIn(List<Double> values) {
+            addCriterion("balance_amount not in", values, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountBetween(Double value1, Double value2) {
+            addCriterion("balance_amount between", value1, value2, "balanceAmount");
+            return (Criteria) this;
+        }
+
+        public Criteria andBalanceAmountNotBetween(Double value1, Double value2) {
+            addCriterion("balance_amount not between", value1, value2, "balanceAmount");
+            return (Criteria) this;
+        }
+
         public Criteria andFreightAmountIsNull() {
             addCriterion("freight_amount is null");
             return (Criteria) this;

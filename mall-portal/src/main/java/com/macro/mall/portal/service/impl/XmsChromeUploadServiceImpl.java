@@ -15,6 +15,7 @@ import com.macro.mall.portal.domain.XmsChromeUploadParam;
 import com.macro.mall.portal.service.IXmsChromeUploadService;
 import com.macro.mall.portal.service.mapstruct.XmsChromeUploadMapstruct;
 import com.macro.mall.security.util.JwtTokenUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -45,14 +46,32 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
     @Override
     public void upload(XmsChromeUploadParam xmsChromeUploadParam) {
 
-        //查询是否已有该用户
-        UmsMemberExample example = new UmsMemberExample();
-        String username = jwtTokenUtil.getUserNameFromToken(xmsChromeUploadParam.getToken());
-        example.createCriteria().andUsernameEqualTo(username);
-        List<UmsMember> umsMembers = memberMapper.selectByExample(example);
-        if (CollectionUtils.isEmpty(umsMembers)) {
-            Asserts.fail("用户不存在");
+        String token = xmsChromeUploadParam.getToken();
+        String username="";
+        Long userId=0L;
+        if(StringUtils.isNotEmpty(token)){
+            if(token.startsWith("TOURIST_")){
+                //游客
+                username = token;
+            }else{
+                //查询是否已有该用户
+                UmsMemberExample example = new UmsMemberExample();
+                username = jwtTokenUtil.getUserNameFromToken(token);
+                if(StringUtils.isNotEmpty(username)){
+                    example.createCriteria().andUsernameEqualTo(username);
+                    List<UmsMember> umsMembers = memberMapper.selectByExample(example);
+                    if (CollectionUtils.isEmpty(umsMembers)) {
+                        Asserts.fail("用户不存在");
+                    }
+                    userId = umsMembers.get(0).getId();
+                }else{
+                    Asserts.fail("token无效");
+                }
+            }
+        }else{
+            Asserts.fail("未传用户信息");
         }
+
         //进行添加操作
         XmsChromeUpload xmsChromeUpload = mapstruct.toDto(xmsChromeUploadParam);
 
@@ -64,7 +83,7 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
             Asserts.fail("不属于抓取网站范围");
         }
 
-        xmsChromeUpload.setMemberId(umsMembers.get(0).getId());
+        xmsChromeUpload.setMemberId(userId);
         xmsChromeUpload.setStatus(1);
         xmsChromeUpload.setUsername(username);
 

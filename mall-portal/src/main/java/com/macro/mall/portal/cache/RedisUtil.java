@@ -27,7 +27,7 @@ public class RedisUtil {
     private final static org.slf4j.Logger logger = LoggerFactory.getLogger(RedisUtil.class);
 
     public static final long EXPIRATION_TIME_7_DAY = 3600 * 24 * 7;
-    public static final long EXPIRATION_TIME_1_SECOND = 1;
+    public static final long EXPIRATION_TIME_1_HOURS = 60 * 60;
     public static final long EXPIRATION_TIME_1_DAY = 3600 * 24;
 
     private final StringRedisTemplate stringRedisTemplate;
@@ -287,6 +287,19 @@ public class RedisUtil {
     public boolean hmsetObj(String key, Map<String, Object> map) {
         try {
             redisTemplate.opsForHash().putAll(key, map);
+            return true;
+        } catch (Exception e) {
+            logger.error("hmset", e);
+            return false;
+        }
+    }
+
+    public boolean hmsetObj(String key, String item, Object value, long time) {
+        try {
+            redisTemplate.opsForHash().put(key, item, value);
+            if (time > 0) {
+                expire(key + item, time);
+            }
             return true;
         } catch (Exception e) {
             logger.error("hmset", e);

@@ -191,6 +191,15 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return jwtTokenUtil.refreshHeadToken(token);
     }
 
+    @Override
+    public int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag) {
+        UmsMember tempMember = new UmsMember();
+        tempMember.setId(id);
+        tempMember.setShopifyName(shopifyName);
+        tempMember.setShopifyFlag(shopifyFlag);
+        return this.memberMapper.updateByPrimaryKeySelective(tempMember);
+    }
+
     //对输入的验证码进行校验
     private boolean verifyAuthCode(String authCode, String telephone) {
         if (StringUtils.isEmpty(authCode)) {

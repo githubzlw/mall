@@ -10,6 +10,7 @@
     <result column="member_username" jdbcType="VARCHAR" property="memberUsername" />
     <result column="total_amount" jdbcType="DECIMAL" property="totalAmount" />
     <result column="pay_amount" jdbcType="DECIMAL" property="payAmount" />
+    <result column="balance_amount" jdbcType="DOUBLE" property="balanceAmount" />
     <result column="freight_amount" jdbcType="DECIMAL" property="freightAmount" />
     <result column="promotion_amount" jdbcType="DECIMAL" property="promotionAmount" />
     <result column="integration_amount" jdbcType="DECIMAL" property="integrationAmount" />
@@ -107,12 +108,13 @@
   </sql>
   <sql id="Base_Column_List">
     id, member_id, coupon_id, order_sn, create_time, member_username, total_amount, pay_amount, 
-    freight_amount, promotion_amount, integration_amount, coupon_amount, discount_amount, 
-    pay_type, source_type, status, order_type, delivery_company, delivery_sn, auto_confirm_day, 
-    integration, growth, promotion_info, bill_type, bill_header, bill_content, bill_receiver_phone, 
-    bill_receiver_email, receiver_name, receiver_phone, receiver_post_code, receiver_province, 
-    receiver_city, receiver_region, receiver_detail_address, note, confirm_status, delete_status, 
-    use_integration, payment_time, delivery_time, receive_time, comment_time, modify_time
+    balance_amount, freight_amount, promotion_amount, integration_amount, coupon_amount, 
+    discount_amount, pay_type, source_type, status, order_type, delivery_company, delivery_sn, 
+    auto_confirm_day, integration, growth, promotion_info, bill_type, bill_header, bill_content, 
+    bill_receiver_phone, bill_receiver_email, receiver_name, receiver_phone, receiver_post_code, 
+    receiver_province, receiver_city, receiver_region, receiver_detail_address, note, 
+    confirm_status, delete_status, use_integration, payment_time, delivery_time, receive_time, 
+    comment_time, modify_time
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.OmsOrderExample" resultMap="BaseResultMap">
     select
@@ -150,34 +152,36 @@
     </selectKey>
     insert into oms_order (member_id, coupon_id, order_sn, 
       create_time, member_username, total_amount, 
-      pay_amount, freight_amount, promotion_amount, 
-      integration_amount, coupon_amount, discount_amount, 
-      pay_type, source_type, status, 
-      order_type, delivery_company, delivery_sn, 
-      auto_confirm_day, integration, growth, 
-      promotion_info, bill_type, bill_header, 
-      bill_content, bill_receiver_phone, bill_receiver_email, 
-      receiver_name, receiver_phone, receiver_post_code, 
-      receiver_province, receiver_city, receiver_region, 
-      receiver_detail_address, note, confirm_status, 
-      delete_status, use_integration, payment_time, 
-      delivery_time, receive_time, comment_time, 
-      modify_time)
+      pay_amount, balance_amount, freight_amount, 
+      promotion_amount, integration_amount, coupon_amount, 
+      discount_amount, pay_type, source_type, 
+      status, order_type, delivery_company, 
+      delivery_sn, auto_confirm_day, integration, 
+      growth, promotion_info, bill_type, 
+      bill_header, bill_content, bill_receiver_phone, 
+      bill_receiver_email, receiver_name, receiver_phone, 
+      receiver_post_code, receiver_province, receiver_city, 
+      receiver_region, receiver_detail_address, 
+      note, confirm_status, delete_status, 
+      use_integration, payment_time, delivery_time, 
+      receive_time, comment_time, modify_time
+      )
     values (#{memberId,jdbcType=BIGINT}, #{couponId,jdbcType=BIGINT}, #{orderSn,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{memberUsername,jdbcType=VARCHAR}, #{totalAmount,jdbcType=DECIMAL}, 
-      #{payAmount,jdbcType=DECIMAL}, #{freightAmount,jdbcType=DECIMAL}, #{promotionAmount,jdbcType=DECIMAL}, 
-      #{integrationAmount,jdbcType=DECIMAL}, #{couponAmount,jdbcType=DECIMAL}, #{discountAmount,jdbcType=DECIMAL}, 
-      #{payType,jdbcType=INTEGER}, #{sourceType,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, 
-      #{orderType,jdbcType=INTEGER}, #{deliveryCompany,jdbcType=VARCHAR}, #{deliverySn,jdbcType=VARCHAR}, 
-      #{autoConfirmDay,jdbcType=INTEGER}, #{integration,jdbcType=INTEGER}, #{growth,jdbcType=INTEGER}, 
-      #{promotionInfo,jdbcType=VARCHAR}, #{billType,jdbcType=INTEGER}, #{billHeader,jdbcType=VARCHAR}, 
-      #{billContent,jdbcType=VARCHAR}, #{billReceiverPhone,jdbcType=VARCHAR}, #{billReceiverEmail,jdbcType=VARCHAR}, 
-      #{receiverName,jdbcType=VARCHAR}, #{receiverPhone,jdbcType=VARCHAR}, #{receiverPostCode,jdbcType=VARCHAR}, 
-      #{receiverProvince,jdbcType=VARCHAR}, #{receiverCity,jdbcType=VARCHAR}, #{receiverRegion,jdbcType=VARCHAR}, 
-      #{receiverDetailAddress,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}, #{confirmStatus,jdbcType=INTEGER}, 
-      #{deleteStatus,jdbcType=INTEGER}, #{useIntegration,jdbcType=INTEGER}, #{paymentTime,jdbcType=TIMESTAMP}, 
-      #{deliveryTime,jdbcType=TIMESTAMP}, #{receiveTime,jdbcType=TIMESTAMP}, #{commentTime,jdbcType=TIMESTAMP}, 
-      #{modifyTime,jdbcType=TIMESTAMP})
+      #{payAmount,jdbcType=DECIMAL}, #{balanceAmount,jdbcType=DOUBLE}, #{freightAmount,jdbcType=DECIMAL}, 
+      #{promotionAmount,jdbcType=DECIMAL}, #{integrationAmount,jdbcType=DECIMAL}, #{couponAmount,jdbcType=DECIMAL}, 
+      #{discountAmount,jdbcType=DECIMAL}, #{payType,jdbcType=INTEGER}, #{sourceType,jdbcType=INTEGER}, 
+      #{status,jdbcType=INTEGER}, #{orderType,jdbcType=INTEGER}, #{deliveryCompany,jdbcType=VARCHAR}, 
+      #{deliverySn,jdbcType=VARCHAR}, #{autoConfirmDay,jdbcType=INTEGER}, #{integration,jdbcType=INTEGER}, 
+      #{growth,jdbcType=INTEGER}, #{promotionInfo,jdbcType=VARCHAR}, #{billType,jdbcType=INTEGER}, 
+      #{billHeader,jdbcType=VARCHAR}, #{billContent,jdbcType=VARCHAR}, #{billReceiverPhone,jdbcType=VARCHAR}, 
+      #{billReceiverEmail,jdbcType=VARCHAR}, #{receiverName,jdbcType=VARCHAR}, #{receiverPhone,jdbcType=VARCHAR}, 
+      #{receiverPostCode,jdbcType=VARCHAR}, #{receiverProvince,jdbcType=VARCHAR}, #{receiverCity,jdbcType=VARCHAR}, 
+      #{receiverRegion,jdbcType=VARCHAR}, #{receiverDetailAddress,jdbcType=VARCHAR}, 
+      #{note,jdbcType=VARCHAR}, #{confirmStatus,jdbcType=INTEGER}, #{deleteStatus,jdbcType=INTEGER}, 
+      #{useIntegration,jdbcType=INTEGER}, #{paymentTime,jdbcType=TIMESTAMP}, #{deliveryTime,jdbcType=TIMESTAMP}, 
+      #{receiveTime,jdbcType=TIMESTAMP}, #{commentTime,jdbcType=TIMESTAMP}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.OmsOrder">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -205,6 +209,9 @@
       </if>
       <if test="payAmount != null">
         pay_amount,
+      </if>
+      <if test="balanceAmount != null">
+        balance_amount,
       </if>
       <if test="freightAmount != null">
         freight_amount,
@@ -336,6 +343,9 @@
       </if>
       <if test="payAmount != null">
         #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="balanceAmount != null">
+        #{balanceAmount,jdbcType=DOUBLE},
       </if>
       <if test="freightAmount != null">
         #{freightAmount,jdbcType=DECIMAL},
@@ -480,6 +490,9 @@
       <if test="record.payAmount != null">
         pay_amount = #{record.payAmount,jdbcType=DECIMAL},
       </if>
+      <if test="record.balanceAmount != null">
+        balance_amount = #{record.balanceAmount,jdbcType=DOUBLE},
+      </if>
       <if test="record.freightAmount != null">
         freight_amount = #{record.freightAmount,jdbcType=DECIMAL},
       </if>
@@ -603,6 +616,7 @@
       member_username = #{record.memberUsername,jdbcType=VARCHAR},
       total_amount = #{record.totalAmount,jdbcType=DECIMAL},
       pay_amount = #{record.payAmount,jdbcType=DECIMAL},
+      balance_amount = #{record.balanceAmount,jdbcType=DOUBLE},
       freight_amount = #{record.freightAmount,jdbcType=DECIMAL},
       promotion_amount = #{record.promotionAmount,jdbcType=DECIMAL},
       integration_amount = #{record.integrationAmount,jdbcType=DECIMAL},
@@ -666,6 +680,9 @@
       </if>
       <if test="payAmount != null">
         pay_amount = #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="balanceAmount != null">
+        balance_amount = #{balanceAmount,jdbcType=DOUBLE},
       </if>
       <if test="freightAmount != null">
         freight_amount = #{freightAmount,jdbcType=DECIMAL},
@@ -787,6 +804,7 @@
       member_username = #{memberUsername,jdbcType=VARCHAR},
       total_amount = #{totalAmount,jdbcType=DECIMAL},
       pay_amount = #{payAmount,jdbcType=DECIMAL},
+      balance_amount = #{balanceAmount,jdbcType=DOUBLE},
       freight_amount = #{freightAmount,jdbcType=DECIMAL},
       promotion_amount = #{promotionAmount,jdbcType=DECIMAL},
       integration_amount = #{integrationAmount,jdbcType=DECIMAL},

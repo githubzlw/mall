@@ -1,7 +1,9 @@
 package com.macro.mall.portal.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.macro.mall.entity.XmsPayment;
+import com.macro.mall.portal.domain.XmsPaymentParam;
 
 /**
  * <p>
@@ -13,4 +15,5 @@ import com.macro.mall.entity.XmsPayment;
  */
 public interface IXmsPaymentService extends IService<XmsPayment> {
 
+    Page<XmsPayment> list(XmsPaymentParam paymentParam);
 }

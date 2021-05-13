@@ -68,4 +68,14 @@ public interface UmsMemberService {
      * 获取所有的用户信息
      */
     List<UmsMember> getAllUser(Long id);
+
+
+    /**
+     *更新客户的 shopify信息
+     * @param id
+     * @param shopifyName
+     * @param shopifyFlag
+     * @return
+     */
+    int updateShopifyInfo(Long id, String shopifyName,Integer shopifyFlag);
 }

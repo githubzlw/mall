@@ -154,4 +154,24 @@ public class BuyForMeController {
         }
     }
 
+
+    @ApiOperation(value = "根据万邦接口获取URL详细信息", notes = "BuyForMe逻辑")
+    @GetMapping("/getInfoByUrl")
+    public CommonResult getInfoByUrl(String url) {
+        Assert.isTrue(StrUtil.isNotBlank(url), "url null");
+        try {
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setUrl(url);
+            // 生成PID和catid数据
+            this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
+
+            JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
+            return CommonResult.success(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getInfoByUrl,url[{}],error:", url, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 }
