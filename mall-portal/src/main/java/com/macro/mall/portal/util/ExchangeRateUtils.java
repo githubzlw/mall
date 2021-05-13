@@ -20,7 +20,7 @@ import java.util.Map;
 public class ExchangeRateUtils {
 
 
-    @Value("${import.microService.api.exchangeRate}")
+    @Value("${microService.importApi.exchangeRate}")
     private String exchangeRateUrl;
 
     private double usdToCnyRate = 0;// 美元对人名币汇率

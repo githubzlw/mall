@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 @Data
 public class MicroServiceConfig {
 
-    @Value("${import.microService.api.url}")
-    private String url;
+    @Value("${microService.importApi.url}")
+    private String importUrl;
+
+    @Value("${microService.shopifyApi.url}")
+    private String shopifyUrl;
 }

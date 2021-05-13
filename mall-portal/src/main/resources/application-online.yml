@@ -41,13 +41,17 @@ logging:
 logstash:
   host: 192.168.1.31
 
-import:
-  microService:
-    api:
+microService:
+  importApi:
       url: http://127.0.0.1:18005/api
-      exchangeRate: ${import.microService.api.url}/utils-service/fx
+      exchangeRate: ${microService.importApi.url}/utils-service/fx
+  shopifyApi:
+    url: http://127.0.0.1:8086/shopify
 
-shopify:
-  callback:
-    url: http://127.0.0.1:8085/shopify/auth/callback
+paypal:
+  cancelUrlType: 1
+  successUrl: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
+  cancelUrl: http://127.0.0.1:8087/myaccount
+  businessId: 584JZVFU6PPVU
+
 
