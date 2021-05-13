@@ -57,12 +57,16 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
                 //查询是否已有该用户
                 UmsMemberExample example = new UmsMemberExample();
                 username = jwtTokenUtil.getUserNameFromToken(token);
-                example.createCriteria().andUsernameEqualTo(username);
-                List<UmsMember> umsMembers = memberMapper.selectByExample(example);
-                if (CollectionUtils.isEmpty(umsMembers)) {
-                    Asserts.fail("用户不存在");
+                if(StringUtils.isNotEmpty(username)){
+                    example.createCriteria().andUsernameEqualTo(username);
+                    List<UmsMember> umsMembers = memberMapper.selectByExample(example);
+                    if (CollectionUtils.isEmpty(umsMembers)) {
+                        Asserts.fail("用户不存在");
+                    }
+                    userId = umsMembers.get(0).getId();
+                }else{
+                    Asserts.fail("token无效");
                 }
-                userId = umsMembers.get(0).getId();
             }
         }else{
             Asserts.fail("未传用户信息");
