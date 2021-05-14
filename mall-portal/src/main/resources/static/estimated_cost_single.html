@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>estimated cost</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <link href="resources/css/jquery-ui-themes.css" type="text/css" rel="stylesheet"/>
+    <link href="resources/css/axure_rp_page.css" type="text/css" rel="stylesheet"/>
+    <link href="data/styles.css" type="text/css" rel="stylesheet"/>
+    <link href="files/estimated_cost/styles.css" type="text/css" rel="stylesheet"/>
+    <script src="resources/scripts/jquery-1.7.1.min.js"></script>
+    <script src="resources/scripts/jquery-ui-1.8.10.custom.min.js"></script>
+    <script src="resources/scripts/prototypePre.js"></script>
+    <script src="data/document.js"></script>
+    <script src="resources/scripts/prototypePost.js"></script>
+    <script src="files/estimated_cost/data.js"></script>
+
+    <script type="text/javascript">
+
+        function getFreightPortList() {
+            var price = $("#price_id").val();
+            var shippingFee = $("#shippingFee_id").val();
+            var countryId = $("#countryId_id").val();
+            var weight = $("#weight_id").val();
+            var volume = $("#volume_id").val();
+            if (Number(price) >= 0 && Number(shippingFee) >= 0 && Number(weight) > 0 && Number(volume) > 0 && parseInt(countryId) > 0) {
+                $.ajax({
+                    url: "/freight/estimateFreight",
+                    data: {
+                        price: price,
+                        shippingFee: shippingFee,
+                        countryId: countryId,
+                        weight: weight,
+                        volume: volume
+                    },
+                    type: "post",
+                    success: function (data) {
+                        if (data.code && data.code == 200) {
+                            var json = data.data;
+
+                            $("#origina_price").val(json.originalPrice);
+                            $("#origina_Cost").text(json.originalShippingFee);
+                            $("#origina_weight").val(json.originalWeight);
+                            $("#Standard_price").text(json.importXStandard.productPrice);
+                            $("#Standard_Cost").text(json.importXStandard.cost);
+                            $("#Premium_price").text(json.importXPremium.productPrice);
+                            $("#Premium_Cost").text(json.importXPremium.cost);
+
+                            $("#rs_productPrice").text(json.productPrice);
+                            $("#freightUnit_freight").text(json.freightUnit.totalPrice);
+                            $("#freightUnit_deliveryTime").text(json.freightUnit.deliveryTime);
+
+                        } else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function () {
+                        alert("网络异常");
+                    }
+                });
+            } else {
+                return false;
+            }
+
+        }
+
+    </script>
+</head>
+<body>
+
+
+<table border="1" cellspacing="1" style="background-color: #15d6ba;">
+    <form action="#" onsubmit="return false;">
+        <span>价格:<input id="price_id" name="price" value="0"/> </span>
+        <span>运费:<input id="shippingFee_id" name="shippingFee" value="0"/> </span>
+        <span>国家ID:<input id="countryId_id" name="countryId" value="0"/> </span>
+        <span>重量:<input id="weight_id" name="weight" value="0"/> </span>
+        <span>体积:<input id="volume_id" name="volume" value="0"/> </span>
+        <span><button onclick="getFreightPortList()">提交</button></span>
+    </form>
+</table>
+
+
+<div>
+    <table>
+        <thead>
+        <tr>
+            <td>Original</td>
+            <td>Product Price</td>
+            <td>Shipping by</td>
+            <td>Cost</td>
+            <td>Delivery Time</td>
+            <td>Weight</td>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr>
+            <td>From Aliexpress</td>
+            <td>From $<input id="origina_price" value="0"/></td>
+            <td>Aliexpress Standard</td>
+            <td id="origina_Cost">Cost</td>
+            <td>50 Days</td>
+            <td><input id="origina_weight" value="0"/></td>
+        </tr>
+
+        <tr>
+            <td>Inventory in China</td>
+            <td>From $<span id="Standard_price"></span></td>
+            <td>ImportX Standard</td>
+            <td id="Standard_Cost">Cost</td>
+            <td>15 Days</td>
+            <td>Buffer “Inventory” of 5 Daily Orders > 8</td>
+        </tr>
+
+        <tr>
+            <td>Inventory in China</td>
+            <td>From $<span id="Premium_price"></span></td>
+            <td>ImportX Premium</td>
+            <td id="Premium_Cost">Cost</td>
+            <td>8-15 Days</td>
+            <td>Buffer “Inventory” of 5 Daily Orders > 8</td>
+        </tr>
+
+
+        </tbody>
+
+    </table>
+    <p>Estimated Cost KIPOZI Professional Titanium Flat Iron Hair Straightener with Digital LCD Display Dual Voltage
+        Instant Heating Curling Iron Product Price is USD $<span id="rs_productPrice"></span>, shipping cost to US
+        Warehouse is USD $<span id="freightUnit_freight"></span>(<span id="freightUnit_deliveryTime"></span> days by
+        sea).</p>
+
+</div>
+
+</body>
+</html>

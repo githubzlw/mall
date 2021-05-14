@@ -1,0 +1,885 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon FBA warehouse</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <link href="resources/css/jquery-ui-themes.css" type="text/css" rel="stylesheet"/>
+    <link href="resources/css/axure_rp_page.css" type="text/css" rel="stylesheet"/>
+    <link href="data/styles.css" type="text/css" rel="stylesheet"/>
+    <link href="files/amazon_fba_warehouse/styles.css" type="text/css" rel="stylesheet"/>
+    <script src="resources/scripts/jquery-1.7.1.min.js"></script>
+    <script src="resources/scripts/jquery-ui-1.8.10.custom.min.js"></script>
+    <script src="resources/scripts/prototypePre.js"></script>
+    <script src="data/document.js"></script>
+    <script src="resources/scripts/prototypePost.js"></script>
+    <script src="files/amazon_fba_warehouse/data.js"></script>
+    <script type="text/javascript">
+        $axure.utils.getTransparentGifPath = function () {
+            return 'resources/images/transparent.gif';
+        };
+        $axure.utils.getOtherPath = function () {
+            return 'resources/Other.html';
+        };
+        $axure.utils.getReloadPath = function () {
+            return 'resources/reload.html';
+        };
+    </script>
+
+    <script type="text/javascript">
+
+        var fbaJson = {};
+        var stateJson = null;
+        var countryList = [];
+        var currCountryId = null;
+        var currState = null;
+        var currZipCode = null;
+
+
+        $(function () {
+            getFbaList();
+
+        });
+
+
+        /**
+         * 获取FBA国家
+         */
+        function getFbaList() {
+            $.ajax({
+                url: "/freight/getListOfFbaCountries",
+                data: {},
+                success: function (data) {
+                    if (data.code && data.code == 200) {
+                        initCountrySelect(data.data);
+                    } else {
+                        alert(data.message);
+                    }
+                },
+                error: function () {
+                    alert("网络异常");
+                }
+            });
+        }
+
+        /**
+         * 初始化国家选择框
+         * @param data
+         */
+        function initCountrySelect(data) {
+            // 获取国家列表
+            var countryContent = '';
+            var count = 0;
+            for (var key in data) {
+                var tempArr = key.split("_");
+                countryContent += '<option value="' + tempArr[1] + '">' + tempArr[0] + '</option>';
+                fbaJson[tempArr[1]] = data[key];
+                countryList.push(tempArr[1]);
+                if (count == 0) {
+                    currCountryId = tempArr[1];
+                    count++;
+                }
+            }
+            $("#country_id").empty();
+            $("#country_id").append(countryContent);
+            $("#country_id").val(currCountryId);
+            stateJson = fbaJson[currCountryId];
+            initStateSelect();
+        }
+
+
+        /**
+         * 初始化州列表
+         */
+        function initStateSelect() {
+            // 获取州列表
+            var stateContent = '';
+            var count = 0;
+            for (var key in stateJson) {
+                stateContent += '<option value="' + key + '">' + key + '</option>';
+                if (count == 0) {
+                    currState = key;
+                    count++;
+                }
+            }
+            $("#state_id").empty();
+            $("#state_id").append(stateContent);
+            $("#state_id").val(currState);
+
+            initZipCode();
+        }
+
+
+        /**
+         * 当州改变后
+         */
+        function initZipCode() {
+
+            var content = '';
+            var zipCodeList = stateJson[currState];
+            for (var i = 0; i < zipCodeList.length; i++) {
+                content += '<option value="' + zipCodeList[i]["zip"] + '">'
+                    + zipCodeList[i]["city"]
+                    + '@' + zipCodeList[i]["address"]
+                    + '@' + zipCodeList[i]["zip"]
+                    + '</option>';
+                if (i == 0) {
+                    currZipCode = zipCodeList[i]["zip"];
+                }
+            }
+
+            $("#zipCode_id").empty();
+            $("#zipCode_id").append(content);
+            $("#zipCode_id").val(currZipCode);
+
+            getFreightList();
+        }
+
+
+        /**
+         * 当国家改变后
+         */
+        function changeCountry(obj) {
+            currCountryId = $(obj).val();
+            stateJson = fbaJson[currCountryId];
+            initStateSelect();
+        }
+
+        /**
+         * 当州改变后
+         */
+        function changeState(obj) {
+            currState = $(obj).val();
+            var cityJson = stateJson[currState][0];
+            $("#city_id").val(cityJson["city"]);
+            $("#zipCode_id").val(cityJson["zip"]);
+
+            initZipCode();
+        }
+
+        /**
+         * 获取运费列表
+         */
+        function getFreightList() {
+            var zipCode = $("#zipCode_id").val();
+            var weight = $("#weight_id").val();
+            var volume = $("#volume_id").val();
+            var modeOfTransport = 1;//运输模式: 1 进FBA, 2 进客户门点
+
+            if (currCountryId && Number(weight) > 0 && Number(volume) > 0 && modeOfTransport && zipCode) {
+                // 判断参数齐全，获取运费列表
+                $.ajax({
+                    url: "/freight/fbaCalculate",
+                    type: "post",
+                    data: {
+                        countryId: currCountryId,
+                        modeOfTransport: modeOfTransport,
+                        zipCode: zipCode,
+                        weight: weight,
+                        volume: volume
+                    },
+                    success: function (data) {
+                        if (data.code && data.code == 200) {
+                            showFreightList(data.data);
+                        } else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function () {
+                        alert("网络异常");
+                    }
+                });
+            }
+            return false;
+        }
+
+        function showFreightList(data) {
+            var content = '';
+            // freight_body
+            for (let i = 0; i < data.length; i++) {
+                content += '<tr>';
+                content += '<td>' + data[i].modeOfTransportDesc + '</td>';
+                content += '<td>' + data[i].deliveryTime + ' Days</td>';
+                content += '<td>USD $' + data[i].totalPrice + '</td>';
+                content += '</tr>';
+            }
+            $("#freight_body").empty();
+            $("#freight_body").append(content);
+        }
+
+    </script>
+</head>
+<body>
+<h1>FBA的国家列表</h1>
+<div id="base" class="">
+
+    <!-- Unnamed (Image) -->
+    <div id="u5023" class="ax_default image">
+        <img id="u5023_img" class="img " src="images/sourcing_list/u468.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5024" class="ax_default label">
+        <div id="u5024_div" class=""></div>
+        <div id="u5024_text" class="text ">
+            <p><span>KIPOZI Professional ..</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5025" class="ax_default label">
+        <div id="u5025_div" class=""></div>
+        <div id="u5025_text" class="text ">
+            <p><span>Color: Black</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5026" class="ax_default label">
+        <div id="u5026_div" class=""></div>
+        <div id="u5026_text" class="text ">
+            <p><span>Size: 12L</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5027" class="ax_default label">
+        <div id="u5027_div" class=""></div>
+        <div id="u5027_text" class="text ">
+            <p><span>USD $21.00</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5028" class="ax_default label">
+        <div id="u5028_div" class=""></div>
+        <div id="u5028_text" class="text ">
+            <p><span>Shipping Cost: USD $0.00 </span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5029" class="ax_default label">
+        <div id="u5029_div" class=""></div>
+        <div id="u5029_text" class="text ">
+            <p><span>Product</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5030" class="ax_default label">
+        <div id="u5030_div" class=""></div>
+        <div id="u5030_text" class="text ">
+            <p><span>Price</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5031" class="ax_default label">
+        <div id="u5031_div" class=""></div>
+        <div id="u5031_text" class="text ">
+            <p><span>Quantity</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5032" class="ax_default label">
+        <div id="u5032_div" class=""></div>
+        <div id="u5032_text" class="text ">
+            <p><span>Total</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5033" class="ax_default box_1">
+        <div id="u5033_div" class=""></div>
+        <div id="u5033_text" class="text ">
+            <p><span>100&nbsp; &nbsp;&nbsp; </span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5034" class="ax_default line">
+        <img id="u5034_img" class="img " src="images/shopping_cart/u2554.png"/>
+    </div>
+
+    <!-- Unnamed (Horizontal Line) -->
+    <div id="u5035" class="ax_default line">
+        <img id="u5035_img" class="img " src="images/shopping_cart/u2555.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5036" class="ax_default icon">
+        <img id="u5036_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5037" class="ax_default icon">
+        <img id="u5037_img" class="img " src="images/shopping_cart/u2557.png"/>
+    </div>
+
+    <!-- Unnamed (Image) -->
+    <div id="u5038" class="ax_default image">
+        <img id="u5038_img" class="img " src="images/sourcing_list/u468.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5039" class="ax_default label">
+        <div id="u5039_div" class=""></div>
+        <div id="u5039_text" class="text ">
+            <p><span>KIPOZI Professional ..</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5040" class="ax_default label">
+        <div id="u5040_div" class=""></div>
+        <div id="u5040_text" class="text ">
+            <p><span>Color: Black</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5041" class="ax_default label">
+        <div id="u5041_div" class=""></div>
+        <div id="u5041_text" class="text ">
+            <p><span>Size: 12L</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5042" class="ax_default label">
+        <div id="u5042_div" class=""></div>
+        <div id="u5042_text" class="text ">
+            <p><span>USD $21.00</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5043" class="ax_default box_1">
+        <div id="u5043_div" class=""></div>
+        <div id="u5043_text" class="text ">
+            <p><span>100&nbsp; &nbsp;&nbsp; </span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5044" class="ax_default line">
+        <img id="u5044_img" class="img " src="images/shopping_cart/u2554.png"/>
+    </div>
+
+    <!-- Unnamed (Horizontal Line) -->
+    <div id="u5045" class="ax_default line">
+        <img id="u5045_img" class="img " src="images/shopping_cart/u2555.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5046" class="ax_default icon">
+        <img id="u5046_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5047" class="ax_default icon">
+        <img id="u5047_img" class="img " src="images/shopping_cart/u2557.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5048" class="ax_default icon">
+        <img id="u5048_img" class="img " src="images/add_to_my_product_list/u818.png"/>
+    </div>
+
+    <!-- Unnamed (Image) -->
+    <div id="u5049" class="ax_default image">
+        <img id="u5049_img" class="img " src="images/sourcing_list/u468.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5050" class="ax_default label">
+        <div id="u5050_div" class=""></div>
+        <div id="u5050_text" class="text ">
+            <p><span>KIPOZI Professional ..</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5051" class="ax_default box_1">
+        <div id="u5051_div" class=""></div>
+        <div id="u5051_text" class="text ">
+            <p><span>100&nbsp; &nbsp;&nbsp; </span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5052" class="ax_default line">
+        <img id="u5052_img" class="img " src="images/shopping_cart/u2554.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5053" class="ax_default icon">
+        <img id="u5053_img" class="img " src="images/shopping_cart/u2557.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5054" class="ax_default box_2">
+        <div id="u5054_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5055" class="ax_default label">
+        <div id="u5055_div" class=""></div>
+        <div id="u5055_text" class="text ">
+            <p><span>Shipping to:</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5056" class="ax_default box_1">
+        <img id="u5056_img" class="img " src="images/amazon_fba_warehouse/u5056.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5057" class="ax_default box_1">
+        <img id="u5057_img" class="img " src="images/amazon_fba_warehouse/u5057.png"/>
+    </div>
+
+    <!-- Unnamed (Ellipse) -->
+    <div id="u5058" class="ax_default ellipse">
+        <img id="u5058_img" class="img " src="images/amazon_fba_warehouse/u5058.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5059" class="ax_default label">
+        <div id="u5059_div" class=""></div>
+        <div id="u5059_text" class="text ">
+            <p><span>Ocean&nbsp; LCL</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5060" class="ax_default icon">
+        <img id="u5060_img" class="img " src="images/change_express/u2786.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5061" class="ax_default label">
+        <div id="u5061_div" class=""></div>
+        <div id="u5061_text" class="text ">
+            <p><span>35 - 47 Days</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5062" class="ax_default label">
+        <div id="u5062_div" class=""></div>
+        <div id="u5062_text" class="text ">
+            <p><span>USD $297.76</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5063" class="ax_default primary_button">
+        <div id="u5063_div" class=""></div>
+        <div id="u5063_text" class="text ">
+            <p><span>OK</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5064" class="ax_default label">
+        <div id="u5064_div" class=""></div>
+        <div id="u5064_text" class="text ">
+            <p><span>X&nbsp; Close</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5065" class="ax_default box_2">
+        <div id="u5065_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5066" class="ax_default label">
+        <div id="u5066_div" class=""></div>
+        <div id="u5066_text" class="text ">
+            <p><span>What are you shipping？</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5067" class="ax_default box_1">
+        <div id="u5067_div" class=""></div>
+        <div id="u5067_text" class="text ">
+            <!--<p><span>60&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></p>-->
+            <p><input id="volume_id" value="0" onblur="getFreightList()"/></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5068" class="ax_default line">
+        <img id="u5068_img" class="img " src="images/change_express/u2874.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5069" class="ax_default label">
+        <div id="u5069_div" class=""></div>
+        <div id="u5069_text" class="text ">
+            <p><span>CBM</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5070" class="ax_default icon">
+        <img id="u5070_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5071" class="ax_default box_1">
+        <div id="u5071_div" class=""></div>
+        <div id="u5071_text" class="text ">
+            <!--<p><span>150&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></p>-->
+            <p><input id="weight_id" value="0" onblur="getFreightList()"/></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5072" class="ax_default line">
+        <img id="u5072_img" class="img " src="images/change_express/u2874.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5073" class="ax_default label">
+        <div id="u5073_div" class=""></div>
+        <div id="u5073_text" class="text ">
+            <p><span>KG</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5074" class="ax_default icon">
+        <img id="u5074_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5075" class="ax_default label">
+        <div id="u5075_div" class=""></div>
+        <div id="u5075_text" class="text ">
+            <p><span>Your Own Address</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5076" class="ax_default label">
+        <div id="u5076_div" class=""></div>
+        <div id="u5076_text" class="text ">
+            <p><span style="text-decoration:underline;">Amazon FBA Warehouse</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5077" class="ax_default line">
+        <img id="u5077_img" class="img " src="images/change_express/u2883.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5078" class="ax_default label">
+        <div id="u5078_div" class=""></div>
+        <div id="u5078_text" class="text ">
+            <p><span>Shipment total:&nbsp; 14 products, 60 CBM, 150 KG</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5079" class="ax_default box_2">
+        <div id="u5079_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5080" class="ax_default label">
+        <div id="u5080_div" class=""></div>
+        <div id="u5080_text" class="text ">
+            <p><span>Deliver goods to</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5081" class="ax_default label">
+        <div id="u5081_div" class=""></div>
+        <div id="u5081_text" class="text ">
+            <p><span>Destination Country / Region</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5082" class="ax_default box_1">
+        <div id="u5082_div" class=""></div>
+        <div id="u5082_text" class="text ">
+            <!--<p><span>&nbsp;&nbsp; United State </span></p>-->
+            <p><select id="country_id" onchange="changeCountry(this)"></select></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5083" class="ax_default label">
+        <div id="u5083_div" class=""></div>
+        <div id="u5083_text" class="text ">
+            <p><span>Destination State / Province</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5084" class="ax_default box_1">
+        <div id="u5084_div" class=""></div>
+        <div id="u5084_text" class="text ">
+            <!--<p><span>&nbsp;&nbsp; AZ</span></p>-->
+            <p>
+                <select id="state_id" onchange="changeState(this)"></select>
+                <input type="hidden" value="" id="city_id">
+            </p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5085" class="ax_default icon">
+        <img id="u5085_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5086" class="ax_default icon">
+        <img id="u5086_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <div id="freight_div" class="ax_default box_1">
+        <table border="1" cellpadding="0" style="text-align: center">
+            <thead>
+            <tr>
+                <td>Shipping Method</td>
+                <td>Delivery Time</td>
+                <td>Shipping Cost</td>
+            </tr>
+            </thead>
+            <tbody id="freight_body">
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5087" class="ax_default box_2">
+        <div id="u5087_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5088" class="ax_default label">
+        <div id="u5088_div" class=""></div>
+        <div id="u5088_text" class="text ">
+            <p><span>Shipping Method</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5089" class="ax_default icon">
+        <img id="u5089_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5090" class="ax_default label">
+        <div id="u5090_div" class=""></div>
+        <div id="u5090_text" class="text ">
+            <p><span>Details</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5091" class="ax_default label">
+        <div id="u5091_div" class=""></div>
+        <div id="u5091_text" class="text ">
+            <p><span>Delivery Time</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5092" class="ax_default label">
+        <div id="u5092_div" class=""></div>
+        <div id="u5092_text" class="text ">
+            <p><span>Shipping Cost</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Horizontal Line) -->
+    <div id="u5093" class="ax_default line">
+        <img id="u5093_img" class="img " src="images/amazon_fba_warehouse/u5093.png"/>
+    </div>
+
+    <!-- Unnamed (Horizontal Line) -->
+    <div id="u5094" class="ax_default line">
+        <img id="u5094_img" class="img " src="images/amazon_fba_warehouse/u5093.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5095" class="ax_default label">
+        <div id="u5095_div" class=""></div>
+        <div id="u5095_text" class="text ">
+            <p><span>Destination Amazon FBA Warehouse</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5096" class="ax_default box_1">
+        <div id="u5096_div" class=""></div>
+        <div id="u5096_text" class="text ">
+            <!--<p><span>&nbsp;&nbsp; Selcet Amazon FBA Warehouse</span></p>-->
+            <p>
+                <select id="zipCode_id" onchange="getFreightList()"></select>
+            </p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Shape) -->
+    <div id="u5097" class="ax_default icon">
+        <img id="u5097_img" class="img " src="images/shopping_cart/u2556.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5098" class="ax_default box_2">
+        <div id="u5098_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5099" class="ax_default label">
+        <div id="u5099_div" class=""></div>
+        <div id="u5099_text" class="text ">
+            <p><span>Amazon FBA Packing Requirements</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Image) -->
+    <div id="u5100" class="ax_default image">
+        <img id="u5100_img" class="img " src="images/change_express/u2906.png"/>
+    </div>
+
+    <!-- Unnamed (Vertical Line) -->
+    <div id="u5101" class="ax_default line">
+        <img id="u5101_img" class="img " src="images/amazon_fba_warehouse/u5101.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5102" class="ax_default label">
+        <div id="u5102_div" class=""></div>
+        <div id="u5102_text" class="text ">
+            <p><span>Who is labeling your boxes?</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5103" class="ax_default box_1">
+        <div id="u5103_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Ellipse) -->
+    <div id="u5104" class="ax_default ellipse">
+        <img id="u5104_img" class="img " src="images/amazon_fba_warehouse/u5104.png"/>
+    </div>
+
+    <!-- Unnamed (Ellipse) -->
+    <div id="u5105" class="ax_default ellipse">
+        <img id="u5105_img" class="img " src="images/amazon_fba_warehouse/u5105.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5106" class="ax_default label">
+        <div id="u5106_div" class=""></div>
+        <div id="u5106_text" class="text ">
+            <p><span>ImportX</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5107" class="ax_default box_1">
+        <div id="u5107_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Ellipse) -->
+    <div id="u5108" class="ax_default ellipse">
+        <img id="u5108_img" class="img " src="images/change_express/u2914.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5109" class="ax_default label">
+        <div id="u5109_div" class=""></div>
+        <div id="u5109_text" class="text ">
+            <p><span>Freight forwarder</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5110" class="ax_default label">
+        <div id="u5110_div" class=""></div>
+        <div id="u5110_text" class="text ">
+            <p><span>By sea</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5111" class="ax_default box_1">
+        <div id="u5111_div" class=""></div>
+    </div>
+
+    <!-- Unnamed (Ellipse) -->
+    <div id="u5112" class="ax_default ellipse">
+        <img id="u5112_img" class="img " src="images/amazon_fba_warehouse/u5112.png"/>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5113" class="ax_default label">
+        <div id="u5113_div" class=""></div>
+        <div id="u5113_text" class="text ">
+            <p><span>By air</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5114" class="ax_default label">
+        <div id="u5114_div" class=""></div>
+        <div id="u5114_text" class="text ">
+            <p><span>Note:</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5115" class="ax_default label">
+        <div id="u5115_div" class=""></div>
+        <div id="u5115_text" class="text ">
+            <p><span>For your convenience, </span><span style="color:#1992F6;">Duties, Taxes, customs cleanrance, customs bond</span><span> are already included. If this shipment</span>
+            </p>
+            <p><span>includes hazardous material (i.e., liquids, batteries), extra cost may apply.</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5116" class="ax_default label">
+        <div id="u5116_div" class=""></div>
+        <div id="u5116_text" class="text ">
+            <p><span style="color:#1992F6;">Basic Insurance</span><span style="color:#800080;"> </span><span>already included, you don't need to worry about them.</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5117" class="ax_default label">
+        <div id="u5117_div" class=""></div>
+        <div id="u5117_text" class="text ">
+            <p><span>*</span></p>
+        </div>
+    </div>
+
+    <!-- Unnamed (Rectangle) -->
+    <div id="u5118" class="ax_default label">
+        <div id="u5118_div" class=""></div>
+        <div id="u5118_text" class="text ">
+            <p><span>*</span></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

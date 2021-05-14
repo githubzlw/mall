@@ -43,7 +43,7 @@ logstash:
 
 microService:
   importApi:
-      url: http://192.168.1.66:18005/api
+      url: http://192.168.1.132:18005/api
       exchangeRate: ${microService.importApi.url}/utils-service/fx
   shopifyApi:
     url: http://192.168.1.67:8086/shopify
