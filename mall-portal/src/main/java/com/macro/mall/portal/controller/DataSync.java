@@ -7,6 +7,7 @@ import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.SiteSourcing;
 import com.macro.mall.portal.domain.SiteSourcingParam;
+import com.macro.mall.portal.service.DataSyncService;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
 import io.swagger.annotations.Api;
@@ -36,11 +37,11 @@ import java.util.Map;
 public class DataSync {
 
 
-    private final UmsMemberService umsMemberService;
+    private final DataSyncService dataSyncService;
 
     @Autowired
-    public DataSync(UmsMemberService umsMemberService) {
-        this.umsMemberService = umsMemberService;
+    public DataSync(DataSyncService dataSyncService) {
+        this.dataSyncService = dataSyncService;
     }
 
 
@@ -50,12 +51,28 @@ public class DataSync {
     public CommonResult getAllUser(@RequestParam(value = "id", required = false) Long id) {
 
         try {
-            List<UmsMember> umsMemberList = umsMemberService.getAllUser(id);
+            List<UmsMember> umsMemberList = dataSyncService.getAllUser(id);
 
             return CommonResult.success(umsMemberList);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getAllUser,error:", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "同步用户信息", notes = "同步逻辑")
+    @PostMapping("/getAllProduct")
+    @ResponseBody
+    public CommonResult getAllProduct(@RequestParam(value = "id", required = false) Long id) {
+
+        try {
+            List<UmsMember> umsMemberList = dataSyncService.getAllUser(id);
+
+            return CommonResult.success(umsMemberList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getAllProduct,error:", e);
             return CommonResult.failed(e.getMessage());
         }
     }

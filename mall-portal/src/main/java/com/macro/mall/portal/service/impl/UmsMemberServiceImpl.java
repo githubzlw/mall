@@ -209,17 +209,4 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return authCode.equals(realAuthCode);
     }
 
-    @Override
-    public List<UmsMember> getAllUser(Long id) {
-
-        UmsMemberExample example = new UmsMemberExample();
-        if (id != null && id > 0) {
-            example.createCriteria().andIdEqualTo(id);
-        }
-
-        List<UmsMember> memberList = memberMapper.selectByExample(example);
-
-        return memberList;
-    }
-
 }
