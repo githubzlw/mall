@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.SiteSourcing;
 import com.macro.mall.portal.domain.SiteSourcingParam;
@@ -61,15 +62,15 @@ public class DataSync {
         }
     }
 
-    @ApiOperation(value = "同步用户信息", notes = "同步逻辑")
+    @ApiOperation(value = "同步商品信息", notes = "同步逻辑")
     @PostMapping("/getAllProduct")
     @ResponseBody
     public CommonResult getAllProduct(@RequestParam(value = "id", required = false) Long id) {
 
         try {
-            List<UmsMember> umsMemberList = dataSyncService.getAllUser(id);
+            List<PmsProduct> pmsProductList = dataSyncService.getAllProduct(id);
 
-            return CommonResult.success(umsMemberList);
+            return CommonResult.success(pmsProductList);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getAllProduct,error:", e);

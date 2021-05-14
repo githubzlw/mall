@@ -1,12 +1,10 @@
 package com.macro.mall.portal.service.impl;
 
 import com.macro.mall.common.exception.Asserts;
+import com.macro.mall.mapper.PmsProductMapper;
 import com.macro.mall.mapper.UmsMemberLevelMapper;
 import com.macro.mall.mapper.UmsMemberMapper;
-import com.macro.mall.model.UmsMember;
-import com.macro.mall.model.UmsMemberExample;
-import com.macro.mall.model.UmsMemberLevel;
-import com.macro.mall.model.UmsMemberLevelExample;
+import com.macro.mall.model.*;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.DataSyncService;
 import com.macro.mall.portal.service.UmsMemberCacheService;
@@ -44,6 +42,9 @@ public class DataSyncServiceImpl implements DataSyncService {
     @Autowired
     private UmsMemberMapper memberMapper;
 
+    @Autowired
+    private PmsProductMapper pmsProductMapper;
+
     @Override
     public List<UmsMember> getAllUser(Long id) {
 
@@ -55,6 +56,18 @@ public class DataSyncServiceImpl implements DataSyncService {
         List<UmsMember> memberList = memberMapper.selectByExample(example);
 
         return memberList;
+    }
+
+    @Override
+    public List<PmsProduct> getAllProduct(Long id) {
+        PmsProductExample example = new PmsProductExample();
+        if (id != null && id > 0) {
+            example.createCriteria().andIdEqualTo(id);
+        }
+
+        List<PmsProduct> pmsProductList = pmsProductMapper.selectByExample(example);
+
+        return pmsProductList;
     }
 
 }
