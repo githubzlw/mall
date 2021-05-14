@@ -254,7 +254,7 @@ public class SourcingUtils {
                 return JSONObject.parseObject(jsonResult.getData().toString());
             }
         }
-        return null;
+        return new JSONObject();
     }
 
 

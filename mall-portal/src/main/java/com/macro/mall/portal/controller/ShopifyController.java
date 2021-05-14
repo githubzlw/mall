@@ -3,12 +3,16 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
+import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
+import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.UrlUtil;
 import io.swagger.annotations.Api;
@@ -46,6 +50,8 @@ public class ShopifyController {
     private RedisUtil redisUtil;
     @Autowired
     private UmsMemberService umsMemberService;
+    @Autowired
+    private IXmsShopifyOrderinfoService shopifyOrderinfoService;
 
     private final Map<String, UmsMember> umsMemberMap = new HashMap<>();
 
@@ -93,7 +99,7 @@ public class ShopifyController {
 
 
     @ApiOperation("shopify授权回调")
-    @GetMapping(value = "/auth/callback")
+    @GetMapping(value = "/authCallback")
     public CommonResult authCallback(String code, String hmac, String timestamp, String state, String shop, String host,
                                      HttpServletRequest request) {
 
@@ -166,5 +172,27 @@ public class ShopifyController {
             return CommonResult.failed(JSONObject.toJSONString(rsMap));
         }
     }
+
+
+    @ApiOperation("shopify的订单List列表")
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+
+        XmsShopifyOrderinfoParam orderinfoParam = new XmsShopifyOrderinfoParam();
+        try {
+
+            orderinfoParam.setPageNum(pageNum);
+            orderinfoParam.setPageSize(pageSize);
+            orderinfoParam.setShopifyName(this.umsMemberService.getCurrentMember().getShopifyName());
+            Page<XmsShopifyOrderinfo> listPage = this.shopifyOrderinfoService.list(orderinfoParam);
+            return CommonResult.success(listPage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("list,orderinfoParam[{}],error:", orderinfoParam, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
 
 }
