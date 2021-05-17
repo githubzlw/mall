@@ -7,11 +7,9 @@ import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.PmsProductParam;
 import com.macro.mall.entity.XmsChromeUpload;
+import com.macro.mall.entity.XmsListOfCountries;
 import com.macro.mall.entity.XmsSourcingList;
-import com.macro.mall.mapper.PmsProductAttributeCategoryMapper;
-import com.macro.mall.mapper.PmsProductCategoryMapper;
-import com.macro.mall.mapper.XmsChromeUploadMapper;
-import com.macro.mall.mapper.XmsSourcingListMapper;
+import com.macro.mall.mapper.*;
 import com.macro.mall.model.PmsProductAttributeValue;
 import com.macro.mall.model.PmsProductCategory;
 import com.macro.mall.model.PmsProductCategoryExample;
@@ -27,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -56,6 +51,8 @@ public class ProductUtils {
     private PmsProductAttributeCategoryMapper productAttributeCategoryMapper;
     @Autowired
     private PmsProductCategoryMapper productCategoryMapper;
+    @Autowired
+    private XmsListOfCountriesMapper listOfCountriesMapper;
     @Autowired
     public ProductUtils(XmsChromeUploadMapper xmsChromeUploadMapper, XmsSourcingListMapper xmsSourcingListMapper) {
         this.xmsChromeUploadMapper = xmsChromeUploadMapper;
@@ -177,6 +174,10 @@ public class ProductUtils {
             productParam.setUrl(xmsSourcingList.getUrl());
             //moq
             productParam.setMoq(chromeUpload.getMoq());
+            //shippingfee
+            productParam.setShippingFee(chromeUpload.getShippingFee());
+            //shippingby
+            productParam.setShippingBy(chromeUpload.getShippingBy());
 
             productParam.setProductAttributeValueList(productAttributeValueList);
             int productMaxId = pmsProductService.create(productParam);
@@ -258,29 +259,52 @@ public class ProductUtils {
 //        }
         sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()));
         // 处理 shippingFee
-        // Shipping: US $5.14
-        if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
-            if (chromeUpload.getShippingFee().contains("Shipping: US $")) {
-                sourcingInfo.setCost(chromeUpload.getShippingFee().replace("Shipping: US $", "").trim());
-            } else {
-                sourcingInfo.setCost(chromeUpload.getShippingFee().trim());
-            }
-            sourcingInfo.setCost(sourcingInfo.getCost().replace("AWG", "").trim());
+        sourcingInfo.setCost(this.cleaningShippingFee(chromeUpload.getShippingFee().trim(),chromeUpload.getSiteType()));
+//        // Shipping: US $5.14
+//        if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
+//            if (chromeUpload.getShippingFee().contains("Shipping: US $")) {
+//                sourcingInfo.setCost(chromeUpload.getShippingFee().replace("Shipping: US $", "").trim());
+//            } else {
+//                sourcingInfo.setCost(chromeUpload.getShippingFee().trim());
+//            }
+//            sourcingInfo.setCost(sourcingInfo.getCost().replace("AWG", "").trim());
+//
+//        }
 
-        }
-
-        if (StrUtil.isNotEmpty(chromeUpload.getShippingBy())) {
-            sourcingInfo.setShipping(chromeUpload.getShippingBy());
-        }
-
+//        if (StrUtil.isNotEmpty(chromeUpload.getShippingBy())) {
+//            sourcingInfo.setShipping(chromeUpload.getShippingBy());
+//        }
+        // 处理 shippingFee
+        String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy().trim(),chromeUpload.getSiteType());
+        sourcingInfo.setCountryId(this.getCountId(shipingbyC));
+        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC)?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
         sourcingInfo.setStatus(chromeUpload.getStatus());
         sourcingInfo.setCreateTime(new Date());
         sourcingInfo.setUpdateTime(new Date());
         return sourcingInfo;
-
     }
 
+    // 取得国家id
+    public int getCountId(String shipingbyC) {
+        int countId = 0;
+
+        if(StringUtil.isEmpty(shipingbyC)){
+            countId = 36;
+        }else{
+            List<XmsListOfCountries> countriesList = new ArrayList<>();
+            QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
+            queryWrapper.like("english_name_of_country",shipingbyC.split(";")[0]);
+            countriesList = this.listOfCountriesMapper.selectList(queryWrapper);
+            if (CollectionUtil.isNotEmpty(countriesList)) {
+                countId = countriesList.get(0).getId();
+            }else{
+                countId =36;
+            }
+        }
+
+        return countId;
+    }
 
     // 规格清洗
     public String cleaningCType(String cType,int site) {
@@ -349,6 +373,89 @@ public class ProductUtils {
         //正常价格
         if(StrUtil.isEmpty(result.toString())){
             result.append(price);
+        }
+
+        return result.toString();
+    }
+
+    // price ShippingFee
+    // 运费运输方式
+    public static String cleaningShippingFee(String shippingFee,int site) {
+
+        if(StrUtil.isEmpty(shippingFee)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        Document doc = Jsoup.parse(shippingFee);
+        //ebay
+        if(site==1){
+            Elements elementSpan = doc.select("span.from-num");
+            result.append(elementSpan.text());
+        }else if(site == 2 || site == 3){
+            if(StringUtil.isNotEmpty(shippingFee)){
+                if(shippingFee.contains("Shipping:")){
+                    result.append(shippingFee.replace("Shipping:","").replace("&nbsp;","").trim());
+                }
+            }
+
+        }
+
+        return result.toString();
+    }
+
+    // shippingBy
+    // 运费方式
+    public static String cleaningShippingBy(String shippingBy,int site) {
+
+        if(StrUtil.isEmpty(shippingBy)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        //ebay
+        if(site==1){
+
+            if(StringUtil.isNotEmpty(shippingBy)){
+                if(shippingBy.contains("to")){
+                    if(shippingBy.contains("by")){
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2,shippingBy.indexOf("by"));
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                        String by = shippingBy.substring(shippingBy.indexOf("by")+2);
+                        if(StringUtil.isNotEmpty(by)){
+                            result.append(";"+by.trim());
+                        }
+                    }
+                    else{
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2);
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                    }
+                }
+            }
+        }else if(site == 2 || site == 3){
+            if(StringUtil.isNotEmpty(shippingBy)){
+                if(shippingBy.contains("to")){
+                    if(shippingBy.contains("via")){
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2,shippingBy.indexOf("via"));
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                        String by = shippingBy.substring(shippingBy.indexOf("via")+3);
+                        if(StringUtil.isNotEmpty(by)){
+                            result.append(";"+by.trim());
+                        }
+                    }
+                    else{
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2);
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                    }
+                }
+            }
+
         }
 
         return result.toString();

@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-12
+ * @since 2021-05-17
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -91,6 +91,9 @@ public class XmsSourcingList implements Serializable {
 
     @ApiModelProperty(value = "定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
     private Integer customType;
+
+    @ApiModelProperty(value = "国家id")
+    private Integer countryId;
 
 
 }
