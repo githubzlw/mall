@@ -41,6 +41,18 @@ public class XmsMsgServiceImpl extends ServiceImpl<XmsMsgMapper, XmsMsg> impleme
     }
 
     @Override
+    public int unreadMsgListCount(XmsMsgParam xmsMsgParam) {
+
+        return msgDao.unreadMsgListCount(xmsMsgParam.getEmail(),xmsMsgParam.getType(),xmsMsgParam.getStartDate(),xmsMsgParam.getEndDate());
+    }
+
+    @Override
+    public int readMsgListCount(XmsMsgParam xmsMsgParam) {
+
+        return msgDao.readMsgListCount(xmsMsgParam.getEmail(),xmsMsgParam.getType(),xmsMsgParam.getStartDate(),xmsMsgParam.getEndDate());
+    }
+
+    @Override
     public void insetMsgList(XmsMsgParam xmsMsgParam) {
 
         XmsMsg xmsMsg = new XmsMsg();

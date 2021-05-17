@@ -26,4 +26,8 @@ public interface IXmsMsgService extends IService<XmsMsg> {
     List<XmsMsg> readMsgList(XmsMsgParam xmsMsgParam,Integer pageNum, Integer pageSize);
 
     void insetMsgList(XmsMsgParam xmsMsgParam);
+
+
+    int readMsgListCount(XmsMsgParam xmsMsgParam);
+    int unreadMsgListCount(XmsMsgParam xmsMsgParam);
 }

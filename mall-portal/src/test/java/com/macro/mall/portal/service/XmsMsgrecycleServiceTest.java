@@ -23,10 +23,25 @@ class XmsMsgrecycleServiceTest {
     }
 
     @Test
+    void unreadMsgListCount() {
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        xmsMsgParam.setEmail("test@163.com");
+        System.out.println(service.unreadMsgListCount(xmsMsgParam ));
+    }
+
+    @Test
     void readMsgList() {
 
         XmsMsgParam xmsMsgParam =new XmsMsgParam();
         System.out.println(service.readMsgList(xmsMsgParam ,1,5));
+    }
+
+    @Test
+    void readMsgListCount() {
+
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        xmsMsgParam.setEmail("test@163.com");
+        System.out.println(service.readMsgListCount(xmsMsgParam));
     }
 
     @Test
