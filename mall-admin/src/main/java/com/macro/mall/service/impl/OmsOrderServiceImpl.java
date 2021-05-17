@@ -150,4 +150,18 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         orderOperateHistoryMapper.insert(history);
         return count;
     }
+
+    @Override
+    public long listCount(SyncOrderParam orderParam) {
+
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andMemberIdEqualTo(orderParam.getMemberId());
+        return this.orderMapper.countByExample(example);
+    }
+
+    @Override
+    public List<OmsOrder> list(SyncOrderParam orderParam) {
+        PageHelper.startPage(orderParam.getPageNum(), orderParam.getPageSize());
+        return this.orderDao.getListByParam(orderParam);
+    }
 }

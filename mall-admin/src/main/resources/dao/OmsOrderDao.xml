@@ -87,4 +87,14 @@
             o.id = #{id}
         ORDER BY oi.id ASC,oh.create_time DESC
     </select>
+
+
+    <select id="getListByParam" resultMap="com.macro.mall.mapper.OmsOrderMapper.BaseResultMap" resultType="com.macro.mall.dto.SyncOrderParam">
+        SELECT *
+        FROM
+        oms_order
+        where member_id = #{memberId}
+    </select>
+
+
 </mapper>

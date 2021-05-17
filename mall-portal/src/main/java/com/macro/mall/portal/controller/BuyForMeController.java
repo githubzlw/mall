@@ -85,6 +85,7 @@ public class BuyForMeController {
 
         Assert.notNull(siteSourcingParam, "siteBuyForMeParam null");
         Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getImg()), "img null");
+        Assert.isTrue(null != siteSourcingParam.getChooseType() && siteSourcingParam.getChooseType() > 0, "chooseType null");
 
         Assert.isTrue((null != siteSourcingParam.getAverageDailyOrder() && siteSourcingParam.getAverageDailyOrder() > 0) || (null != siteSourcingParam.getOneTimeOrderOnly() && siteSourcingParam.getOneTimeOrderOnly() > 0), "averageDailyOrder or oneTimeOrderOnly null");
 
@@ -101,7 +102,7 @@ public class BuyForMeController {
             sourcingUtils.addBfmCart(siteSourcing);
 
             // 添加到sourcingList
-            sourcingUtils.saveSourcingImgInfo(siteSourcing);
+            sourcingUtils.saveSourcingInfo(siteSourcing);
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {

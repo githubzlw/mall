@@ -3,6 +3,7 @@ package com.macro.mall.dao;
 import com.macro.mall.dto.OmsOrderDeliveryParam;
 import com.macro.mall.dto.OmsOrderDetail;
 import com.macro.mall.dto.OmsOrderQueryParam;
+import com.macro.mall.dto.SyncOrderParam;
 import com.macro.mall.model.OmsOrder;
 import org.apache.ibatis.annotations.Param;
 
@@ -27,4 +28,6 @@ public interface OmsOrderDao {
      * 获取订单详情
      */
     OmsOrderDetail getDetail(@Param("id") Long id);
+
+    List<OmsOrder> getListByParam(SyncOrderParam orderParam);
 }
