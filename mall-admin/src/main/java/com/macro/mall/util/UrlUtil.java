@@ -123,4 +123,34 @@ public class UrlUtil {
         return response.body() != null ?
                 JSON.parseObject(response.body().string()) : null;
     }
+
+    /**
+     * Post调用
+     * @param url
+     * @param params
+     * @return
+     * @throws IOException
+     */
+    public JSONObject postURL(String url, Map<String, String> params) throws IOException {
+
+        // Create okhttp3 form body builder.
+        FormBody.Builder bodyBuilder = new FormBody.Builder();
+
+        // Add form parameters
+        params.forEach((k, v) -> {
+            if (v != null) bodyBuilder.add(k, v);
+        });
+
+        // Build form body.
+        FormBody body = bodyBuilder.build();
+
+        // Create a http request object.
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+
+        return executeCall(url, request);
+    }
+
 }

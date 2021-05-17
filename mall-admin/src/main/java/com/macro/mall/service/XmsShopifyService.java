@@ -8,12 +8,11 @@ import com.macro.mall.common.api.CommonResult;
  */
 public interface XmsShopifyService {
 
-    /**按照所选sku铺货
-     * @param itemId
+    /**u铺货
+     * @param pid
      * @param shopName
-     * @param skus
      * @param published
      * @return
      */
-    CommonResult pushProduct(String itemId, String shopName, String skus, boolean published);
+    CommonResult pushProduct(String pid, String shopName, boolean published);
 }

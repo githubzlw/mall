@@ -25,4 +25,6 @@ public class ProductRequestWrap {
     private List<String> skus = Lists.newArrayList();
     @ApiModelProperty(value ="是否直接发布商品",required = true)
     private boolean published = false;
+    @ApiModelProperty(value ="是否详情",required = true)
+    private boolean bodyHtml = false;
 }
