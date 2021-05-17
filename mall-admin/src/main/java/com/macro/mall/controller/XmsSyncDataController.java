@@ -35,14 +35,12 @@ public class XmsSyncDataController {
     private OmsOrderService orderService;
 
     @ApiOperation("获取客户的订单总数")
-    @RequestMapping(value = "/getOrderCountByUserInfo", method = RequestMethod.GET)
-    public CommonResult getOrderCountByUserInfo(SyncOrderParam syncOrderParam) {
+    @RequestMapping(value = "/getOrderCountByUserInfo/{memberId}", method = RequestMethod.GET)
+    public CommonResult getOrderCountByUserInfo(@PathVariable("memberId") Long memberId) {
 
-        Assert.notNull(syncOrderParam, "syncOrderParam null");
-        Assert.isTrue(null != syncOrderParam.getMemberId() && syncOrderParam.getMemberId() > 0, "memberId null");
-        Assert.isTrue(StrUtil.isNotBlank(syncOrderParam.getUserName()), "userName null");
-
+        SyncOrderParam syncOrderParam = new SyncOrderParam();
         try {
+            syncOrderParam.setMemberId(memberId);
             long listCount = this.orderService.listCount(syncOrderParam);
             return CommonResult.success(listCount);
         } catch (Exception e) {
@@ -54,12 +52,12 @@ public class XmsSyncDataController {
 
 
     @ApiOperation("获取客户的订单")
-    @RequestMapping(value = "/orderList", method = RequestMethod.GET)
+    @RequestMapping(value = "/orderList", method = RequestMethod.POST)
     public CommonResult orderList(SyncOrderParam syncOrderParam) {
 
         Assert.notNull(syncOrderParam, "syncOrderParam null");
         Assert.isTrue(null != syncOrderParam.getMemberId() && syncOrderParam.getMemberId() > 0, "memberId null");
-        Assert.isTrue(StrUtil.isNotBlank(syncOrderParam.getUserName()), "userName null");
+        //Assert.isTrue(StrUtil.isNotBlank(syncOrderParam.getUserName()), "userName null");
         Assert.isTrue(null != syncOrderParam.getPageNum() && syncOrderParam.getPageNum() > 0, "pageNum null");
         Assert.isTrue(null != syncOrderParam.getPageSize() && syncOrderParam.getPageSize() > 0, "pageSize null");
 
