@@ -45,7 +45,7 @@ public class SourcingUtils {
     public final String IMG_SEARCH_PATH = "/search/sourcing";
     public final String SOURCING_UPLOAD_IMG = "/sourcing/upload";
 
-    public final String SOURCING_CAR = "sourcing:car:list";
+    public final String SOURCING_CAR = "sourcing:carInfo:";
     public final String SOURCING_GOODS = "sourcing:goods";
     public final String SOURCING_TAOBAO_IMG = "sourcing:taobao:img";
 
@@ -167,7 +167,7 @@ public class SourcingUtils {
                 }
             }
             // 更新购物车
-            this.setSiteBuyForMeCartInfo(siteSourcing, userId);
+            // this.setSiteBuyForMeCartInfo(siteSourcing, userId);
         }
     }
 
@@ -219,8 +219,6 @@ public class SourcingUtils {
             xmsChromeUploadService.upload(uploadParam);
         }
     }*/
-
-
     public void saveSourcingInfo(SiteSourcing siteSourcing) {
 
 
@@ -235,23 +233,57 @@ public class SourcingUtils {
         xmsSourcingList.setTitle(siteSourcing.getName());
         xmsSourcingList.setStatus(0);
         xmsSourcingList.setSiteType(9);
+        xmsSourcingList.setRemark(siteSourcing.getData());
+        xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
+        xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
 
         xmsSourcingListService.save(xmsSourcingList);
     }
 
 
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
+
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return JSONObject.parseObject(jsonResult.getData().toString());
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getString("pic_url");
+                String title = jsonObject.getString("title");
+                String price = jsonObject.getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                return jsonObject;
             }
         } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return JSONObject.parseObject(jsonResult.getData().toString());
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
+                String title = jsonObject.getJSONObject("item").getString("title");
+                String price = jsonObject.getJSONObject("item").getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                return jsonObject;
+            }
+        }else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
+            // TAOBAO
+            CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
+            if (null != jsonResult && null != jsonResult.getData()) {
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getString("pic_url");
+                String title = jsonObject.getString("title");
+                String price = jsonObject.getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                return jsonObject;
             }
         }
         return new JSONObject();
@@ -385,6 +417,28 @@ public class SourcingUtils {
         }
     }
 
+    public CommonResult getAliBabaDetails(String pid) {
+
+        try {
+
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "alibaba?pid=" + pid);
+            if (null != jsonObject && jsonObject.containsKey("item")) {
+                JSONObject dataJson = jsonObject.getJSONObject("item");
+                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
+                // 放入redis中
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALIBABA.getFlag(), dataJson);
+                return CommonResult.success(jsonObject);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getAliExpressDetails pid[{}],  error:", pid, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
     /**
      * 根据图片生成PID等数据
      *
@@ -424,6 +478,9 @@ public class SourcingUtils {
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                         break;
+                    case 5:
+                        pid = dealAliBaBaUrl(siteSourcing.getUrl());
+                        siteSourcing.setPid(pid);
                     default:
                         break;
                 }
@@ -475,6 +532,19 @@ public class SourcingUtils {
         }
         String tempKey = url.split(".html")[0];
         return tempKey.substring(tempKey.lastIndexOf("/") + 1);
+    }
+
+
+    public String dealAliBaBaUrl(String url) {
+        // https://www.alibaba.com/product-detail/2019-new-design-summer-kids-floral_62133045607.html?spm=a27aq.industry_category_productlist.dt_3.1.588e2055yoESRA
+        if (StrUtil.isBlank(url)) {
+            return null;
+        }
+        if (url.contains("?")) {
+            url = url.substring(0, url.indexOf("?"));
+        }
+        String tempKey = url.split(".html")[0];
+        return tempKey.substring(tempKey.lastIndexOf("_") + 1);
     }
 
 
@@ -576,21 +646,9 @@ public class SourcingUtils {
     }
 
 
-    public void deleteRedisCar(String sessionId, int useId, String cookieId) {
-
-        // System.err.println("deleteRedisCar:");
-        // Arrays.stream(Thread.currentThread().getStackTrace()).forEach(System.err::println);
-
+    public void deleteRedisCar(long sessionId) {
         Map<String, Object> objectMap = new HashMap<>();
-        if (StrUtil.isNotBlank(sessionId)) {
-            redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
-        if (useId > 0) {
-            redisUtil.hmsetObj(SOURCING_CAR + useId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
-        if (StrUtil.isNotBlank(cookieId)) {
-            redisUtil.hmsetObj(SOURCING_CAR + cookieId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
+        redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_1_SECOND);
 
     }
 

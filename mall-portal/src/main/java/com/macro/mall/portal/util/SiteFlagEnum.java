@@ -7,7 +7,11 @@ package com.macro.mall.portal.util;
  * @date:2021-04-01
  */
 public enum SiteFlagEnum {
-    ALIEXPRESS("www.aliexpress.com", 1, "887766001"), TAOBAO("detail.1688.com/offer", 2, "887766002"), OTHER("otherUrl", 3, "887766003"),IMG_ONLY("imgUrl", 4, "887766004") ;
+    ALIEXPRESS("www.aliexpress.com", 1, "887766001"),
+    TAOBAO("detail.1688.com/offer", 2, "887766002"),
+    OTHER("otherUrl", 3, "887766003"),
+    IMG_ONLY("imgUrl", 4, "887766004") ,
+    ALIBABA("www.alibaba.com", 5, "887766005");
 
 
     private String url;

@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.SiteSourcing;
 import com.macro.mall.portal.domain.SiteSourcingParam;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -57,17 +58,21 @@ public class BuyForMeController {
         BeanUtil.copyProperties(siteSourcingParam, siteSourcing);
 
         try {
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             //siteBuyForMe.setUserName("1071083166@qq.com");
             // 生成PID和catid数据
             sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             // 添加到购物车
-            sourcingUtils.addBfmCart(siteSourcing);
+            // sourcingUtils.addBfmCart(siteSourcing);
 
             // 异步加载数据
             sourcingUtils.checkAndLoadDataAsync(siteSourcing);
+
+            // 清空redis数据
+            sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -96,13 +101,17 @@ public class BuyForMeController {
             // 生成PID和catid数据
             sourcingUtils.checkSiteFlagByImg(siteSourcing);
 
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             // 添加到购物车
-            sourcingUtils.addBfmCart(siteSourcing);
+            // sourcingUtils.addBfmCart(siteSourcing); c
 
             // 添加到sourcingList
             sourcingUtils.saveSourcingInfo(siteSourcing);
+
+            // 清空redis数据
+            sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -167,6 +176,9 @@ public class BuyForMeController {
             this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
+            // 添加到购物车
+            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
+            this.sourcingUtils.addBfmCart(siteSourcing);
             return CommonResult.success(jsonObject);
         } catch (Exception e) {
             e.printStackTrace();

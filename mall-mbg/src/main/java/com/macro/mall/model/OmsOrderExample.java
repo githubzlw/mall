@@ -2146,6 +2146,76 @@ public class OmsOrderExample {
             return (Criteria) this;
         }
 
+        public Criteria andReceiverCountryIsNull() {
+            addCriterion("receiver_country is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryIsNotNull() {
+            addCriterion("receiver_country is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryEqualTo(String value) {
+            addCriterion("receiver_country =", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryNotEqualTo(String value) {
+            addCriterion("receiver_country <>", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryGreaterThan(String value) {
+            addCriterion("receiver_country >", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryGreaterThanOrEqualTo(String value) {
+            addCriterion("receiver_country >=", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryLessThan(String value) {
+            addCriterion("receiver_country <", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryLessThanOrEqualTo(String value) {
+            addCriterion("receiver_country <=", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryLike(String value) {
+            addCriterion("receiver_country like", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryNotLike(String value) {
+            addCriterion("receiver_country not like", value, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryIn(List<String> values) {
+            addCriterion("receiver_country in", values, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryNotIn(List<String> values) {
+            addCriterion("receiver_country not in", values, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryBetween(String value1, String value2) {
+            addCriterion("receiver_country between", value1, value2, "receiverCountry");
+            return (Criteria) this;
+        }
+
+        public Criteria andReceiverCountryNotBetween(String value1, String value2) {
+            addCriterion("receiver_country not between", value1, value2, "receiverCountry");
+            return (Criteria) this;
+        }
+
         public Criteria andReceiverProvinceIsNull() {
             addCriterion("receiver_province is null");
             return (Criteria) this;

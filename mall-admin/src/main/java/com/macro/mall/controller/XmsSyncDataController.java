@@ -1,6 +1,5 @@
 package com.macro.mall.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.OmsOrderDetail;
 import com.macro.mall.dto.SyncOrderParam;
