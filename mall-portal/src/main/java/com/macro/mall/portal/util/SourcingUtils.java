@@ -3,8 +3,10 @@ package com.macro.mall.portal.util;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsSourcingList;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.SiteSourcing;
@@ -199,6 +201,22 @@ public class SourcingUtils {
 
 
     /**
+     * 整合Sourcing的临时表数据
+     * @param currentMember
+     * @param uuid
+     */
+    public void mergeSourcingList(UmsMember currentMember, String uuid) {
+        if (null != currentMember && StrUtil.isNotEmpty(uuid)) {
+            // TOURIST_b0596503-cf0a-422c-8a5f-500b5284bc77
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().eq(XmsSourcingList::getUsername, "TOURIST_" + uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
+            this.xmsSourcingListService.update(updateWrapper);
+        }
+
+
+    }
+
+    /**
      * 保存到jack的数据库
      *
      * @param siteSourcing
@@ -271,7 +289,7 @@ public class SourcingUtils {
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
                 return jsonObject;
             }
-        }else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
+        } else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
