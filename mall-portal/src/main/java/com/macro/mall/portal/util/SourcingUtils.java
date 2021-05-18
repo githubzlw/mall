@@ -210,7 +210,7 @@ public class SourcingUtils {
             // TOURIST_b0596503-cf0a-422c-8a5f-500b5284bc77
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
             updateWrapper.lambda().eq(XmsSourcingList::getUsername, "TOURIST_" + uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
-            this.xmsSourcingListService.update(updateWrapper);
+            this.xmsSourcingListService.update(null, updateWrapper);
         }
 
 
