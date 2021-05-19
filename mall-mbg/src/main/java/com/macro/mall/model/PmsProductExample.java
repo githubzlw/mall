@@ -2845,6 +2845,146 @@ public class PmsProductExample {
             addCriterion("source_price not between", value1, value2, "sourcePrice");
             return (Criteria) this;
         }
+
+        public Criteria andShippingFeeIsNull() {
+            addCriterion("shipping_fee is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeIsNotNull() {
+            addCriterion("shipping_fee is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeEqualTo(String value) {
+            addCriterion("shipping_fee =", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeNotEqualTo(String value) {
+            addCriterion("shipping_fee <>", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeGreaterThan(String value) {
+            addCriterion("shipping_fee >", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeGreaterThanOrEqualTo(String value) {
+            addCriterion("shipping_fee >=", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeLessThan(String value) {
+            addCriterion("shipping_fee <", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeLessThanOrEqualTo(String value) {
+            addCriterion("shipping_fee <=", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeLike(String value) {
+            addCriterion("shipping_fee like", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeNotLike(String value) {
+            addCriterion("shipping_fee not like", value, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeIn(List<String> values) {
+            addCriterion("shipping_fee in", values, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeNotIn(List<String> values) {
+            addCriterion("shipping_fee not in", values, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeBetween(String value1, String value2) {
+            addCriterion("shipping_fee between", value1, value2, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFeeNotBetween(String value1, String value2) {
+            addCriterion("shipping_fee not between", value1, value2, "shippingFee");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByIsNull() {
+            addCriterion("shipping_by is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByIsNotNull() {
+            addCriterion("shipping_by is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByEqualTo(String value) {
+            addCriterion("shipping_by =", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByNotEqualTo(String value) {
+            addCriterion("shipping_by <>", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByGreaterThan(String value) {
+            addCriterion("shipping_by >", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByGreaterThanOrEqualTo(String value) {
+            addCriterion("shipping_by >=", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByLessThan(String value) {
+            addCriterion("shipping_by <", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByLessThanOrEqualTo(String value) {
+            addCriterion("shipping_by <=", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByLike(String value) {
+            addCriterion("shipping_by like", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByNotLike(String value) {
+            addCriterion("shipping_by not like", value, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByIn(List<String> values) {
+            addCriterion("shipping_by in", values, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByNotIn(List<String> values) {
+            addCriterion("shipping_by not in", values, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByBetween(String value1, String value2) {
+            addCriterion("shipping_by between", value1, value2, "shippingBy");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingByNotBetween(String value1, String value2) {
+            addCriterion("shipping_by not between", value1, value2, "shippingBy");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

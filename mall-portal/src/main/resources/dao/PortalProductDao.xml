@@ -32,7 +32,16 @@
             ps.sku_code sku_code,
             ps.price sku_price,
             ps.stock sku_stock,
-            ps.pic sku_pic
+            ps.pic sku_pic,
+            ps.min_price sku_min_price,
+            ps.max_price sku_max_price,
+            ps.moq sku_moq,
+            ps.min_moq sku_min_moq,
+            ps.max_moq sku_max_moq,
+            ps.weight sku_weight,
+            ps.volume_lenght sku_volume_lenght,
+            ps.volume_width sku_volume_width,
+            ps.volume_height sku_volume_height
         FROM
             pms_product p
             LEFT JOIN pms_product_attribute pa ON p.product_attribute_category_id = pa.product_attribute_category_id
@@ -55,6 +64,15 @@
             sku.promotion_price sku_promotion_price,
             sku.stock sku_stock,
             sku.lock_stock sku_lock_stock,
+            sku.min_price sku_min_price,
+            sku.max_price sku_max_price,
+            sku.moq sku_moq,
+            sku.min_moq sku_min_moq,
+            sku.max_moq sku_max_moq,
+            sku.weight sku_weight,
+            sku.volume_lenght sku_volume_lenght,
+            sku.volume_width sku_volume_width,
+            sku.volume_height sku_volume_height,
             ladder.id ladder_id,
             ladder.count ladder_count,
             ladder.discount ladder_discount,

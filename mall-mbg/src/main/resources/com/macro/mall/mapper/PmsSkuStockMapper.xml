@@ -19,7 +19,9 @@
     <result column="min_moq" jdbcType="INTEGER" property="minMoq" />
     <result column="max_moq" jdbcType="INTEGER" property="maxMoq" />
     <result column="weight" jdbcType="DECIMAL" property="weight" />
-    <result column="volume" jdbcType="VARCHAR" property="volume" />
+    <result column="volume_lenght" jdbcType="INTEGER" property="volumeLenght" />
+    <result column="volume_width" jdbcType="INTEGER" property="volumeWidth" />
+    <result column="volume_height" jdbcType="INTEGER" property="volumeHeight" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -81,7 +83,8 @@
   </sql>
   <sql id="Base_Column_List">
     id, product_id, sku_code, price, stock, low_stock, pic, sale, promotion_price, lock_stock, 
-    sp_data, min_price, max_price, moq, min_moq, max_moq, weight, volume
+    sp_data, min_price, max_price, moq, min_moq, max_moq, weight, volume_lenght, volume_width, 
+    volume_height
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.PmsSkuStockExample" resultMap="BaseResultMap">
     select
@@ -122,13 +125,15 @@
       sale, promotion_price, lock_stock, 
       sp_data, min_price, max_price, 
       moq, min_moq, max_moq, 
-      weight, volume)
+      weight, volume_lenght, volume_width, 
+      volume_height)
     values (#{productId,jdbcType=BIGINT}, #{skuCode,jdbcType=VARCHAR}, #{price,jdbcType=DECIMAL}, 
       #{stock,jdbcType=INTEGER}, #{lowStock,jdbcType=INTEGER}, #{pic,jdbcType=VARCHAR}, 
       #{sale,jdbcType=INTEGER}, #{promotionPrice,jdbcType=DECIMAL}, #{lockStock,jdbcType=INTEGER}, 
       #{spData,jdbcType=VARCHAR}, #{minPrice,jdbcType=DECIMAL}, #{maxPrice,jdbcType=DECIMAL}, 
       #{moq,jdbcType=INTEGER}, #{minMoq,jdbcType=INTEGER}, #{maxMoq,jdbcType=INTEGER}, 
-      #{weight,jdbcType=DECIMAL}, #{volume,jdbcType=VARCHAR})
+      #{weight,jdbcType=DECIMAL}, #{volumeLenght,jdbcType=INTEGER}, #{volumeWidth,jdbcType=INTEGER}, 
+      #{volumeHeight,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsSkuStock">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -184,8 +189,14 @@
       <if test="weight != null">
         weight,
       </if>
-      <if test="volume != null">
-        volume,
+      <if test="volumeLenght != null">
+        volume_lenght,
+      </if>
+      <if test="volumeWidth != null">
+        volume_width,
+      </if>
+      <if test="volumeHeight != null">
+        volume_height,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -237,8 +248,14 @@
       <if test="weight != null">
         #{weight,jdbcType=DECIMAL},
       </if>
-      <if test="volume != null">
-        #{volume,jdbcType=VARCHAR},
+      <if test="volumeLenght != null">
+        #{volumeLenght,jdbcType=INTEGER},
+      </if>
+      <if test="volumeWidth != null">
+        #{volumeWidth,jdbcType=INTEGER},
+      </if>
+      <if test="volumeHeight != null">
+        #{volumeHeight,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -302,8 +319,14 @@
       <if test="record.weight != null">
         weight = #{record.weight,jdbcType=DECIMAL},
       </if>
-      <if test="record.volume != null">
-        volume = #{record.volume,jdbcType=VARCHAR},
+      <if test="record.volumeLenght != null">
+        volume_lenght = #{record.volumeLenght,jdbcType=INTEGER},
+      </if>
+      <if test="record.volumeWidth != null">
+        volume_width = #{record.volumeWidth,jdbcType=INTEGER},
+      </if>
+      <if test="record.volumeHeight != null">
+        volume_height = #{record.volumeHeight,jdbcType=INTEGER},
       </if>
     </set>
     <if test="_parameter != null">
@@ -329,7 +352,9 @@
       min_moq = #{record.minMoq,jdbcType=INTEGER},
       max_moq = #{record.maxMoq,jdbcType=INTEGER},
       weight = #{record.weight,jdbcType=DECIMAL},
-      volume = #{record.volume,jdbcType=VARCHAR}
+      volume_lenght = #{record.volumeLenght,jdbcType=INTEGER},
+      volume_width = #{record.volumeWidth,jdbcType=INTEGER},
+      volume_height = #{record.volumeHeight,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -385,8 +410,14 @@
       <if test="weight != null">
         weight = #{weight,jdbcType=DECIMAL},
       </if>
-      <if test="volume != null">
-        volume = #{volume,jdbcType=VARCHAR},
+      <if test="volumeLenght != null">
+        volume_lenght = #{volumeLenght,jdbcType=INTEGER},
+      </if>
+      <if test="volumeWidth != null">
+        volume_width = #{volumeWidth,jdbcType=INTEGER},
+      </if>
+      <if test="volumeHeight != null">
+        volume_height = #{volumeHeight,jdbcType=INTEGER},
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
@@ -409,7 +440,9 @@
       min_moq = #{minMoq,jdbcType=INTEGER},
       max_moq = #{maxMoq,jdbcType=INTEGER},
       weight = #{weight,jdbcType=DECIMAL},
-      volume = #{volume,jdbcType=VARCHAR}
+      volume_lenght = #{volumeLenght,jdbcType=INTEGER},
+      volume_width = #{volumeWidth,jdbcType=INTEGER},
+      volume_height = #{volumeHeight,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

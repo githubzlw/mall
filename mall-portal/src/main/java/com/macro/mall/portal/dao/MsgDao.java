@@ -3,6 +3,7 @@ package com.macro.mall.portal.dao;
 import com.macro.mall.entity.XmsMsg;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,10 +15,19 @@ public interface MsgDao {
     /**
      * 没有读过的用户消息记录
      */
-    List<XmsMsg> unreadMsgList(@Param("mail") String mail,@Param("type") Integer type);
+    List<XmsMsg> unreadMsgList(@Param("mail") String mail, @Param("type") Integer type, @Param("startDate") String startDate,
+                               @Param("endDate") String endDate, @Param("offset") Integer offset, @Param("limit") Integer limit);
 
     /**
      * 已读过的用户消息记录
      */
-    List<XmsMsg> readMsgList(@Param("mail") String mail,@Param("type") Integer type);
+    List<XmsMsg> readMsgList(@Param("mail") String mail,@Param("type") Integer type, @Param("startDate") String startDate,
+                             @Param("endDate") String endDate,@Param("offset") Integer offset,@Param("limit") Integer limit);
+
+    int unreadMsgListCount(@Param("mail") String mail, @Param("type") Integer type, @Param("startDate") String startDate,
+                               @Param("endDate") String endDate);
+
+    int readMsgListCount(@Param("mail") String mail,@Param("type") Integer type, @Param("startDate") String startDate,
+                             @Param("endDate") String endDate);
+
 }

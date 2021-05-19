@@ -45,6 +45,8 @@
     <result column="url" jdbcType="VARCHAR" property="url" />
     <result column="moq" jdbcType="VARCHAR" property="moq" />
     <result column="source_price" jdbcType="DECIMAL" property="sourcePrice" />
+    <result column="shipping_fee" jdbcType="VARCHAR" property="shippingFee" />
+    <result column="shipping_by" jdbcType="VARCHAR" property="shippingBy" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.macro.mall.model.PmsProduct">
     <result column="description" jdbcType="LONGVARCHAR" property="description" />
@@ -117,7 +119,7 @@
     sub_title, original_price, stock, low_stock, unit, weight, preview_status, service_ids, 
     keywords, note, album_pics, detail_title, promotion_start_time, promotion_end_time, 
     promotion_per_limit, promotion_type, brand_name, product_category_name, lead_time, 
-    price_xj, url, moq, source_price
+    price_xj, url, moq, source_price, shipping_fee, shipping_by
   </sql>
   <sql id="Blob_Column_List">
     description, detail_desc, detail_html, detail_mobile_html
@@ -188,8 +190,9 @@
       promotion_per_limit, promotion_type, brand_name, 
       product_category_name, lead_time, price_xj, 
       url, moq, source_price, 
-      description, detail_desc, detail_html, 
-      detail_mobile_html)
+      shipping_fee, shipping_by, description, 
+      detail_desc, detail_html, detail_mobile_html
+      )
     values (#{brandId,jdbcType=BIGINT}, #{productCategoryId,jdbcType=BIGINT}, #{feightTemplateId,jdbcType=BIGINT}, 
       #{productAttributeCategoryId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{pic,jdbcType=VARCHAR}, 
       #{productSn,jdbcType=VARCHAR}, #{deleteStatus,jdbcType=INTEGER}, #{publishStatus,jdbcType=INTEGER}, 
@@ -204,8 +207,9 @@
       #{promotionPerLimit,jdbcType=INTEGER}, #{promotionType,jdbcType=INTEGER}, #{brandName,jdbcType=VARCHAR}, 
       #{productCategoryName,jdbcType=VARCHAR}, #{leadTime,jdbcType=VARCHAR}, #{priceXj,jdbcType=VARCHAR}, 
       #{url,jdbcType=VARCHAR}, #{moq,jdbcType=VARCHAR}, #{sourcePrice,jdbcType=DECIMAL}, 
-      #{description,jdbcType=LONGVARCHAR}, #{detailDesc,jdbcType=LONGVARCHAR}, #{detailHtml,jdbcType=LONGVARCHAR}, 
-      #{detailMobileHtml,jdbcType=LONGVARCHAR})
+      #{shippingFee,jdbcType=VARCHAR}, #{shippingBy,jdbcType=VARCHAR}, #{description,jdbcType=LONGVARCHAR}, 
+      #{detailDesc,jdbcType=LONGVARCHAR}, #{detailHtml,jdbcType=LONGVARCHAR}, #{detailMobileHtml,jdbcType=LONGVARCHAR}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsProduct">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -338,6 +342,12 @@
       </if>
       <if test="sourcePrice != null">
         source_price,
+      </if>
+      <if test="shippingFee != null">
+        shipping_fee,
+      </if>
+      <if test="shippingBy != null">
+        shipping_by,
       </if>
       <if test="description != null">
         description,
@@ -478,6 +488,12 @@
       </if>
       <if test="sourcePrice != null">
         #{sourcePrice,jdbcType=DECIMAL},
+      </if>
+      <if test="shippingFee != null">
+        #{shippingFee,jdbcType=VARCHAR},
+      </if>
+      <if test="shippingBy != null">
+        #{shippingBy,jdbcType=VARCHAR},
       </if>
       <if test="description != null">
         #{description,jdbcType=LONGVARCHAR},
@@ -631,6 +647,12 @@
       <if test="record.sourcePrice != null">
         source_price = #{record.sourcePrice,jdbcType=DECIMAL},
       </if>
+      <if test="record.shippingFee != null">
+        shipping_fee = #{record.shippingFee,jdbcType=VARCHAR},
+      </if>
+      <if test="record.shippingBy != null">
+        shipping_by = #{record.shippingBy,jdbcType=VARCHAR},
+      </if>
       <if test="record.description != null">
         description = #{record.description,jdbcType=LONGVARCHAR},
       </if>
@@ -693,6 +715,8 @@
       url = #{record.url,jdbcType=VARCHAR},
       moq = #{record.moq,jdbcType=VARCHAR},
       source_price = #{record.sourcePrice,jdbcType=DECIMAL},
+      shipping_fee = #{record.shippingFee,jdbcType=VARCHAR},
+      shipping_by = #{record.shippingBy,jdbcType=VARCHAR},
       description = #{record.description,jdbcType=LONGVARCHAR},
       detail_desc = #{record.detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{record.detailHtml,jdbcType=LONGVARCHAR},
@@ -745,7 +769,9 @@
       price_xj = #{record.priceXj,jdbcType=VARCHAR},
       url = #{record.url,jdbcType=VARCHAR},
       moq = #{record.moq,jdbcType=VARCHAR},
-      source_price = #{record.sourcePrice,jdbcType=DECIMAL}
+      source_price = #{record.sourcePrice,jdbcType=DECIMAL},
+      shipping_fee = #{record.shippingFee,jdbcType=VARCHAR},
+      shipping_by = #{record.shippingBy,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -879,6 +905,12 @@
       <if test="sourcePrice != null">
         source_price = #{sourcePrice,jdbcType=DECIMAL},
       </if>
+      <if test="shippingFee != null">
+        shipping_fee = #{shippingFee,jdbcType=VARCHAR},
+      </if>
+      <if test="shippingBy != null">
+        shipping_by = #{shippingBy,jdbcType=VARCHAR},
+      </if>
       <if test="description != null">
         description = #{description,jdbcType=LONGVARCHAR},
       </if>
@@ -938,6 +970,8 @@
       url = #{url,jdbcType=VARCHAR},
       moq = #{moq,jdbcType=VARCHAR},
       source_price = #{sourcePrice,jdbcType=DECIMAL},
+      shipping_fee = #{shippingFee,jdbcType=VARCHAR},
+      shipping_by = #{shippingBy,jdbcType=VARCHAR},
       description = #{description,jdbcType=LONGVARCHAR},
       detail_desc = #{detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{detailHtml,jdbcType=LONGVARCHAR},
@@ -987,7 +1021,9 @@
       price_xj = #{priceXj,jdbcType=VARCHAR},
       url = #{url,jdbcType=VARCHAR},
       moq = #{moq,jdbcType=VARCHAR},
-      source_price = #{sourcePrice,jdbcType=DECIMAL}
+      source_price = #{sourcePrice,jdbcType=DECIMAL},
+      shipping_fee = #{shippingFee,jdbcType=VARCHAR},
+      shipping_by = #{shippingBy,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>
