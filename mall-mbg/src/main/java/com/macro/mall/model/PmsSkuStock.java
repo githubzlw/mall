@@ -53,8 +53,14 @@ public class PmsSkuStock implements Serializable {
     @ApiModelProperty(value = "重量（新加字段）")
     private BigDecimal weight;
 
-    @ApiModelProperty(value = "体积（新加字段）")
-    private String volume;
+    @ApiModelProperty(value = "体积长（新加字段）")
+    private Integer volumeLenght;
+
+    @ApiModelProperty(value = "体积宽（新加字段）")
+    private Integer volumeWidth;
+
+    @ApiModelProperty(value = "体积高（新加字段）")
+    private Integer volumeHeight;
 
     private static final long serialVersionUID = 1L;
 
@@ -194,12 +200,28 @@ public class PmsSkuStock implements Serializable {
         this.weight = weight;
     }
 
-    public String getVolume() {
-        return volume;
+    public Integer getVolumeLenght() {
+        return volumeLenght;
     }
 
-    public void setVolume(String volume) {
-        this.volume = volume;
+    public void setVolumeLenght(Integer volumeLenght) {
+        this.volumeLenght = volumeLenght;
+    }
+
+    public Integer getVolumeWidth() {
+        return volumeWidth;
+    }
+
+    public void setVolumeWidth(Integer volumeWidth) {
+        this.volumeWidth = volumeWidth;
+    }
+
+    public Integer getVolumeHeight() {
+        return volumeHeight;
+    }
+
+    public void setVolumeHeight(Integer volumeHeight) {
+        this.volumeHeight = volumeHeight;
     }
 
     @Override
@@ -225,7 +247,9 @@ public class PmsSkuStock implements Serializable {
         sb.append(", minMoq=").append(minMoq);
         sb.append(", maxMoq=").append(maxMoq);
         sb.append(", weight=").append(weight);
-        sb.append(", volume=").append(volume);
+        sb.append(", volumeLenght=").append(volumeLenght);
+        sb.append(", volumeWidth=").append(volumeWidth);
+        sb.append(", volumeHeight=").append(volumeHeight);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

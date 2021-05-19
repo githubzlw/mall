@@ -17,13 +17,31 @@ class XmsMsgrecycleServiceTest {
 
     @Test
     void unreadMsgList() {
-        System.out.println(service.unreadMsgList("test@qq.com",0));
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        xmsMsgParam.setEmail("test@163.com");
+        System.out.println(service.unreadMsgList(xmsMsgParam ,1,5));
+    }
+
+    @Test
+    void unreadMsgListCount() {
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        xmsMsgParam.setEmail("test@163.com");
+        System.out.println(service.unreadMsgListCount(xmsMsgParam ));
     }
 
     @Test
     void readMsgList() {
 
-        System.out.println(service.readMsgList("test@163.com",0));
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        System.out.println(service.readMsgList(xmsMsgParam ,1,5));
+    }
+
+    @Test
+    void readMsgListCount() {
+
+        XmsMsgParam xmsMsgParam =new XmsMsgParam();
+        xmsMsgParam.setEmail("test@163.com");
+        System.out.println(service.readMsgListCount(xmsMsgParam));
     }
 
     @Test

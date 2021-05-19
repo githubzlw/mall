@@ -18,12 +18,16 @@ public interface IXmsMsgService extends IService<XmsMsg> {
     /**
      * 没有读过的用户消息记录
      */
-    List<XmsMsg> unreadMsgList(String mail,Integer type);
+    List<XmsMsg> unreadMsgList(XmsMsgParam xmsMsgParam,Integer pageNum, Integer pageSize);
 
     /**
      * 已读的用户消息记录
      */
-    List<XmsMsg> readMsgList(String mail,Integer type);
+    List<XmsMsg> readMsgList(XmsMsgParam xmsMsgParam,Integer pageNum, Integer pageSize);
 
     void insetMsgList(XmsMsgParam xmsMsgParam);
+
+
+    int readMsgListCount(XmsMsgParam xmsMsgParam);
+    int unreadMsgListCount(XmsMsgParam xmsMsgParam);
 }

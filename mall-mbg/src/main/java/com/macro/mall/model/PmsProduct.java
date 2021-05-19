@@ -124,6 +124,12 @@ public class PmsProduct implements Serializable {
     @ApiModelProperty(value = "货源价格(新加字段)")
     private BigDecimal sourcePrice;
 
+    @ApiModelProperty(value = "抓取的运费(新加字段)")
+    private String shippingFee;
+
+    @ApiModelProperty(value = "抓取的运输方式(新加字段)")
+    private String shippingBy;
+
     @ApiModelProperty(value = "商品描述")
     private String description;
 
@@ -481,6 +487,22 @@ public class PmsProduct implements Serializable {
         this.sourcePrice = sourcePrice;
     }
 
+    public String getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(String shippingFee) {
+        this.shippingFee = shippingFee;
+    }
+
+    public String getShippingBy() {
+        return shippingBy;
+    }
+
+    public void setShippingBy(String shippingBy) {
+        this.shippingBy = shippingBy;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -562,6 +584,8 @@ public class PmsProduct implements Serializable {
         sb.append(", url=").append(url);
         sb.append(", moq=").append(moq);
         sb.append(", sourcePrice=").append(sourcePrice);
+        sb.append(", shippingFee=").append(shippingFee);
+        sb.append(", shippingBy=").append(shippingBy);
         sb.append(", description=").append(description);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);
