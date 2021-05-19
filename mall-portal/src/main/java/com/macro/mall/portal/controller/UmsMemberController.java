@@ -78,6 +78,7 @@ public class UmsMemberController {
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
+        tokenMap.put("mail", usernamez);
 
         // 整合sourcing数据
         if(StrUtil.isNotEmpty(uuid)){
