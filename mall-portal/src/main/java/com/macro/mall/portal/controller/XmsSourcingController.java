@@ -126,7 +126,8 @@ public class XmsSourcingController {
         Assert.isTrue(CollectionUtil.isNotEmpty(sourcingPayParam.getSkuCodeAndNumList()), "skuCodeAndNumList null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverName()), "receiverName null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverPhone()), "receiverPhone null");
-        Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getAddress()), "address null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverCountry()), "receiverCountry null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverPostCode()), "receiverPostCode null");
 
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();

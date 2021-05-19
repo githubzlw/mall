@@ -100,6 +100,9 @@ public class OmsOrder implements Serializable {
     @ApiModelProperty(value = "收货人邮编")
     private String receiverPostCode;
 
+    @ApiModelProperty(value = "国家")
+    private String receiverCountry;
+
     @ApiModelProperty(value = "省份/直辖市")
     private String receiverProvince;
 
@@ -397,6 +400,14 @@ public class OmsOrder implements Serializable {
         this.receiverPostCode = receiverPostCode;
     }
 
+    public String getReceiverCountry() {
+        return receiverCountry;
+    }
+
+    public void setReceiverCountry(String receiverCountry) {
+        this.receiverCountry = receiverCountry;
+    }
+
     public String getReceiverProvince() {
         return receiverProvince;
     }
@@ -539,6 +550,7 @@ public class OmsOrder implements Serializable {
         sb.append(", receiverName=").append(receiverName);
         sb.append(", receiverPhone=").append(receiverPhone);
         sb.append(", receiverPostCode=").append(receiverPostCode);
+        sb.append(", receiverCountry=").append(receiverCountry);
         sb.append(", receiverProvince=").append(receiverProvince);
         sb.append(", receiverCity=").append(receiverCity);
         sb.append(", receiverRegion=").append(receiverRegion);

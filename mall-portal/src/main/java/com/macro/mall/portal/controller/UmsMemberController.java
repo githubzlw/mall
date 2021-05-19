@@ -1,8 +1,10 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.util.SourcingUtils;
 import com.macro.mall.portal.util.UrlUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +44,9 @@ public class UmsMemberController {
     @Autowired
     private UmsMemberService memberService;
 
+    @Autowired
+    private SourcingUtils sourcingUtils;
+
     @ApiOperation("会员注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
@@ -65,7 +70,7 @@ public class UmsMemberController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult login(@RequestParam String usernamez,
-                              @RequestParam String passwordz) {
+                              @RequestParam String passwordz, @RequestParam String uuid) {
         String token = memberService.login(usernamez, passwordz);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
@@ -73,6 +78,11 @@ public class UmsMemberController {
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
+
+        // 整合sourcing数据
+        if(StrUtil.isNotEmpty(uuid)){
+            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+        }
         return CommonResult.success(tokenMap);
     }
 

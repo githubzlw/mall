@@ -18,6 +18,9 @@ public class SiteSourcingParam {
     @ApiModelProperty("BFM的图片链接")
     private String img;
 
+    @ApiModelProperty("价格")
+    private double price;
+
     @ApiModelProperty("BFM的商品名称")
     private String name;
 
@@ -40,5 +43,8 @@ public class SiteSourcingParam {
 
     @ApiModelProperty("定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
     private Integer customType;
+
+    @ApiModelProperty("备注或者补充信息")
+    private String data;
 
 }

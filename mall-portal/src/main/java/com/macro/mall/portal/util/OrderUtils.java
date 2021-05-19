@@ -115,8 +115,17 @@ public class OrderUtils {
             order.setOrderSn(generateParam.getOrderNo());
             order.setMemberId(generateParam.getCurrentMember().getId());
             order.setMemberUsername(generateParam.getCurrentMember().getUsername());
+
+            // 地址相关
+            order.setReceiverCountry(generateParam.getOrderPayParam().getReceiverCountry());
+            order.setReceiverProvince(generateParam.getOrderPayParam().getReceiverProvince());
+            order.setReceiverCity(generateParam.getOrderPayParam().getReceiverCity());
+            order.setReceiverRegion(generateParam.getOrderPayParam().getReceiverRegion());
             order.setReceiverName(generateParam.getOrderPayParam().getReceiverName());
             order.setReceiverPhone(generateParam.getOrderPayParam().getReceiverPhone());
+            order.setReceiverPostCode(generateParam.getOrderPayParam().getReceiverPostCode());
+
+
             order.setDeleteStatus(0);
             order.setStatus(0);// 待付款
             order.setCreateTime(new Date());
@@ -127,7 +136,7 @@ public class OrderUtils {
             Map<String, String> addressMap = new HashMap<>();
             addressMap.put("modeOfTransportation", generateParam.getOrderPayParam().getModeOfTransportation());
             addressMap.put("deliveryTime", generateParam.getOrderPayParam().getDeliveryTime());
-            addressMap.put("address", generateParam.getOrderPayParam().getAddress());
+            addressMap.put("address", generateParam.getOrderPayParam().getReceiverDetailAddress());
             order.setNote(JSONObject.toJSONString(addressMap));
 
 
@@ -143,6 +152,8 @@ public class OrderUtils {
                 orderItem.setProductPrice(pmsSkuStock.getPrice());
                 orderItem.setProductQuantity(pmsSkuStock.getStock());
                 orderItem.setProductSkuCode(pmsSkuStock.getSkuCode());
+                orderItem.setProductPic(pmsSkuStock.getPic());
+                orderItem.setProductAttr(pmsSkuStock.getSpData());
                 orderItemList.add(orderItem);
 
                 XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
@@ -150,6 +161,7 @@ public class OrderUtils {
                 tempSkuStock.setMemberId(generateParam.getCurrentMember().getId());
                 tempSkuStock.setProductId(pmsSkuStock.getProductId());
                 tempSkuStock.setPrice(pmsSkuStock.getPrice());
+                tempSkuStock.setSpData(pmsSkuStock.getSpData());
                 tempSkuStock.setStock(pmsSkuStock.getStock());
                 tempSkuStock.setSkuCode(pmsSkuStock.getSkuCode());
                 tempSkuStock.setSkuStockId(pmsSkuStock.getId().intValue());
@@ -187,7 +199,7 @@ public class OrderUtils {
             orderResult.setTotalFreight(generateParam.getTotalFreight());
 
             this.orderMapper.insert(order);
-
+            orderItemList.forEach(e-> e.setOrderId(order.getId()));
             this.orderItemDao.insertList(orderItemList);
 
             // 如果是库存，进行库存处理：每次都是插入库存，方便处理
