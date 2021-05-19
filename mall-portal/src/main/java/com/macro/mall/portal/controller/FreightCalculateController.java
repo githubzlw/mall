@@ -176,7 +176,13 @@ public class FreightCalculateController {
             double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
             double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
-            importXPremium.setCost(rsFreight);
+            if (null != estimatedCostParam.getOriginalShippingFee() && estimatedCostParam.getOriginalShippingFee() > 0) {
+                // 直接用集运价格
+                importXPremium.setCost(BigDecimalUtil.truncateDouble(centralizedFreight, 2));
+            } else {
+                importXPremium.setCost(rsFreight);
+            }
+
 
             estimatedCostResult.setImportXStandard(importXStandard);
             estimatedCostResult.setImportXPremium(importXPremium);
