@@ -29,6 +29,14 @@ redis:
 shopify:
   uri_oauth: https://%s.myshopify.com/admin/oauth/access_token
   uri_products: https://%s.myshopify.com/admin/api/2020-04/products.json
-  uri_delete: https://%s.myshopify.com/admin/api/2020-01/products/%s.json
-  uri_orders: https://%s.myshopify.com/admin/api/2019-10/orders.json
+  uri_delete: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
+  uri_orders: https://%s.myshopify.com/admin/api/2021-04/orders.json?status=any
+  uri_put_orders: https://%s.myshopify.com/admin/api/unstable/orders/%s.json
+  uri_post_fulfillment_orders: https://%s.myshopify.com/admin/api/2021-04/orders/%s/fulfillments.json
+  uri_post_fulfillment_service: https://%s.myshopify.com/admin/api/2021-04/fulfillments.json
+  uri_query_orders: https://%s.myshopify.com/admin/api/2021-04/orders/%s.json
+  uri_query_variants: https://%s.myshopify.com/admin/api/2021-04/variants/%s.json
+  uri_query_inventory_levels: https://%s.myshopify.com/admin/api/2021-04/inventory_levels.json?inventory_item_ids=%s
+
+
 

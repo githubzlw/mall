@@ -2,12 +2,19 @@ package com.macro.mall.shopify.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.gson.Gson;
 import com.macro.mall.entity.XmsShopifyOrderAddress;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.shopify.config.ShopifyConfig;
-import com.macro.mall.shopify.config.ShopifyUtil;
+import com.macro.mall.shopify.config.ShopifyRestTemplate;
+import com.macro.mall.shopify.pojo.FulfillmentParam;
+import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
+import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
 import com.macro.mall.shopify.pojo.orders.Line_items;
 import com.macro.mall.shopify.pojo.orders.Orders;
 import com.macro.mall.shopify.pojo.orders.OrdersWraper;
@@ -35,7 +42,7 @@ import java.util.stream.Collectors;
 public class ShopifyUtils {
 
     @Autowired
-    private ShopifyUtil shopifyUtil;
+    private ShopifyRestTemplate shopifyRestTemplate;
     @Autowired
     private ShopifyConfig shopifyConfig;
     @Autowired
@@ -64,6 +71,140 @@ public class ShopifyUtils {
     }
 
 
+    public void updateShopifyOrder(XmsShopifyOrderinfo xmsShopifyOrderinfo) {
+        UpdateWrapper<XmsShopifyOrderinfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(XmsShopifyOrderinfo::getOrderNo, xmsShopifyOrderinfo.getOrderNo())
+                .set(XmsShopifyOrderinfo::getFulfillmentServiceId, xmsShopifyOrderinfo.getFulfillmentServiceId())
+                .set(XmsShopifyOrderinfo::getLocationId, xmsShopifyOrderinfo.getLocationId());
+        this.shopifyOrderinfoService.update(null, updateWrapper);
+    }
+
+    /**
+     * 更新订单的状态
+     *
+     * @param orderId
+     * @param shopifyName
+     * @param statusEnum
+     * @return
+     */
+    public String updateOrder(long orderId, String shopifyName, FulfillmentStatusEnum statusEnum) {
+        /**
+         * shipped:已发货
+         * partial: 部分
+         * unshipped:未发货
+         * unfulfilled: 返回 状态为 null 或partial的订单
+         */
+        String url = String.format(shopifyConfig.SHOPIFY_URI_PUT_ORDERS, shopifyName, String.valueOf(orderId));
+
+        Map<String, Object> param = new HashMap<>();
+        Map<String, Object> orderMap = new HashMap<>();
+        orderMap.put("id", orderId);
+        orderMap.put("fulfillment_status", statusEnum.toString().toLowerCase());
+        //orderMap.put("note", statusEnum.toString().toLowerCase());
+        param.put("order", orderMap);
+
+        String json = this.shopifyRestTemplate.put(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName), param);
+        return json;
+    }
+
+
+    public String updateFulfillmentOrders(long orderId, String shopifyName, String new_fulfill_at) {
+        /**
+         * shipped:已发货
+         * partial: 部分
+         * unshipped:未发货
+         * unfulfilled: 返回 状态为 null 或partial的订单
+         */
+        String url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, shopifyName, String.valueOf(orderId));
+
+        Map<String, Object> param = new HashMap<>();
+        Map<String, Object> orderMap = new HashMap<>();
+        orderMap.put("new_fulfill_at", new_fulfill_at);
+        param.put("fulfillment_order", orderMap);
+
+        String json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName), param);
+        return json;
+    }
+
+
+    public String createFulfillmentOrders(XmsShopifyOrderinfo shopifyOrderinfo, List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
+
+        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
+        // 步骤1：查询订单以查看其订单项
+        // get https://{shop}.myshopify.com/admin/api/2021-04/orders/{order_rest_id}.json
+
+        String url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        String json = this.shopifyRestTemplate.exchange(url, token);
+        JSONObject orderJson = JSONObject.parseObject(json);
+        // 获取variant_id
+        JSONArray itemsArray = orderJson.getJSONObject("order").getJSONArray("line_items");
+
+        //步骤2. https://{shop}.myshopify.com/admin/api/2021-04/variants/{variant_rest_id}.json
+
+        String variant_id = itemsArray.getJSONObject(0).getString("variant_id");
+
+        url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_VARIANTS, fulfillmentParam.getShopifyName(), variant_id);
+        json = this.shopifyRestTemplate.exchange(url, token);
+
+        // 获取inventory_item_ids
+        JSONObject variantJson = JSONObject.parseObject(json);
+        long inventory_item_id = variantJson.getJSONObject("variant").getLongValue("inventory_item_id");
+
+        // 第3步https://{shop}.myshopify.com/admin/api/2021-04/inventory_levels.json?inventory_item_ids={inventory_item_rest_id}
+
+        url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_INVENTORY_LEVELS, fulfillmentParam.getShopifyName(), inventory_item_id);
+        json = this.shopifyRestTemplate.exchange(url, token);
+        JSONObject inventoryLevelsJson = JSONObject.parseObject(json);
+        JSONArray inventoryLevelsArray = inventoryLevelsJson.getJSONArray("inventory_levels");
+        // String location_id = inventoryLevelsArray.getJSONObject(0).getString("inventory_item_id");
+         String location_id = inventoryLevelsArray.getJSONObject(0).getString("location_id");
+
+         //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
+
+        /**
+         * {
+         *   "fulfillment": {
+         *     "location_id": "{location_rest_id}",
+         *     "tracking_number": "{tracking_number}",
+         *     "line_items": [
+         *       {
+         *         "id": "{line_item_rest_id}"
+         *       }
+         *     ]
+         *   }
+         * }
+         */
+        Map<String, Object> param = new HashMap<>();
+
+        Map<String, Object> fulfillmentMap = new HashMap<>();
+        fulfillmentMap.put("location_id", location_id);
+        fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
+        fulfillmentMap.put("tracking_company", anElse.getName());
+        //fulfillmentMap.put("tracking_url", anElse.getUrl());
+
+        List<Map<String, Object>> line_itemsList = new ArrayList<>();
+        detailsList.forEach(e -> {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("id", e.getLineItemId());
+            line_itemsList.add(itemMap);
+        });
+
+        fulfillmentMap.put("line_items", line_itemsList);
+
+        param.put("fulfillment", fulfillmentMap);
+
+        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName()), param);
+        return json;
+
+    }
+
+
+
+
+
+
+
     private int getOrdersSingle(String shopifyName) {
         try {
 
@@ -89,11 +230,27 @@ public class ShopifyUtils {
     public OrdersWraper getOrders(String shopName) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
-        String json = this.shopifyUtil.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
     }
 
+    /**
+     * 获取shopify的订单
+     *
+     * @param orderNo
+     * @return
+     */
+    public List<XmsShopifyOrderinfo> queryListByOrderNo(Long orderNo) {
+        return this.shopifyOrderinfoService.queryListByOrderNo(orderNo);
+    }
+
+
+    public List<XmsShopifyOrderDetails> queryDetailsListByOrderNo(Long orderNo) {
+        QueryWrapper<XmsShopifyOrderDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsShopifyOrderDetails::getOrderNo, orderNo);
+        return this.shopifyOrderDetailsService.list(queryWrapper);
+    }
 
     /**
      * 根据数据生成订单数据
@@ -111,19 +268,8 @@ public class ShopifyUtils {
         if (CollectionUtil.isNotEmpty(existList)) {
             // 过滤已经存在的订单
             Map<Long, XmsShopifyOrderinfo> idSet = new HashMap<>(existList.size() * 2);
-            existList.forEach(e -> idSet.put(e.getId(), e));
-            insertList = shopifyOrderList.stream().filter(e -> {
-                if (idSet.containsKey(e.getId())) {
-                    XmsShopifyOrderinfo tempOrder = idSet.get(e.getId());
-                    if (!tempOrder.getTotalPriceUsd().equalsIgnoreCase(e.getTotal_price_usd())
-                            || !tempOrder.getFinancialStatus().equalsIgnoreCase(e.getFinancial_status())) {
-                        return true;
-                    }
-                    return false;
-                } else {
-                    return true;
-                }
-            }).collect(Collectors.toList());
+            existList.forEach(e -> idSet.put(e.getOrderNo(), e));
+            insertList = shopifyOrderList.stream().filter(e -> !idSet.containsKey(e.getId()) ).collect(Collectors.toList());
             idSet.clear();
         } else {
             insertList = new ArrayList<>(shopifyOrderList);
@@ -167,6 +313,7 @@ public class ShopifyUtils {
         }
         shopifyOrderList.clear();
     }
+
 
     /**
      * shopify过来的数据转换成可存储数据
@@ -224,6 +371,7 @@ public class ShopifyUtils {
         shopifyOrderinfo.setAdminGraphqlApiId(orderInfo.getAdmin_graphql_api_id());
         shopifyOrderinfo.setCreateTime(new Date());
         shopifyOrderinfo.setUpdateTime(new Date());
+        shopifyOrderinfo.setLocationId(orderInfo.getLocation_id());
 
         return shopifyOrderinfo;
     }
@@ -255,6 +403,7 @@ public class ShopifyUtils {
         orderDetails.setFulfillmentStatus(item.getFulfillment_status());
         orderDetails.setAdminGraphqlApiId(item.getAdmin_graphql_api_id());
         orderDetails.setCreateTime(new Date());
+        orderDetails.setLineItemId(item.getId());
 
         return orderDetails;
     }

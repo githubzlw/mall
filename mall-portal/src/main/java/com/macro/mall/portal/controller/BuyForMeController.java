@@ -178,11 +178,36 @@ public class BuyForMeController {
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
             // 添加到购物车
             siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
+            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
             this.sourcingUtils.addBfmCart(siteSourcing);
             return CommonResult.success(jsonObject);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getInfoByUrl,url[{}],error:", url, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @ApiOperation(value = "缓存img信息", notes = "BuyForMe逻辑")
+    @PostMapping("/saveImg")
+    public CommonResult getInfoByUrl(String title, String img) {
+        Assert.isTrue(StrUtil.isNotBlank(title), "title null");
+        Assert.isTrue(StrUtil.isNotBlank(img), "img null");
+        try {
+
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setName(title);
+            siteSourcing.setImg(img);
+            sourcingUtils.checkSiteFlagByImg(siteSourcing);
+            // 添加到购物车
+            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
+            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            this.sourcingUtils.addBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveImg,title[{}],img[{}],error:", title, img, e);
             return CommonResult.failed(e.getMessage());
         }
     }

@@ -130,7 +130,7 @@ public class SourcingUtils {
                 CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
                 this.saveSourcingInfo(siteSourcing);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 // TAOBAO
                 CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
@@ -161,7 +161,7 @@ public class SourcingUtils {
                 String title = jsonObject.getString("title");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 if (jsonObject.containsKey("item")) {
                     String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                     String title = jsonObject.getJSONObject("item").getString("title");
@@ -281,7 +281,7 @@ public class SourcingUtils {
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
                 return jsonObject;
             }
-        } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+        } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
@@ -306,7 +306,7 @@ public class SourcingUtils {
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$","").trim()) : 0);
                 return jsonObject;
             }
         }
@@ -410,7 +410,7 @@ public class SourcingUtils {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
                 // 放入redis中
-                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.TAOBAO.getFlag(), dataJson);
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALI1688.getFlag(), dataJson);
                 return CommonResult.success(dataJson);
             } else {
                 return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
@@ -451,7 +451,7 @@ public class SourcingUtils {
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
                 // 放入redis中
                 redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALIBABA.getFlag(), dataJson);
-                return CommonResult.success(jsonObject);
+                return CommonResult.success(dataJson);
             } else {
                 return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
             }
@@ -496,13 +496,13 @@ public class SourcingUtils {
                 siteSourcing.setSiteFlag(siteFlagEnum.getFlag());
                 siteSourcing.setCatid(siteFlagEnum.getCatid());
                 switch (siteFlagEnum.getFlag()) {
-                    case 1:
                     case 2:
+                    case 8:
                         // 解析aliexpress
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                         break;
-                    case 5:
+                    case 1:
                         pid = dealAliBaBaUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                     default:
