@@ -277,7 +277,7 @@ public class ProductUtils {
         // 处理 shippingFee
         String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy().trim(),chromeUpload.getSiteType());
         sourcingInfo.setCountryId(this.getCountId(shipingbyC));
-        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC)?shipingbyC.split(";")[1]:shipingbyC);
+        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC) && shipingbyC.indexOf(";")>0 ?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
         sourcingInfo.setStatus(chromeUpload.getStatus());
         sourcingInfo.setCreateTime(new Date());
@@ -481,8 +481,11 @@ public class ProductUtils {
             Elements sku_title = element.select("div.sku-title");
             if (sku_title != null && sku_title.size() > 0) {
                 skuType = sku_title.get(0).text();
-                if (StrUtil.isNotEmpty(skuType)) {
+                if (StringUtil.isNotEmpty(skuType)) {
                     skuType = skuType.substring(0, skuType.indexOf(":"));
+                    if(skuType.contains("Fit") || skuType.contains("Condition")){
+                        continue;
+                    }
                 }
                 if (!"".equals(typeResult) && typeResult.length() > 0) {
                     typeResult.append(";");
@@ -496,6 +499,7 @@ public class ProductUtils {
                 elementImg = element.select("span.sku-property-color-inner");
             }
 
+
             for (Element element1 : elementImg) {
                 if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                     typeResult.append(",");
@@ -507,7 +511,7 @@ public class ProductUtils {
             for (Element element2 : elementSpan) {
 
                 String spanText = element2.select("span").first().text();
-                if (StrUtil.isNotEmpty(spanText)) {
+                if (StringUtil.isNotEmpty(spanText)) {
                     if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                         typeResult.append(",");
                     }
@@ -518,6 +522,7 @@ public class ProductUtils {
             }
 
         }
+
 
         return typeResult.toString();
     }
@@ -560,7 +565,7 @@ public class ProductUtils {
                 Elements elementSpan = elementDd.select("span.sku-attr-val-frame");
                 for(Element element2 : elementSpan){
                     String title = element2.attr("title");
-                    if(StrUtil.isNotEmpty(title)){
+                    if(StringUtil.isNotEmpty(title)){
                         if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                             typeResult.append(",");
                         }
@@ -568,17 +573,30 @@ public class ProductUtils {
                     }
                     else{
                         String spanText = element2.select("span").first().text();
-                        if(StrUtil.isNotEmpty(spanText)){
+                        if(StringUtil.isNotEmpty(spanText)){
                             if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                                 typeResult.append(",");
                             }
                             typeResult.append(spanText);
                         }
+                        else{
+                            String spanTextTitle = element2.select("span.color").attr("title");
+                            if(StringUtil.isNotEmpty(spanTextTitle)){
+                                if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
+                                    typeResult.append(",");
+                                }
+                                typeResult.append(spanTextTitle);
+                            }
+                        }
                     }
 
                 }
+
+
             }
         }
+
+
         return typeResult.toString();
     }
 
