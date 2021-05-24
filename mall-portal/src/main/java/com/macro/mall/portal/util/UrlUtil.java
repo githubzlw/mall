@@ -2,19 +2,25 @@ package com.macro.mall.portal.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.CharMatcher;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.portal.domain.ConfigValuesBean;
 import okhttp3.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +37,9 @@ public class UrlUtil {
     public final static String MICRO_SERVICE_PAY = "/pay-service/";
 
     public final static String MICRO_SERVICE_SHOPIFY = "/shopify-service/";
+
+    @Value("${tpurl.googleid}")
+    public String GOOGLE_CLIENT_ID;
 
     /**
      * singleton
@@ -55,27 +64,26 @@ public class UrlUtil {
      * @return
      * @throws IOException
      */
-    public ImmutablePair<String, String> googleAuth(String idTokenString,String url) throws IOException {
+    public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
 
-        //sample:http://192.168.1.71:18013/googleAuth?site=IMPORTX&idTokenString=111
+        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
 
-        JSONObject jsonObject =
-                this.callUrlByGet(url + "/googleAuth?idTokenString=" +idTokenString );
-        CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
-        if(commonResult.getCode() !=CommonResult.SUCCESS){
-            throw new IllegalStateException("googleAuth() return value is error. commonResult="+commonResult);
+        try {
+
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(configValues.getGoogleClientId())).build();
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String googleUserId = payload.getSubject();
+            String googleEmail = payload.getEmail();
+
+            return new ImmutablePair<>(googleUserId, googleEmail);
+
+        } catch (GeneralSecurityException | IOException e) {
+            throw new IOException("googleAuth.GeneralSecurityException");
         }
-        String data = jsonObject.getString("data");
-        //sample:[{"108317501779666266090":"luohao518@gmail.com"}]
-        LOGGER.info("data:{}", data);
-        String cleanStr = CharMatcher.anyOf("{}\"").removeFrom(data).trim();
-        LOGGER.info("cleanStr:{}",cleanStr);
-        String[] split = cleanStr.split(":");
-        LOGGER.info("split:{}",split);
-        Assert.isTrue(split.length==2);
-        return new ImmutablePair<>(split[0], split[1]);
     }
-
 
     /**
      * call facebookAuth
