@@ -140,7 +140,7 @@ public class UmsMemberController {
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair= null;
         try {
-            pair = UrlUtil.getInstance().googleAuth(idtokenstr,tpLogin);
+            pair = UrlUtil.getInstance().googleAuth(idtokenstr);
             memberService.register(pair.getRight(), "","","",1);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
