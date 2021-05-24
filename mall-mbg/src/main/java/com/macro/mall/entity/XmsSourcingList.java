@@ -105,5 +105,7 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "客户备注")
     private String remark;
 
+    @ApiModelProperty(value = "aliexpress处理")
+    private String pricePs;
 
 }
