@@ -2,7 +2,6 @@ package com.macro.mall.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -72,6 +71,15 @@ public class XmsCustomerProduct implements Serializable {
 
     @ApiModelProperty(value = "shopify的价格")
     private String shopifyPrice;
+
+    @ApiModelProperty(value = "shopify的商品ID")
+    private Long shopifyProductId;
+
+    @ApiModelProperty(value = "shopify商品的完整数据")
+    private String shopifyJson;
+
+    @ApiModelProperty(value = "shopify的店铺名称")
+    private String shopifyName;
 
 
 }

@@ -2,14 +2,13 @@ package com.macro.mall.shopify.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.gson.Gson;
-import com.macro.mall.entity.XmsShopifyOrderAddress;
-import com.macro.mall.entity.XmsShopifyOrderDetails;
-import com.macro.mall.entity.XmsShopifyOrderinfo;
+import com.macro.mall.entity.*;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
@@ -19,10 +18,7 @@ import com.macro.mall.shopify.pojo.orders.Line_items;
 import com.macro.mall.shopify.pojo.orders.Orders;
 import com.macro.mall.shopify.pojo.orders.OrdersWraper;
 import com.macro.mall.shopify.pojo.orders.Shipping_address;
-import com.macro.mall.shopify.service.IXmsShopifyAuthService;
-import com.macro.mall.shopify.service.IXmsShopifyOrderAddressService;
-import com.macro.mall.shopify.service.IXmsShopifyOrderDetailsService;
-import com.macro.mall.shopify.service.IXmsShopifyOrderinfoService;
+import com.macro.mall.shopify.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +49,11 @@ public class ShopifyUtils {
     private IXmsShopifyOrderDetailsService shopifyOrderDetailsService;
     @Autowired
     private IXmsShopifyOrderAddressService shopifyOrderAddressService;
+    @Autowired
+    private IXmsCustomerProductService customerProductService;
+
+    @Autowired
+    private IXmsSourcingListService sourcingListService;
 
 
     /**
@@ -70,6 +71,109 @@ public class ShopifyUtils {
         return total.get();
     }
 
+
+    public int getProductsByShopifyName(String shopifyName, Long memberId, String userName) {
+        if (StrUtil.isNotEmpty(shopifyName)) {
+            String token = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+            String url = String.format(shopifyConfig.SHOPIFY_URI_PRODUCTS, shopifyName);
+            String json = this.shopifyRestTemplate.exchange(url, token);
+            JSONObject jsonObject = JSONObject.parseObject(json);
+            JSONArray products = jsonObject.getJSONArray("products");
+            this.saveShopifyProducts(shopifyName, memberId, userName, products);
+        }
+        return 0;
+    }
+
+    public void saveShopifyProducts(String shopifyName, Long memberId, String userName, JSONArray products) {
+        if (null != products && products.size() > 0) {
+            int length = products.size();
+            for (int i = 0; i < length; i++) {
+                this.saveSingleProduct(shopifyName, memberId, userName, products.getJSONObject(i));
+            }
+        }
+    }
+
+
+    private void saveSingleProduct(String shopifyName, Long memberId, String userName, JSONObject jsonObject) {
+        try {
+            // 获取sourcing的数据
+            XmsSourcingList sourcingList = this.genXmsSourcingListByShopifyProduct(shopifyName, memberId, userName, jsonObject);
+            // 检查并且保存Sourcing数据
+            this.checkXmsSourcingListId(sourcingList);
+            // 获取客户的商品信息
+            XmsCustomerProduct customerProduct = this.genXmsCustomerProductByShopifyProduct(shopifyName, memberId, userName, jsonObject);
+            // 判断是否存在并且保存数据
+            boolean b = checkHasCustomerProduct(customerProduct);
+            if (!b) {
+                customerProduct.setSourcingId(sourcingList.getId().intValue());
+                this.customerProductService.save(customerProduct);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveSingleProduct,shopifyName:[{}],memberId;[{}],product[{}],error:", shopifyName, memberId, jsonObject, e);
+        }
+    }
+
+    public void checkXmsSourcingListId(XmsSourcingList sourcingList) {
+        QueryWrapper<XmsSourcingList> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsSourcingList::getMemberId, sourcingList.getMemberId())
+                .eq(XmsSourcingList::getSiteType, 11)
+                .eq(XmsSourcingList::getUrl, sourcingList.getUrl());
+        XmsSourcingList one = this.sourcingListService.getOne(queryWrapper);
+        if (null == one || null == one.getId() || one.getId() == 0) {
+            this.sourcingListService.save(sourcingList);
+        } else {
+            sourcingList.setId(one.getId());
+        }
+    }
+
+    public boolean checkHasCustomerProduct(XmsCustomerProduct customerProduct) {
+        QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsCustomerProduct::getShopifyName, customerProduct.getShopifyName())
+                .eq(XmsCustomerProduct::getShopifyProductId, customerProduct.getShopifyProductId());
+        return this.customerProductService.count(queryWrapper) > 0;
+    }
+
+    public XmsSourcingList genXmsSourcingListByShopifyProduct(String shopifyName, Long memberId, String userName, JSONObject shopifyProduct) {
+        XmsSourcingList sourcingList = new XmsSourcingList();
+        sourcingList.setMemberId(memberId);
+        sourcingList.setUsername(userName);
+        sourcingList.setCreateTime(new Date());
+        sourcingList.setUpdateTime(new Date());
+        sourcingList.setStatus(0);
+        sourcingList.setSiteType(11);
+        sourcingList.setRemark("shopify product");
+        sourcingList.setTitle(shopifyProduct.getString("title"));
+        if (shopifyProduct.containsKey("images") && null != shopifyProduct.getJSONArray("images")) {
+            sourcingList.setImages(shopifyProduct.getJSONArray("images").getJSONObject(0).getString("src"));
+        }
+        sourcingList.setUrl(this.getShopifyProductUrl(shopifyName, shopifyProduct.getLongValue("id")));
+        return sourcingList;
+
+    }
+
+    private String getShopifyProductUrl(String shopifyName, Long productId) {
+        // https://sunsharetts.myshopify.com/admin/products/6719946850481
+        return "https://" + shopifyName + ".myshopify.com/admin/products/" + productId;
+    }
+
+    public XmsCustomerProduct genXmsCustomerProductByShopifyProduct(String shopifyName, Long memberId, String userName, JSONObject shopifyProduct) {
+        XmsCustomerProduct customerProduct = new XmsCustomerProduct();
+        customerProduct.setShopifyName(shopifyName);
+        customerProduct.setMemberId(memberId);
+        customerProduct.setUsername(userName);
+        customerProduct.setCreateTime(new Date());
+        customerProduct.setUpdateTime(new Date());
+        customerProduct.setShopifyJson(shopifyProduct.toJSONString());
+
+        customerProduct.setShopifyProductId(shopifyProduct.getLongValue("id"));
+        // customerProduct.setShopifyPrice();
+        customerProduct.setSyncTime(new Date());
+        customerProduct.setStatus(9);
+
+        return customerProduct;
+
+    }
 
     public void updateShopifyOrder(XmsShopifyOrderinfo xmsShopifyOrderinfo) {
         UpdateWrapper<XmsShopifyOrderinfo> updateWrapper = new UpdateWrapper<>();
@@ -157,9 +261,9 @@ public class ShopifyUtils {
         JSONObject inventoryLevelsJson = JSONObject.parseObject(json);
         JSONArray inventoryLevelsArray = inventoryLevelsJson.getJSONArray("inventory_levels");
         // String location_id = inventoryLevelsArray.getJSONObject(0).getString("inventory_item_id");
-         String location_id = inventoryLevelsArray.getJSONObject(0).getString("location_id");
+        String location_id = inventoryLevelsArray.getJSONObject(0).getString("location_id");
 
-         //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
+        //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
 
         /**
          * {
@@ -198,11 +302,6 @@ public class ShopifyUtils {
         return json;
 
     }
-
-
-
-
-
 
 
     private int getOrdersSingle(String shopifyName) {
@@ -269,7 +368,7 @@ public class ShopifyUtils {
             // 过滤已经存在的订单
             Map<Long, XmsShopifyOrderinfo> idSet = new HashMap<>(existList.size() * 2);
             existList.forEach(e -> idSet.put(e.getOrderNo(), e));
-            insertList = shopifyOrderList.stream().filter(e -> !idSet.containsKey(e.getId()) ).collect(Collectors.toList());
+            insertList = shopifyOrderList.stream().filter(e -> !idSet.containsKey(e.getId())).collect(Collectors.toList());
             idSet.clear();
         } else {
             insertList = new ArrayList<>(shopifyOrderList);

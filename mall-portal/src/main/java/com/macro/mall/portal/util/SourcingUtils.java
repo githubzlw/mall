@@ -256,7 +256,7 @@ public class SourcingUtils {
         xmsSourcingList.setImages(siteSourcing.getImg());
         xmsSourcingList.setTitle(siteSourcing.getName());
         xmsSourcingList.setStatus(0);
-        xmsSourcingList.setSiteType(9);
+        xmsSourcingList.setSiteType(siteSourcing.getSiteFlag());
         xmsSourcingList.setRemark(siteSourcing.getData());
         xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
         xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
@@ -307,6 +307,8 @@ public class SourcingUtils {
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$","").trim()) : 0);
+                // 价格除以汇率
+                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
                 return jsonObject;
             }
         }
