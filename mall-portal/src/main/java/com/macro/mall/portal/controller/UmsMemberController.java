@@ -80,7 +80,7 @@ public class UmsMemberController {
         tokenMap.put("tokenHead", tokenHead);
 
         // 整合sourcing数据
-        if (StrUtil.isNotEmpty(uuid)) {
+        if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
             this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
         }
         return CommonResult.success(tokenMap);

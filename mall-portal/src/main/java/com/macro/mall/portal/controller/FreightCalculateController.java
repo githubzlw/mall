@@ -165,8 +165,8 @@ public class FreightCalculateController {
             EstimatedCost importXPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
-            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
+            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
+            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
 
 
             // importXStandard cost 照抄

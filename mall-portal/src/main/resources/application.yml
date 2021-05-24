@@ -3,6 +3,10 @@ spring:
     name: mall-portal
   profiles:
     active: dev #默认为开发环境
+  servlet:
+    multipart:
+      max-file-size: 5MB # 单个文件的最大值
+      max-request-size: 50MB # 上传文件总的最大值
 
 #mybatis:
 #  mapper-locations:
