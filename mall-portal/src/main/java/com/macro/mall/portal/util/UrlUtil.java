@@ -2,25 +2,16 @@ package com.macro.mall.portal.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.portal.domain.ConfigValuesBean;
 import okhttp3.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -37,9 +28,6 @@ public class UrlUtil {
     public final static String MICRO_SERVICE_PAY = "/pay-service/";
 
     public final static String MICRO_SERVICE_SHOPIFY = "/shopify-service/";
-
-    @Value("${tpurl.googleid}")
-    public String GOOGLE_CLIENT_ID;
 
     /**
      * singleton
@@ -58,32 +46,6 @@ public class UrlUtil {
             .connectTimeout(300, TimeUnit.SECONDS)
             .readTimeout(300, TimeUnit.SECONDS)
             .build();
-
-    /**
-     * call googleAuth
-     * @return
-     * @throws IOException
-     */
-    public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
-
-        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
-
-        try {
-
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(configValues.getGoogleClientId())).build();
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String googleUserId = payload.getSubject();
-            String googleEmail = payload.getEmail();
-
-            return new ImmutablePair<>(googleUserId, googleEmail);
-
-        } catch (GeneralSecurityException | IOException e) {
-            throw new IOException("googleAuth.GeneralSecurityException");
-        }
-    }
 
     /**
      * call facebookAuth
