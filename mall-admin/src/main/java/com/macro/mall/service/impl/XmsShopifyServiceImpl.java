@@ -3,6 +3,7 @@ package com.macro.mall.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
@@ -12,9 +13,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.domain.*;
+import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyPidInfo;
 import com.macro.mall.mapper.PmsProductMapper;
 import com.macro.mall.mapper.PmsSkuStockMapper;
+import com.macro.mall.mapper.XmsShopifyAuthMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsSkuStock;
@@ -52,6 +55,8 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
     private PmsSkuStockMapper skuStockMapper;
     @Autowired
     private XmsShopifyPidInfoMapper shopifyPidInfoMapper;
+    @Autowired
+    private XmsShopifyAuthMapper xmsShopifyAuthMapper;
 
     private final ShopifyUtil shopifyUtil;
 
@@ -453,8 +458,12 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
             PushPrduct wrap = new PushPrduct();
             wrap.setProduct(productWraper.getProduct());
             String json =  gson.toJson(wrap);
-            // TODO
-            String token="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";
+
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+            XmsShopifyAuth shopifyAuth = xmsShopifyAuthMapper.selectOne(queryWrapper);
+            String token = shopifyAuth.getAccessToken();
+
             LOGGER.info("add product to myself shop:[{}]",shopName);
             String returnJson = shopifyUtil.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
             LOGGER.info("returnJson:[{}]", returnJson);

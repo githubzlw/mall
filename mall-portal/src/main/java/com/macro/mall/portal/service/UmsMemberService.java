@@ -1,8 +1,11 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.model.UmsMember;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 
 /**
  * 会员管理Service
@@ -79,4 +82,9 @@ public interface UmsMemberService {
      * @return
      */
     int updateShopifyInfo(Long id, String shopifyName,Integer shopifyFlag);
+
+    /**
+     * google登录验证
+     */
+    ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
 }

@@ -2,6 +2,8 @@ package com.macro.mall.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dto.PmsProductAttributeParam;
@@ -258,6 +260,9 @@ public class ProductUtils {
 //            }
 //        }
         sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()));
+        //阿里价格处理
+        sourcingInfo.setPricePs(cleaningAliPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()),chromeUpload.getSiteType()));
+
         // 处理 shippingFee
         sourcingInfo.setCost(this.cleaningShippingFee(chromeUpload.getShippingFee().trim(),chromeUpload.getSiteType()));
 //        // Shipping: US $5.14
@@ -277,7 +282,7 @@ public class ProductUtils {
         // 处理 shippingFee
         String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy().trim(),chromeUpload.getSiteType());
         sourcingInfo.setCountryId(this.getCountId(shipingbyC));
-        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC)?shipingbyC.split(";")[1]:shipingbyC);
+        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC) && shipingbyC.indexOf(";")>0 ?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
         sourcingInfo.setStatus(chromeUpload.getStatus());
         sourcingInfo.setCreateTime(new Date());
@@ -342,8 +347,27 @@ public class ProductUtils {
         }
         StringBuilder result = new StringBuilder();
         Document doc = Jsoup.parse(price);
-        //ebay
-        if(site==6){
+        //alibaba
+        if (site == 1) {
+            List<String> prcieList = new ArrayList();
+            JSONArray jsonArr = JSONArray.parseArray(price);
+            if (jsonArr != null && jsonArr.size() > 0) {
+                for (int i = 0; i < jsonArr.size(); i++) {
+                    JSONObject json = jsonArr.getJSONObject(i);
+                    String spDate = json.getString("ma_spec_price");
+                    prcieList.add(spDate);
+                }
+            }
+            if(prcieList.size()==1){
+                result.append(prcieList.get(0));
+            }else{
+                result.append(prcieList.get(prcieList.size()-1));
+                result.append("-");
+                result.append(prcieList.get(0));
+            }
+
+            //ebay
+        }else if(site==6){
             // 价格
             Elements element1 = doc.select("span.notranslate");
 
@@ -358,8 +382,8 @@ public class ProductUtils {
                 result.append(element1.get(0).text());
             }
             if(element1.size()==2){
-                result.append(element1.get(0).text());
-                result.append(";");
+//                result.append(element1.get(0).text());
+//                result.append(";");
                 result.append(element1.get(1).text());
             }
 
@@ -403,6 +427,29 @@ public class ProductUtils {
         return result.toString();
     }
 
+    // ali价格处理
+    public static String cleaningAliPrice(String priceUnit,int site) {
+
+        if(StrUtil.isEmpty(priceUnit)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+
+         if(site == 2 || site == 3){
+            if(priceUnit.contains("-")){
+                result.append(StrUtils.matchStr(priceUnit.split("-")[0], "(\\d+(\\.\\d+){0,1})"));
+                result.append("-");
+                result.append(StrUtils.matchStr(priceUnit.split("-")[1], "(\\d+(\\.\\d+){0,1})"));
+            }else{
+                result.append(StrUtils.matchStr(priceUnit, "(\\d+(\\.\\d+){0,1})"));
+            }
+        }
+
+        return result.toString();
+    }
+
+
+
     // shippingBy
     // 运费方式
     public static String cleaningShippingBy(String shippingBy,int site) {
@@ -411,7 +458,7 @@ public class ProductUtils {
             return "";
         }
         StringBuilder result = new StringBuilder();
-        //ebay
+        //alibaba
         if(site==1){
 
             if(StringUtil.isNotEmpty(shippingBy)){
@@ -481,8 +528,11 @@ public class ProductUtils {
             Elements sku_title = element.select("div.sku-title");
             if (sku_title != null && sku_title.size() > 0) {
                 skuType = sku_title.get(0).text();
-                if (StrUtil.isNotEmpty(skuType)) {
+                if (StringUtil.isNotEmpty(skuType)) {
                     skuType = skuType.substring(0, skuType.indexOf(":"));
+                    if(skuType.contains("Fit") || skuType.contains("Condition")){
+                        continue;
+                    }
                 }
                 if (!"".equals(typeResult) && typeResult.length() > 0) {
                     typeResult.append(";");
@@ -496,6 +546,7 @@ public class ProductUtils {
                 elementImg = element.select("span.sku-property-color-inner");
             }
 
+
             for (Element element1 : elementImg) {
                 if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                     typeResult.append(",");
@@ -507,7 +558,7 @@ public class ProductUtils {
             for (Element element2 : elementSpan) {
 
                 String spanText = element2.select("span").first().text();
-                if (StrUtil.isNotEmpty(spanText)) {
+                if (StringUtil.isNotEmpty(spanText)) {
                     if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                         typeResult.append(",");
                     }
@@ -518,6 +569,7 @@ public class ProductUtils {
             }
 
         }
+
 
         return typeResult.toString();
     }
@@ -560,7 +612,7 @@ public class ProductUtils {
                 Elements elementSpan = elementDd.select("span.sku-attr-val-frame");
                 for(Element element2 : elementSpan){
                     String title = element2.attr("title");
-                    if(StrUtil.isNotEmpty(title)){
+                    if(StringUtil.isNotEmpty(title)){
                         if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                             typeResult.append(",");
                         }
@@ -568,17 +620,30 @@ public class ProductUtils {
                     }
                     else{
                         String spanText = element2.select("span").first().text();
-                        if(StrUtil.isNotEmpty(spanText)){
+                        if(StringUtil.isNotEmpty(spanText)){
                             if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                                 typeResult.append(",");
                             }
                             typeResult.append(spanText);
                         }
+                        else{
+                            String spanTextTitle = element2.select("span.color").attr("title");
+                            if(StringUtil.isNotEmpty(spanTextTitle)){
+                                if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
+                                    typeResult.append(",");
+                                }
+                                typeResult.append(spanTextTitle);
+                            }
+                        }
                     }
 
                 }
+
+
             }
         }
+
+
         return typeResult.toString();
     }
 

@@ -1,5 +1,9 @@
 package com.macro.mall.portal.service.impl;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.mapper.UmsMemberLevelMapper;
 import com.macro.mall.mapper.UmsMemberMapper;
@@ -7,10 +11,12 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.model.UmsMemberLevel;
 import com.macro.mall.model.UmsMemberLevelExample;
+import com.macro.mall.portal.domain.ConfigValuesBean;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberCacheService;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.security.util.JwtTokenUtil;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +34,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -53,6 +62,8 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     private String REDIS_KEY_PREFIX_AUTH_CODE;
     @Value("${redis.expire.authCode}")
     private Long AUTH_CODE_EXPIRE_SECONDS;
+    @Value("${tpurl.googleid}")
+    public String GOOGLE_CLIENT_ID;
 
     @Override
     public UmsMember getByUsername(String username) {
@@ -200,6 +211,34 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public String refreshToken(String token) {
         return jwtTokenUtil.refreshHeadToken(token);
+    }
+
+
+    /**
+     * call googleAuth
+     * @return
+     * @throws IOException
+     */
+    @Override
+    public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
+
+        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
+
+        try {
+
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(configValues.getGoogleClientId())).build();
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String googleUserId = payload.getSubject();
+            String googleEmail = payload.getEmail();
+
+            return new ImmutablePair<>(googleUserId, googleEmail);
+
+        } catch (GeneralSecurityException | IOException e) {
+            throw new IOException("googleAuth.GeneralSecurityException");
+        }
     }
 
     @Override
