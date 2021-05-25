@@ -117,6 +117,11 @@ public class SourcingUtils {
     }
 
 
+    public void deleteBfmCart(SiteSourcing siteSourcing) {
+        String pidKey = siteSourcing.getPid() + "_" + siteSourcing.getSiteFlag();
+        this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+    }
+
     /**
      * 检查bean数据并且异步获取PID数据
      *
@@ -130,7 +135,7 @@ public class SourcingUtils {
                 CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
                 this.saveSourcingInfo(siteSourcing);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 // TAOBAO
                 CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
@@ -161,7 +166,7 @@ public class SourcingUtils {
                 String title = jsonObject.getString("title");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 if (jsonObject.containsKey("item")) {
                     String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                     String title = jsonObject.getJSONObject("item").getString("title");
@@ -203,6 +208,7 @@ public class SourcingUtils {
 
     /**
      * 整合Sourcing的临时表数据
+     *
      * @param currentMember
      * @param uuid
      */
@@ -256,7 +262,7 @@ public class SourcingUtils {
         xmsSourcingList.setImages(siteSourcing.getImg());
         xmsSourcingList.setTitle(siteSourcing.getName());
         xmsSourcingList.setStatus(0);
-        xmsSourcingList.setSiteType(9);
+        xmsSourcingList.setSiteType(siteSourcing.getSiteFlag());
         xmsSourcingList.setRemark(siteSourcing.getData());
         xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
         xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
@@ -281,7 +287,7 @@ public class SourcingUtils {
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
                 return jsonObject;
             }
-        } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+        } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
@@ -306,7 +312,9 @@ public class SourcingUtils {
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
+                // 价格除以汇率
+                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
                 return jsonObject;
             }
         }
@@ -410,7 +418,7 @@ public class SourcingUtils {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
                 // 放入redis中
-                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.TAOBAO.getFlag(), dataJson);
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALI1688.getFlag(), dataJson);
                 return CommonResult.success(dataJson);
             } else {
                 return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
@@ -451,7 +459,7 @@ public class SourcingUtils {
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
                 // 放入redis中
                 redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALIBABA.getFlag(), dataJson);
-                return CommonResult.success(jsonObject);
+                return CommonResult.success(dataJson);
             } else {
                 return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
             }
@@ -496,13 +504,13 @@ public class SourcingUtils {
                 siteSourcing.setSiteFlag(siteFlagEnum.getFlag());
                 siteSourcing.setCatid(siteFlagEnum.getCatid());
                 switch (siteFlagEnum.getFlag()) {
-                    case 1:
                     case 2:
+                    case 8:
                         // 解析aliexpress
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                         break;
-                    case 5:
+                    case 1:
                         pid = dealAliBaBaUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                     default:
@@ -580,6 +588,22 @@ public class SourcingUtils {
     public Map<String, Object> getCarToRedis(String sessionId) {
         return redisUtil.hmgetObj(SOURCING_CAR + sessionId);
     }
+
+
+    public List<SiteSourcing> getCarFromRedis(String userId) {
+        Map<String, Object> objectMap = this.getCarToRedis(userId);
+        if (null == objectMap) {
+            objectMap = new HashMap<>();
+        }
+
+        List<SiteSourcing> carList = new ArrayList<>();
+        objectMap.forEach((k, v) -> {
+            SiteSourcing redisBuyForMe = JSONObject.parseObject(v.toString(), SiteSourcing.class);
+            carList.add(redisBuyForMe);
+        });
+        return carList;
+    }
+
 
     public String getOrderNo() {
         synchronized (SourcingUtils.class) {
