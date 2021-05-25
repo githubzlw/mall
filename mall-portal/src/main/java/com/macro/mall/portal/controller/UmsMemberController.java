@@ -78,6 +78,7 @@ public class UmsMemberController {
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
+        tokenMap.put("mail", usernamez);
 
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
@@ -139,8 +140,17 @@ public class UmsMemberController {
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
         try {
-            pair = UrlUtil.getInstance().googleAuth(idtokenstr, tpLogin);
-            memberService.register(pair.getRight(), "", "", "", 1);
+            pair = memberService.googleAuth(idtokenstr);
+            memberService.register(pair.getRight(), pair.getRight(),"","",1);
+
+            String token = memberService.login(pair.getRight(), pair.getRight());
+            if (token == null) {
+                return CommonResult.validateFailed("用户名或密码错误");
+            }
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("token", token);
+            tokenMap.put("tokenHead", tokenHead);
+            return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
         }
