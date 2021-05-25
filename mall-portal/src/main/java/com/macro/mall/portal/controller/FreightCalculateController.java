@@ -159,7 +159,7 @@ public class FreightCalculateController {
 
 
             // 原商品的0.75
-            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.75, 2));
+            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
 
             EstimatedCost importXStandard = new EstimatedCost();
             EstimatedCost importXPremium = new EstimatedCost();

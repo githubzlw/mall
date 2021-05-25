@@ -117,6 +117,11 @@ public class SourcingUtils {
     }
 
 
+    public void deleteBfmCart(SiteSourcing siteSourcing) {
+        String pidKey = siteSourcing.getPid() + "_" + siteSourcing.getSiteFlag();
+        this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+    }
+
     /**
      * 检查bean数据并且异步获取PID数据
      *
@@ -203,6 +208,7 @@ public class SourcingUtils {
 
     /**
      * 整合Sourcing的临时表数据
+     *
      * @param currentMember
      * @param uuid
      */
@@ -306,7 +312,7 @@ public class SourcingUtils {
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$","").trim()) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
                 // 价格除以汇率
                 siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
                 return jsonObject;
@@ -582,6 +588,22 @@ public class SourcingUtils {
     public Map<String, Object> getCarToRedis(String sessionId) {
         return redisUtil.hmgetObj(SOURCING_CAR + sessionId);
     }
+
+
+    public List<SiteSourcing> getCarFromRedis(String userId) {
+        Map<String, Object> objectMap = this.getCarToRedis(userId);
+        if (null == objectMap) {
+            objectMap = new HashMap<>();
+        }
+
+        List<SiteSourcing> carList = new ArrayList<>();
+        objectMap.forEach((k, v) -> {
+            SiteSourcing redisBuyForMe = JSONObject.parseObject(v.toString(), SiteSourcing.class);
+            carList.add(redisBuyForMe);
+        });
+        return carList;
+    }
+
 
     public String getOrderNo() {
         synchronized (SourcingUtils.class) {

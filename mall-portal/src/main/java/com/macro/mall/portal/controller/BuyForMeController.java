@@ -127,18 +127,7 @@ public class BuyForMeController {
     public CommonResult queryBfmCartList() {
         String userId = String.valueOf(umsMemberService.getCurrentMember().getId());
         try {
-
-            Map<String, Object> objectMap = sourcingUtils.getCarToRedis(userId);
-            if (null == objectMap) {
-                objectMap = new HashMap<>();
-            }
-
-            List<SiteSourcing> carList = new ArrayList<>();
-            objectMap.forEach((k, v) -> {
-                SiteSourcing redisBuyForMe = JSONObject.parseObject(v.toString(), SiteSourcing.class);
-                carList.add(redisBuyForMe);
-            });
-            return CommonResult.success(carList);
+            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("queryBfmCartList,userId:[{}],error:", userId, e);
@@ -169,7 +158,9 @@ public class BuyForMeController {
     @GetMapping("/getInfoByUrl")
     public CommonResult getInfoByUrl(String url) {
         Assert.isTrue(StrUtil.isNotBlank(url), "url null");
+        UmsMember currentMember = umsMemberService.getCurrentMember();
         try {
+
             SiteSourcing siteSourcing = new SiteSourcing();
             siteSourcing.setUrl(url);
             // 生成PID和catid数据
@@ -177,10 +168,10 @@ public class BuyForMeController {
 
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
             // 添加到购物车
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             this.sourcingUtils.addBfmCart(siteSourcing);
-            return CommonResult.success(jsonObject);
+            return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getInfoByUrl,url[{}],error:", url, e);
@@ -196,18 +187,42 @@ public class BuyForMeController {
         Assert.isTrue(StrUtil.isNotBlank(img), "img null");
         try {
 
+            UmsMember currentMember = umsMemberService.getCurrentMember();
             SiteSourcing siteSourcing = new SiteSourcing();
             siteSourcing.setName(title);
             siteSourcing.setImg(img);
             sourcingUtils.checkSiteFlagByImg(siteSourcing);
             // 添加到购物车
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             this.sourcingUtils.addBfmCart(siteSourcing);
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("saveImg,title[{}],img[{}],error:", title, img, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "删除sourcing前的缓存信息", notes = "BuyForMe逻辑")
+    @PostMapping("/deleteBfmCart")
+    public CommonResult deleteBfmCart(String pid, Integer siteFlag) {
+        Assert.isTrue(StrUtil.isNotBlank(pid), "pid null");
+        Assert.isTrue(null != siteFlag && siteFlag > 0, "siteFlag null");
+        try {
+
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setPid(pid);
+            siteSourcing.setSiteFlag(siteFlag);
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
+            this.sourcingUtils.deleteBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+            // return CommonResult.success(this.sourcingUtils.getCarFromRedis(String.valueOf(currentMember.getId())));
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveImg,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
             return CommonResult.failed(e.getMessage());
         }
     }
