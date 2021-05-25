@@ -21,7 +21,7 @@ import java.util.List;
  * 商品管理Controller
  * Created by macro on 2018/4/26.
  */
-@Controller
+@RestController
 @Api(tags = "PmsProductController", description = "商品管理")
 @RequestMapping("/product")
 public class PmsProductController {
@@ -50,9 +50,11 @@ public class PmsProductController {
 
     @GetMapping(value = "/getProductInfo")
     @ApiOperation("根据id获得产品数据")
+    @ResponseBody
     public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
         PmsProductResult productResult = productService.getUpdateInfo(id);
         return CommonResult.success(new Gson().toJson(productResult));
+        // return CommonResult.success(productResult);
     }
 
 

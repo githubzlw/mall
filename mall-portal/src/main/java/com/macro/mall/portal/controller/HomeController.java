@@ -88,10 +88,11 @@ public class HomeController {
 
     @GetMapping(value = "/getProductInfo")
     @ApiOperation("根据id获得产品数据")
+    @ResponseBody
     public CommonResult getProductInfo(@RequestParam Long id) {
         try{
             JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id);
-            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
             return commonResult;
         }catch (Exception e){
             return CommonResult.failed(e.getMessage());
