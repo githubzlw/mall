@@ -19,4 +19,7 @@ public class MicroServiceConfig {
 
     @Value("${microService.shopifyApi.url}")
     private String shopifyUrl;
+
+    @Value("${microService.productApi.url}")
+    private String productUrl;
 }
