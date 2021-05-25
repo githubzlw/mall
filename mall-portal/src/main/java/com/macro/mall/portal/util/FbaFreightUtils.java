@@ -120,7 +120,7 @@ public class FbaFreightUtils {
             }
         }
 
-        // 进行类别分组
+        /*// 进行类别分组
         if (CollectionUtil.isNotEmpty(list)) {
             Map<Integer, List<XmsFbaFreightUnit>> listMap = list.stream().collect(Collectors.groupingBy(XmsFbaFreightUnit::getModeOfTransport));
 
@@ -133,7 +133,12 @@ public class FbaFreightUtils {
             });
             listMap.clear();
             list.clear();
+        }*/
+        // 不分组处理
+        if (CollectionUtil.isNotEmpty(list)) {
+            tmList = BeanCopyUtil.deepListCopy(list);
         }
+
         if (CollectionUtil.isNotEmpty(tmList)) {
             if (StrUtil.isNotBlank(fbaParam.getZipCode())) {
                 tmList.forEach(e -> e.setZipCode(fbaParam.getZipCode()));
