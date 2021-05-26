@@ -1,6 +1,5 @@
 package com.macro.mall.controller;
 
-import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.PmsProductParam;
@@ -12,7 +11,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,7 +51,7 @@ public class PmsProductController {
     @ResponseBody
     public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
         PmsProductResult productResult = productService.getUpdateInfo(id);
-        return CommonResult.success(new Gson().toJson(productResult));
+        return CommonResult.success(productResult);
     }
 
 
