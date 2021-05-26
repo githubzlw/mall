@@ -53,7 +53,7 @@ public class PmsProductController {
     @ResponseBody
     public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
         PmsProductResult productResult = productService.getUpdateInfo(id);
-        return CommonResult.success(new Gson().toJson(productResult));
+        return CommonResult.success(productResult);
     }
 
 
