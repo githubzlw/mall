@@ -120,7 +120,7 @@ public class FbaFreightUtils {
             }
         }
 
-        // 进行类别分组
+        /*// 进行类别分组
         if (CollectionUtil.isNotEmpty(list)) {
             Map<Integer, List<XmsFbaFreightUnit>> listMap = list.stream().collect(Collectors.groupingBy(XmsFbaFreightUnit::getModeOfTransport));
 
@@ -133,7 +133,12 @@ public class FbaFreightUtils {
             });
             listMap.clear();
             list.clear();
+        }*/
+        // 不分组处理
+        if (CollectionUtil.isNotEmpty(list)) {
+            tmList = BeanCopyUtil.deepListCopy(list);
         }
+
         if (CollectionUtil.isNotEmpty(tmList)) {
             if (StrUtil.isNotBlank(fbaParam.getZipCode())) {
                 tmList.forEach(e -> e.setZipCode(fbaParam.getZipCode()));
@@ -302,16 +307,16 @@ public class FbaFreightUtils {
         if (vlNum > 1) {
             if (odlFba.getWeight() * vlNum < vlMaxWeight) {
                 //实际体积转换的重量
-                tempPrice = vlMaxWeight * fbaFreightUnit.getWeightPrice() / vlNum / this.exchangeRateUtils.getUsdToCnyRate();
+                tempPrice = vlMaxWeight * fbaFreightUnit.getWeightPrice() / vlNum;
             } else {
-                tempPrice = odlFba.getWeight() * fbaFreightUnit.getWeightPrice() / this.exchangeRateUtils.getUsdToCnyRate();
+                tempPrice = odlFba.getWeight() * fbaFreightUnit.getWeightPrice();
             }
         } else {
             double totalVolWeight = odlFba.getVolume() * vlMaxWeight;
-            tempPrice = Math.max(totalVolWeight, odlFba.getWeight()) * fbaFreightUnit.getWeightPrice() / this.exchangeRateUtils.getUsdToCnyRate();
+            tempPrice = Math.max(totalVolWeight, odlFba.getWeight()) * fbaFreightUnit.getWeightPrice();
         }
 
-        fbaFreightUnit.setTotalPrice(DoubleUtil.mul(tempPrice, currencyRate, 2));
+        fbaFreightUnit.setTotalPrice(DoubleUtil.divide(tempPrice, currencyRate, 2));
         odlFba.setTotalPrice(fbaFreightUnit.getTotalPrice());
 
     }

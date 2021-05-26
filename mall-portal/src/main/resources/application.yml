@@ -63,6 +63,7 @@ rabbitmq:
 # 第三方登录
 tpurl:
   tpLogin: http://127.0.0.1:8085
+  googleid: BzGb3mP2qVGk9Qi_DLazVIqe
 
 aliyun:
   oss:

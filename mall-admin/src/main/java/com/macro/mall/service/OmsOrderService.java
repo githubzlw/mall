@@ -55,4 +55,10 @@ public interface OmsOrderService {
      */
     @Transactional
     int updateNote(Long id, String note, Integer status);
+
+
+    long listCount(SyncOrderParam orderParam);
+
+    List<OmsOrder>  list(SyncOrderParam orderParam);
+
 }

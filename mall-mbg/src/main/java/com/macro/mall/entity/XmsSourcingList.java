@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-04-20
+ * @since 2021-05-18
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -59,7 +59,7 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
     private Integer status;
 
-    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;11 shopify")
+    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;9 图片11 shopify")
     private Integer siteType;
 
     @ApiModelProperty(value = "创建时间")
@@ -68,8 +68,8 @@ public class XmsSourcingList implements Serializable {
     private Date createTime;
 
     @ApiModelProperty(value = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @ApiModelProperty(value = "sku的json数据")
@@ -81,5 +81,31 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "货源链接")
     private String sourceLink;
 
+    @ApiModelProperty(value = "运输方式  1进FBA, 2 进客户门点, 3 CIF")
+    private Integer typeOfShipping;
+
+    @ApiModelProperty(value = "选择类型 1:Drop Shipping  2:Wholesale and Bulk Shipping 3 Transportation Only:  4:Product Customization")
+    private Integer chooseType;
+
+    @ApiModelProperty(value = "目的国家")
+    private String countryName;
+
+    @ApiModelProperty(value = "目的州或者城市")
+    private String stateName;
+
+    @ApiModelProperty(value = "定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
+    private Integer customType;
+
+    @ApiModelProperty(value = "国家id")
+    private Integer countryId;
+
+    @ApiModelProperty(value = "询问订单量")
+    private Integer orderQuantity;
+
+    @ApiModelProperty(value = "客户备注")
+    private String remark;
+
+    @ApiModelProperty(value = "aliexpress处理")
+    private String pricePs;
 
 }

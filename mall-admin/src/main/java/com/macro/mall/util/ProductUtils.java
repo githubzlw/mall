@@ -2,16 +2,16 @@ package com.macro.mall.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.PmsProductParam;
 import com.macro.mall.entity.XmsChromeUpload;
+import com.macro.mall.entity.XmsListOfCountries;
 import com.macro.mall.entity.XmsSourcingList;
-import com.macro.mall.mapper.PmsProductAttributeCategoryMapper;
-import com.macro.mall.mapper.PmsProductCategoryMapper;
-import com.macro.mall.mapper.XmsChromeUploadMapper;
-import com.macro.mall.mapper.XmsSourcingListMapper;
+import com.macro.mall.mapper.*;
 import com.macro.mall.model.PmsProductAttributeValue;
 import com.macro.mall.model.PmsProductCategory;
 import com.macro.mall.model.PmsProductCategoryExample;
@@ -27,10 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -56,6 +53,8 @@ public class ProductUtils {
     private PmsProductAttributeCategoryMapper productAttributeCategoryMapper;
     @Autowired
     private PmsProductCategoryMapper productCategoryMapper;
+    @Autowired
+    private XmsListOfCountriesMapper listOfCountriesMapper;
     @Autowired
     public ProductUtils(XmsChromeUploadMapper xmsChromeUploadMapper, XmsSourcingListMapper xmsSourcingListMapper) {
         this.xmsChromeUploadMapper = xmsChromeUploadMapper;
@@ -177,6 +176,10 @@ public class ProductUtils {
             productParam.setUrl(xmsSourcingList.getUrl());
             //moq
             productParam.setMoq(chromeUpload.getMoq());
+            //shippingfee
+            productParam.setShippingFee(chromeUpload.getShippingFee());
+            //shippingby
+            productParam.setShippingBy(chromeUpload.getShippingBy());
 
             productParam.setProductAttributeValueList(productAttributeValueList);
             int productMaxId = pmsProductService.create(productParam);
@@ -257,30 +260,56 @@ public class ProductUtils {
 //            }
 //        }
         sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()));
+        //阿里价格处理
+        sourcingInfo.setPricePs(cleaningAliPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()),chromeUpload.getSiteType()));
+
         // 处理 shippingFee
-        // Shipping: US $5.14
-        if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
-            if (chromeUpload.getShippingFee().contains("Shipping: US $")) {
-                sourcingInfo.setCost(chromeUpload.getShippingFee().replace("Shipping: US $", "").trim());
-            } else {
-                sourcingInfo.setCost(chromeUpload.getShippingFee().trim());
-            }
-            sourcingInfo.setCost(sourcingInfo.getCost().replace("AWG", "").trim());
+        sourcingInfo.setCost(this.cleaningShippingFee(chromeUpload.getShippingFee().trim(),chromeUpload.getSiteType()));
+//        // Shipping: US $5.14
+//        if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
+//            if (chromeUpload.getShippingFee().contains("Shipping: US $")) {
+//                sourcingInfo.setCost(chromeUpload.getShippingFee().replace("Shipping: US $", "").trim());
+//            } else {
+//                sourcingInfo.setCost(chromeUpload.getShippingFee().trim());
+//            }
+//            sourcingInfo.setCost(sourcingInfo.getCost().replace("AWG", "").trim());
+//
+//        }
 
-        }
-
-        if (StrUtil.isNotEmpty(chromeUpload.getShippingBy())) {
-            sourcingInfo.setShipping(chromeUpload.getShippingBy());
-        }
-
+//        if (StrUtil.isNotEmpty(chromeUpload.getShippingBy())) {
+//            sourcingInfo.setShipping(chromeUpload.getShippingBy());
+//        }
+        // 处理 shippingFee
+        String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy().trim(),chromeUpload.getSiteType());
+        sourcingInfo.setCountryId(this.getCountId(shipingbyC));
+        sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC) && shipingbyC.indexOf(";")>0 ?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
         sourcingInfo.setStatus(chromeUpload.getStatus());
         sourcingInfo.setCreateTime(new Date());
         sourcingInfo.setUpdateTime(new Date());
         return sourcingInfo;
-
     }
 
+    // 取得国家id
+    public int getCountId(String shipingbyC) {
+        int countId = 0;
+
+        if(StringUtil.isEmpty(shipingbyC)){
+            countId = 36;
+        }else{
+            List<XmsListOfCountries> countriesList = new ArrayList<>();
+            QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
+            queryWrapper.like("english_name_of_country",shipingbyC.split(";")[0]);
+            countriesList = this.listOfCountriesMapper.selectList(queryWrapper);
+            if (CollectionUtil.isNotEmpty(countriesList)) {
+                countId = countriesList.get(0).getId();
+            }else{
+                countId =36;
+            }
+        }
+
+        return countId;
+    }
 
     // 规格清洗
     public String cleaningCType(String cType,int site) {
@@ -318,8 +347,27 @@ public class ProductUtils {
         }
         StringBuilder result = new StringBuilder();
         Document doc = Jsoup.parse(price);
-        //ebay
-        if(site==6){
+        //alibaba
+        if (site == 1) {
+            List<String> prcieList = new ArrayList();
+            JSONArray jsonArr = JSONArray.parseArray(price);
+            if (jsonArr != null && jsonArr.size() > 0) {
+                for (int i = 0; i < jsonArr.size(); i++) {
+                    JSONObject json = jsonArr.getJSONObject(i);
+                    String spDate = json.getString("ma_spec_price");
+                    prcieList.add(spDate);
+                }
+            }
+            if(prcieList.size()==1){
+                result.append(prcieList.get(0));
+            }else{
+                result.append(prcieList.get(prcieList.size()-1));
+                result.append("-");
+                result.append(prcieList.get(0));
+            }
+
+            //ebay
+        }else if(site==6){
             // 价格
             Elements element1 = doc.select("span.notranslate");
 
@@ -334,8 +382,8 @@ public class ProductUtils {
                 result.append(element1.get(0).text());
             }
             if(element1.size()==2){
-                result.append(element1.get(0).text());
-                result.append(";");
+//                result.append(element1.get(0).text());
+//                result.append(";");
                 result.append(element1.get(1).text());
             }
 
@@ -349,6 +397,112 @@ public class ProductUtils {
         //正常价格
         if(StrUtil.isEmpty(result.toString())){
             result.append(price);
+        }
+
+        return result.toString();
+    }
+
+    // price ShippingFee
+    // 运费运输方式
+    public static String cleaningShippingFee(String shippingFee,int site) {
+
+        if(StrUtil.isEmpty(shippingFee)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        Document doc = Jsoup.parse(shippingFee);
+        //ebay
+        if(site==1){
+            Elements elementSpan = doc.select("span.from-num");
+            result.append(elementSpan.text());
+        }else if(site == 2 || site == 3){
+            if(StringUtil.isNotEmpty(shippingFee)){
+                if(shippingFee.contains("Shipping:")){
+                    result.append(shippingFee.replace("Shipping:","").replace("&nbsp;","").trim());
+                }
+            }
+
+        }
+
+        return result.toString();
+    }
+
+    // ali价格处理
+    public static String cleaningAliPrice(String priceUnit,int site) {
+
+        if(StrUtil.isEmpty(priceUnit)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+
+         if(site == 2 || site == 3){
+            if(priceUnit.contains("-")){
+                result.append(StrUtils.matchStr(priceUnit.split("-")[0], "(\\d+(\\.\\d+){0,1})"));
+                result.append("-");
+                result.append(StrUtils.matchStr(priceUnit.split("-")[1], "(\\d+(\\.\\d+){0,1})"));
+            }else{
+                result.append(StrUtils.matchStr(priceUnit, "(\\d+(\\.\\d+){0,1})"));
+            }
+        }
+
+        return result.toString();
+    }
+
+
+
+    // shippingBy
+    // 运费方式
+    public static String cleaningShippingBy(String shippingBy,int site) {
+
+        if(StrUtil.isEmpty(shippingBy)){
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        //alibaba
+        if(site==1){
+
+            if(StringUtil.isNotEmpty(shippingBy)){
+                if(shippingBy.contains("to")){
+                    if(shippingBy.contains("by")){
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2,shippingBy.indexOf("by"));
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                        String by = shippingBy.substring(shippingBy.indexOf("by")+2);
+                        if(StringUtil.isNotEmpty(by)){
+                            result.append(";"+by.trim());
+                        }
+                    }
+                    else{
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2);
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                    }
+                }
+            }
+        }else if(site == 2 || site == 3){
+            if(StringUtil.isNotEmpty(shippingBy)){
+                if(shippingBy.contains("to")){
+                    if(shippingBy.contains("via")){
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2,shippingBy.indexOf("via"));
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                        String by = shippingBy.substring(shippingBy.indexOf("via")+3);
+                        if(StringUtil.isNotEmpty(by)){
+                            result.append(";"+by.trim());
+                        }
+                    }
+                    else{
+                        String to = shippingBy.substring(shippingBy.indexOf("to")+2);
+                        if(StringUtil.isNotEmpty(to)){
+                            result.append(to.trim());
+                        }
+                    }
+                }
+            }
+
         }
 
         return result.toString();
@@ -374,8 +528,11 @@ public class ProductUtils {
             Elements sku_title = element.select("div.sku-title");
             if (sku_title != null && sku_title.size() > 0) {
                 skuType = sku_title.get(0).text();
-                if (StrUtil.isNotEmpty(skuType)) {
+                if (StringUtil.isNotEmpty(skuType)) {
                     skuType = skuType.substring(0, skuType.indexOf(":"));
+                    if(skuType.contains("Fit") || skuType.contains("Condition")){
+                        continue;
+                    }
                 }
                 if (!"".equals(typeResult) && typeResult.length() > 0) {
                     typeResult.append(";");
@@ -389,6 +546,7 @@ public class ProductUtils {
                 elementImg = element.select("span.sku-property-color-inner");
             }
 
+
             for (Element element1 : elementImg) {
                 if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                     typeResult.append(",");
@@ -400,7 +558,7 @@ public class ProductUtils {
             for (Element element2 : elementSpan) {
 
                 String spanText = element2.select("span").first().text();
-                if (StrUtil.isNotEmpty(spanText)) {
+                if (StringUtil.isNotEmpty(spanText)) {
                     if (typeResult.lastIndexOf(":") != (typeResult.length() - 1)) {
                         typeResult.append(",");
                     }
@@ -411,6 +569,7 @@ public class ProductUtils {
             }
 
         }
+
 
         return typeResult.toString();
     }
@@ -453,7 +612,7 @@ public class ProductUtils {
                 Elements elementSpan = elementDd.select("span.sku-attr-val-frame");
                 for(Element element2 : elementSpan){
                     String title = element2.attr("title");
-                    if(StrUtil.isNotEmpty(title)){
+                    if(StringUtil.isNotEmpty(title)){
                         if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                             typeResult.append(",");
                         }
@@ -461,17 +620,30 @@ public class ProductUtils {
                     }
                     else{
                         String spanText = element2.select("span").first().text();
-                        if(StrUtil.isNotEmpty(spanText)){
+                        if(StringUtil.isNotEmpty(spanText)){
                             if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
                                 typeResult.append(",");
                             }
                             typeResult.append(spanText);
                         }
+                        else{
+                            String spanTextTitle = element2.select("span.color").attr("title");
+                            if(StringUtil.isNotEmpty(spanTextTitle)){
+                                if(typeResult.lastIndexOf(":") != (typeResult.length()-1)){
+                                    typeResult.append(",");
+                                }
+                                typeResult.append(spanTextTitle);
+                            }
+                        }
                     }
 
                 }
+
+
             }
         }
+
+
         return typeResult.toString();
     }
 

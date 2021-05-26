@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.SiteSourcing;
 import com.macro.mall.portal.domain.SiteSourcingParam;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -57,17 +58,21 @@ public class BuyForMeController {
         BeanUtil.copyProperties(siteSourcingParam, siteSourcing);
 
         try {
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             //siteBuyForMe.setUserName("1071083166@qq.com");
             // 生成PID和catid数据
             sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             // 添加到购物车
-            sourcingUtils.addBfmCart(siteSourcing);
+            // sourcingUtils.addBfmCart(siteSourcing);
 
             // 异步加载数据
             sourcingUtils.checkAndLoadDataAsync(siteSourcing);
+
+            // 清空redis数据
+            sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -85,6 +90,7 @@ public class BuyForMeController {
 
         Assert.notNull(siteSourcingParam, "siteBuyForMeParam null");
         Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getImg()), "img null");
+        Assert.isTrue(null != siteSourcingParam.getChooseType() && siteSourcingParam.getChooseType() > 0, "chooseType null");
 
         Assert.isTrue((null != siteSourcingParam.getAverageDailyOrder() && siteSourcingParam.getAverageDailyOrder() > 0) || (null != siteSourcingParam.getOneTimeOrderOnly() && siteSourcingParam.getOneTimeOrderOnly() > 0), "averageDailyOrder or oneTimeOrderOnly null");
 
@@ -95,13 +101,17 @@ public class BuyForMeController {
             // 生成PID和catid数据
             sourcingUtils.checkSiteFlagByImg(siteSourcing);
 
-            siteSourcing.setUserId(umsMemberService.getCurrentMember().getId());
-            siteSourcing.setUserName(umsMemberService.getCurrentMember().getUsername());
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
             // 添加到购物车
-            sourcingUtils.addBfmCart(siteSourcing);
+            // sourcingUtils.addBfmCart(siteSourcing); c
 
             // 添加到sourcingList
-            sourcingUtils.saveSourcingImgInfo(siteSourcing);
+            sourcingUtils.saveSourcingInfo(siteSourcing);
+
+            // 清空redis数据
+            sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -117,18 +127,7 @@ public class BuyForMeController {
     public CommonResult queryBfmCartList() {
         String userId = String.valueOf(umsMemberService.getCurrentMember().getId());
         try {
-
-            Map<String, Object> objectMap = sourcingUtils.getCarToRedis(userId);
-            if (null == objectMap) {
-                objectMap = new HashMap<>();
-            }
-
-            List<SiteSourcing> carList = new ArrayList<>();
-            objectMap.forEach((k, v) -> {
-                SiteSourcing redisBuyForMe = JSONObject.parseObject(v.toString(), SiteSourcing.class);
-                carList.add(redisBuyForMe);
-            });
-            return CommonResult.success(carList);
+            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("queryBfmCartList,userId:[{}],error:", userId, e);
@@ -159,17 +158,71 @@ public class BuyForMeController {
     @GetMapping("/getInfoByUrl")
     public CommonResult getInfoByUrl(String url) {
         Assert.isTrue(StrUtil.isNotBlank(url), "url null");
+        UmsMember currentMember = umsMemberService.getCurrentMember();
         try {
+
             SiteSourcing siteSourcing = new SiteSourcing();
             siteSourcing.setUrl(url);
             // 生成PID和catid数据
             this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
-            return CommonResult.success(jsonObject);
+            // 添加到购物车
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
+            this.sourcingUtils.addBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getInfoByUrl,url[{}],error:", url, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @ApiOperation(value = "缓存img信息", notes = "BuyForMe逻辑")
+    @PostMapping("/saveImg")
+    public CommonResult getInfoByUrl(String title, String img) {
+        Assert.isTrue(StrUtil.isNotBlank(title), "title null");
+        Assert.isTrue(StrUtil.isNotBlank(img), "img null");
+        try {
+
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setName(title);
+            siteSourcing.setImg(img);
+            sourcingUtils.checkSiteFlagByImg(siteSourcing);
+            // 添加到购物车
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
+            this.sourcingUtils.addBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveImg,title[{}],img[{}],error:", title, img, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "删除sourcing前的缓存信息", notes = "BuyForMe逻辑")
+    @PostMapping("/deleteBfmCart")
+    public CommonResult deleteBfmCart(String pid, Integer siteFlag) {
+        Assert.isTrue(StrUtil.isNotBlank(pid), "pid null");
+        Assert.isTrue(null != siteFlag && siteFlag > 0, "siteFlag null");
+        try {
+
+            UmsMember currentMember = umsMemberService.getCurrentMember();
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setPid(pid);
+            siteSourcing.setSiteFlag(siteFlag);
+            siteSourcing.setUserId(currentMember.getId());
+            siteSourcing.setUserName(currentMember.getUsername());
+            this.sourcingUtils.deleteBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+            // return CommonResult.success(this.sourcingUtils.getCarFromRedis(String.valueOf(currentMember.getId())));
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveImg,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
             return CommonResult.failed(e.getMessage());
         }
     }

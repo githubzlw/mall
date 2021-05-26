@@ -46,11 +46,14 @@ logging:
 logstash:
   host: logstash
 
-import:
-  microService:
-    api:
+microService:
+  importApi:
       url: http://127.0.0.1:18005/api
-      exchangeRate: ${import.microService.api.url}/utils-service/fx
+      exchangeRate: ${microService.importApi.url}/utils-service/fx
+  shopifyApi:
+    url: http://127.0.0.1:8086/shopify
+  productApi:
+    url: http://127.0.0.1:8091/product
 
 paypal:
   cancelUrlType: 1
@@ -58,7 +61,4 @@ paypal:
   cancelUrl: http://127.0.0.1:8087/myaccount
   businessId: 584JZVFU6PPVU
 
-shopify:
-  callback:
-    url: http://127.0.0.1:8085/shopify/auth/callback
 

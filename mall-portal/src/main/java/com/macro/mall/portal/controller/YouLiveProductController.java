@@ -83,7 +83,8 @@ public class YouLiveProductController {
         Assert.isTrue(null != orderPayParam, "orderPayParam null");
         Assert.isTrue(StrUtil.isNotBlank(orderPayParam.getReceiverName()), "receiverName null");
         Assert.isTrue(StrUtil.isNotBlank(orderPayParam.getReceiverPhone()), "receiverPhone null");
-        Assert.isTrue(StrUtil.isNotBlank(orderPayParam.getAddress()), "address null");
+        Assert.isTrue(StrUtil.isNotBlank(orderPayParam.getReceiverCountry()), "receiverCountry null");
+        Assert.isTrue(StrUtil.isNotBlank(orderPayParam.getReceiverPostCode()), "receiverPostCode null");
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
         try {

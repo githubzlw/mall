@@ -1,13 +1,18 @@
 package com.macro.mall.portal.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.CmsSubject;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsProductCategory;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.HomeContentResult;
 import com.macro.mall.portal.service.HomeService;
+import com.macro.mall.portal.util.UrlUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +29,9 @@ import java.util.List;
 public class HomeController {
     @Autowired
     private HomeService homeService;
+    private UrlUtil urlUtil = UrlUtil.getInstance();
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
 
     @ApiOperation("首页内容页信息展示")
     @RequestMapping(value = "/content", method = RequestMethod.GET)
@@ -76,5 +84,18 @@ public class HomeController {
                                                          @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize) {
         List<PmsProduct> productList = homeService.newProductList(pageNum,pageSize);
         return CommonResult.success(productList);
+    }
+
+    @GetMapping(value = "/getProductInfo")
+    @ApiOperation("根据id获得产品数据")
+    @ResponseBody
+    public CommonResult getProductInfo(@RequestParam Long id) {
+        try{
+            JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id);
+            CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            return commonResult;
+        }catch (Exception e){
+            return CommonResult.failed(e.getMessage());
+        }
     }
 }

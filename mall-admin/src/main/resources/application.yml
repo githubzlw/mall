@@ -52,6 +52,8 @@ secure:
       - /admin/info
       - /admin/logout
       - /minio/upload
+      - /syncData/**
+      - /product/getProductInfo
 
 
 aliyun:
@@ -72,3 +74,10 @@ minio:
   bucketName: mall #存储桶名称
   accessKey: admin #访问的key
   secretKey: xxxxxx #访问的秘钥
+
+shopify:
+  uri_products: https://%s.myshopify.com/admin/api/2020-04/products.json
+
+  api_key: 5cc8320a1e4e227580f72a0c0cddfa8f
+  api_key_secret: c884cb55401548d4bc42af8898a1b5cd
+

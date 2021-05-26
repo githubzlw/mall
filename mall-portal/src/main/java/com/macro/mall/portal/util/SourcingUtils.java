@@ -1,9 +1,13 @@
 package com.macro.mall.portal.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsSourcingList;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.SiteSourcing;
@@ -44,7 +48,7 @@ public class SourcingUtils {
     public final String IMG_SEARCH_PATH = "/search/sourcing";
     public final String SOURCING_UPLOAD_IMG = "/sourcing/upload";
 
-    public final String SOURCING_CAR = "sourcing:car:list";
+    public final String SOURCING_CAR = "sourcing:carInfo:";
     public final String SOURCING_GOODS = "sourcing:goods";
     public final String SOURCING_TAOBAO_IMG = "sourcing:taobao:img";
 
@@ -113,6 +117,11 @@ public class SourcingUtils {
     }
 
 
+    public void deleteBfmCart(SiteSourcing siteSourcing) {
+        String pidKey = siteSourcing.getPid() + "_" + siteSourcing.getSiteFlag();
+        this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+    }
+
     /**
      * 检查bean数据并且异步获取PID数据
      *
@@ -125,14 +134,14 @@ public class SourcingUtils {
             if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
                 CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
-                this.saveSourcingImgInfo(siteSourcing);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+                this.saveSourcingInfo(siteSourcing);
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 // TAOBAO
                 CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
                 this.setSiteBuyForMeInfo(jsonResult, siteSourcing, String.valueOf(siteSourcing.getUserId()));
-                this.saveSourcingImgInfo(siteSourcing);
+                this.saveSourcingInfo(siteSourcing);
             } else {
-                this.saveSourcingImgInfo(siteSourcing);
+                this.saveSourcingInfo(siteSourcing);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,7 +166,7 @@ public class SourcingUtils {
                 String title = jsonObject.getString("title");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-            } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+            } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
                 if (jsonObject.containsKey("item")) {
                     String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                     String title = jsonObject.getJSONObject("item").getString("title");
@@ -166,7 +175,7 @@ public class SourcingUtils {
                 }
             }
             // 更新购物车
-            this.setSiteBuyForMeCartInfo(siteSourcing, userId);
+            // this.setSiteBuyForMeCartInfo(siteSourcing, userId);
         }
     }
 
@@ -198,6 +207,28 @@ public class SourcingUtils {
 
 
     /**
+     * 整合Sourcing的临时表数据
+     *
+     * @param currentMember
+     * @param uuid
+     */
+    public void mergeSourcingList(UmsMember currentMember, String uuid) {
+        if (null != currentMember && StrUtil.isNotEmpty(uuid)) {
+            // TOURIST_b0596503-cf0a-422c-8a5f-500b5284bc77
+            UpdateWrapper<XmsSourcingList> updateSourcingWrapper = new UpdateWrapper<>();
+            updateSourcingWrapper.lambda().eq(XmsSourcingList::getUsername, "TOURIST_" + uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
+            this.xmsSourcingListService.update(null, updateSourcingWrapper);
+
+            // upload表也进行更新
+            UpdateWrapper<XmsChromeUpload> updateUploadWrapper = new UpdateWrapper<>();
+            updateUploadWrapper.lambda().eq(XmsChromeUpload::getUsername, "TOURIST_" + uuid).set(XmsChromeUpload::getMemberId, currentMember.getId()).set(XmsChromeUpload::getUsername, currentMember.getUsername());
+            this.xmsChromeUploadService.update(null, updateUploadWrapper);
+        }
+
+
+    }
+
+    /**
      * 保存到jack的数据库
      *
      * @param siteSourcing
@@ -218,12 +249,12 @@ public class SourcingUtils {
             xmsChromeUploadService.upload(uploadParam);
         }
     }*/
-
-
-    public void saveSourcingImgInfo(SiteSourcing siteSourcing) {
+    public void saveSourcingInfo(SiteSourcing siteSourcing) {
 
 
         XmsSourcingList xmsSourcingList = new XmsSourcingList();
+        BeanUtil.copyProperties(siteSourcing, xmsSourcingList);
+
         xmsSourcingList.setMemberId(siteSourcing.getUserId());
         xmsSourcingList.setUsername(siteSourcing.getUserName());
         xmsSourcingList.setCreateTime(new Date());
@@ -231,28 +262,63 @@ public class SourcingUtils {
         xmsSourcingList.setImages(siteSourcing.getImg());
         xmsSourcingList.setTitle(siteSourcing.getName());
         xmsSourcingList.setStatus(0);
-        xmsSourcingList.setSiteType(9);
-        xmsSourcingList.setUrl("");
+        xmsSourcingList.setSiteType(siteSourcing.getSiteFlag());
+        xmsSourcingList.setRemark(siteSourcing.getData());
+        xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
+        xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
 
         xmsSourcingListService.save(xmsSourcingList);
     }
 
 
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
+
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return JSONObject.parseObject(jsonResult.getData().toString());
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getString("pic_url");
+                String title = jsonObject.getString("title");
+                String price = jsonObject.getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                return jsonObject;
             }
-        } else if (SiteFlagEnum.TAOBAO.getFlag() == siteSourcing.getSiteFlag()) {
+        } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
-                return JSONObject.parseObject(jsonResult.getData().toString());
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
+                String title = jsonObject.getJSONObject("item").getString("title");
+                String price = jsonObject.getJSONObject("item").getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                return jsonObject;
+            }
+        } else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
+            // TAOBAO
+            CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
+            if (null != jsonResult && null != jsonResult.getData()) {
+
+                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                String pic_url = jsonObject.getString("pic_url");
+                String title = jsonObject.getString("title");
+                String price = jsonObject.getString("price");
+                siteSourcing.setImg(pic_url);
+                siteSourcing.setName(title);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
+                // 价格除以汇率
+                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
+                return jsonObject;
             }
         }
-        return null;
+        return new JSONObject();
     }
 
 
@@ -296,7 +362,7 @@ public class SourcingUtils {
     public boolean imgSearchByTaoBao(File file, String uuid, String today) {
         boolean isSu = false;
         try {
-            String url = microServiceConfig.getUrl() + instance.MICRO_SERVICE_1688.replace("18005", "18003")
+            String url = microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688.replace("18005", "18003")
                     .replace("api/ali1688-service/", "");
             JSONObject json = instance.postFile(file, "file", url + "searchimg/upload");
 
@@ -325,7 +391,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -347,12 +413,12 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
                 // 放入redis中
-                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.TAOBAO.getFlag(), dataJson);
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALI1688.getFlag(), dataJson);
                 return CommonResult.success(dataJson);
             } else {
                 return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
@@ -368,7 +434,7 @@ public class SourcingUtils {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -382,6 +448,28 @@ public class SourcingUtils {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+    public CommonResult getAliBabaDetails(String pid) {
+
+        try {
+
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "alibaba?pid=" + pid);
+            if (null != jsonObject && jsonObject.containsKey("item")) {
+                JSONObject dataJson = jsonObject.getJSONObject("item");
+                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
+                // 放入redis中
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALIBABA.getFlag(), dataJson);
+                return CommonResult.success(dataJson);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getAliExpressDetails pid[{}],  error:", pid, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
     /**
      * 根据图片生成PID等数据
@@ -416,12 +504,15 @@ public class SourcingUtils {
                 siteSourcing.setSiteFlag(siteFlagEnum.getFlag());
                 siteSourcing.setCatid(siteFlagEnum.getCatid());
                 switch (siteFlagEnum.getFlag()) {
-                    case 1:
                     case 2:
+                    case 8:
                         // 解析aliexpress
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
                         break;
+                    case 1:
+                        pid = dealAliBaBaUrl(siteSourcing.getUrl());
+                        siteSourcing.setPid(pid);
                     default:
                         break;
                 }
@@ -476,6 +567,19 @@ public class SourcingUtils {
     }
 
 
+    public String dealAliBaBaUrl(String url) {
+        // https://www.alibaba.com/product-detail/2019-new-design-summer-kids-floral_62133045607.html?spm=a27aq.industry_category_productlist.dt_3.1.588e2055yoESRA
+        if (StrUtil.isBlank(url)) {
+            return null;
+        }
+        if (url.contains("?")) {
+            url = url.substring(0, url.indexOf("?"));
+        }
+        String tempKey = url.split(".html")[0];
+        return tempKey.substring(tempKey.lastIndexOf("_") + 1);
+    }
+
+
     public void addCarToRedis(String sessionId, Map<String, Object> objectMap) {
         redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_7_DAY);
     }
@@ -484,6 +588,22 @@ public class SourcingUtils {
     public Map<String, Object> getCarToRedis(String sessionId) {
         return redisUtil.hmgetObj(SOURCING_CAR + sessionId);
     }
+
+
+    public List<SiteSourcing> getCarFromRedis(String userId) {
+        Map<String, Object> objectMap = this.getCarToRedis(userId);
+        if (null == objectMap) {
+            objectMap = new HashMap<>();
+        }
+
+        List<SiteSourcing> carList = new ArrayList<>();
+        objectMap.forEach((k, v) -> {
+            SiteSourcing redisBuyForMe = JSONObject.parseObject(v.toString(), SiteSourcing.class);
+            carList.add(redisBuyForMe);
+        });
+        return carList;
+    }
+
 
     public String getOrderNo() {
         synchronized (SourcingUtils.class) {
@@ -574,21 +694,9 @@ public class SourcingUtils {
     }
 
 
-    public void deleteRedisCar(String sessionId, int useId, String cookieId) {
-
-        // System.err.println("deleteRedisCar:");
-        // Arrays.stream(Thread.currentThread().getStackTrace()).forEach(System.err::println);
-
+    public void deleteRedisCar(long sessionId) {
         Map<String, Object> objectMap = new HashMap<>();
-        if (StrUtil.isNotBlank(sessionId)) {
-            redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
-        if (useId > 0) {
-            redisUtil.hmsetObj(SOURCING_CAR + useId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
-        if (StrUtil.isNotBlank(cookieId)) {
-            redisUtil.hmsetObj(SOURCING_CAR + cookieId, objectMap, EXPIRATION_TIME_1_SECOND);
-        }
+        redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_1_SECOND);
 
     }
 
