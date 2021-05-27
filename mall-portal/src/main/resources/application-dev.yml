@@ -48,7 +48,7 @@ microService:
   shopifyApi:
     url: http://192.168.1.67:8086/shopify
   productApi:
-    url: http://192.168.1.55:8091/product
+    url: http://127.0.0.1:8091/product
 
 paypal:
   cancelUrlType: 1
