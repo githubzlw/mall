@@ -28,3 +28,8 @@ logging:
 
 logstash:
   host: logstash
+
+ali1688api:
+  API_HOST: http://api-gw.onebound.cn/
+  API_KEY: tel13564700983
+  API_SECRET: 20191107

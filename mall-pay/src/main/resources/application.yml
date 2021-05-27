@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: mall-pay
-  profiles:
-    active: dev #默认为开发环境
-
-
