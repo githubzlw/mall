@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: mall-utils
+  profiles:
+    active: dev #默认为开发环境
+
+

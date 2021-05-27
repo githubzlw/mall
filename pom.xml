@@ -18,6 +18,9 @@
         <module>mall-portal</module>
         <module>mall-tools</module>
         <module>mall-shopify</module>
+        <module>mall-utils</module>
+        <module>mall-pay</module>
+        <module>mall-onebound</module>
     </modules>
 
     <parent>

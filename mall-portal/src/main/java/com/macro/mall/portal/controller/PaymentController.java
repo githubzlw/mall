@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.PayPalParam;
-import com.macro.mall.portal.domain.SiteEnum;
+import com.macro.mall.common.enums.SiteEnum;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;

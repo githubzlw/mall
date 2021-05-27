@@ -46,12 +46,15 @@ logging:
 logstash:
   host: logstash
 
-microService:
-  importApi:
-      url: http://127.0.0.1:18005/api
-      exchangeRate: ${microService.importApi.url}/utils-service/fx
+localService:
   shopifyApi:
     url: http://127.0.0.1:8086/shopify
+  oneboundApi:
+    url: http://127.0.0.1:8087/oneBound
+  payApi:
+    url: http://127.0.0.1:8088/paypal
+  exchangeRateApi:
+    url: http://127.0.0.1:8089/exchangeRate/fx
   productApi:
     url: http://127.0.0.1:8091/product
 

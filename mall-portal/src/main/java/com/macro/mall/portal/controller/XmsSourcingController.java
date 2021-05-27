@@ -3,6 +3,8 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
@@ -77,6 +79,30 @@ public class XmsSourcingController {
             return CommonResult.failed("query failed");
         }
     }
+
+
+    @ApiOperation("SourcingList删除")
+    @RequestMapping(value = "/deleteSourcing", method = RequestMethod.POST)
+    @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
+    public CommonResult deleteSourcing(Long sourcingId) {
+        try {
+            // 检查数据是否存在
+            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingId);
+            if (null == xmsSourcingList) {
+                return CommonResult.validateFailed("No data available");
+            }
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
+            boolean update = this.xmsSourcingListService.update(null, updateWrapper);
+            return CommonResult.success(update);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("deleteSourcing,sourcingId[{}],error:", sourcingId, e);
+            return CommonResult.failed("deleteSourcing error");
+        }
+    }
+
 
 
     @ApiOperation("SourcingList添加到客户产品表")
