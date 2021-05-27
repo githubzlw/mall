@@ -78,6 +78,9 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "shopify状态0未绑定 1 绑定成功 2取消绑定")
     private Integer shopifyFlag;
 
+    @ApiModelProperty(value = "引导标识 0未引导 1 已引导")
+    private Integer guidedFlag;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -280,6 +283,14 @@ public class UmsMember implements Serializable {
         this.shopifyFlag = shopifyFlag;
     }
 
+    public Integer getGuidedFlag() {
+        return guidedFlag;
+    }
+
+    public void setGuidedFlag(Integer guidedFlag) {
+        this.guidedFlag = guidedFlag;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -311,6 +322,7 @@ public class UmsMember implements Serializable {
         sb.append(", balance=").append(balance);
         sb.append(", shopifyName=").append(shopifyName);
         sb.append(", shopifyFlag=").append(shopifyFlag);
+        sb.append(", guidedFlag=").append(guidedFlag);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

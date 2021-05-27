@@ -54,7 +54,7 @@ public class UmsMemberController {
                                  @RequestParam String password,
                                  @RequestParam String organizationname,
                                  @RequestParam String monthlyOrders) {
-        memberService.register(username, password, organizationname,monthlyOrders,0);
+        memberService.register(username, password, organizationname, monthlyOrders, 0);
         String token = memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
@@ -77,13 +77,15 @@ public class UmsMemberController {
         }
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
+
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
 
         // 整合sourcing数据
-        if(StrUtil.isNotEmpty(uuid)){
+        if (StrUtil.isNotEmpty(uuid)) {
             this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
         }
+        tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 
@@ -91,7 +93,7 @@ public class UmsMemberController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ResponseBody
     public CommonResult info(Principal principal) {
-        if(principal==null){
+        if (principal == null) {
             return CommonResult.unauthorized(null);
         }
         UmsMember member = memberService.getCurrentMember();
@@ -103,17 +105,17 @@ public class UmsMemberController {
     @ResponseBody
     public CommonResult getAuthCode(@RequestParam String telephone) {
         String authCode = memberService.generateAuthCode(telephone);
-        return CommonResult.success(authCode,"获取验证码成功");
+        return CommonResult.success(authCode, "获取验证码成功");
     }
 
     @ApiOperation("修改密码")
     @RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult updatePassword(@RequestParam String telephone,
-                                 @RequestParam String password,
-                                 @RequestParam String authCode) {
-        memberService.updatePassword(telephone,password,authCode);
-        return CommonResult.success(null,"密码修改成功");
+                                       @RequestParam String password,
+                                       @RequestParam String authCode) {
+        memberService.updatePassword(telephone, password, authCode);
+        return CommonResult.success(null, "密码修改成功");
     }
 
 
@@ -138,10 +140,10 @@ public class UmsMemberController {
     public CommonResult googleAuth(@RequestParam String idtokenstr) {
 
         LOGGER.info("google login begin");
-        ImmutablePair<String, String> pair= null;
+        ImmutablePair<String, String> pair = null;
         try {
             pair = memberService.googleAuth(idtokenstr);
-            memberService.register(pair.getRight(), pair.getRight(),"","",1);
+            memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
 
             String token = memberService.login(pair.getRight(), pair.getRight());
             if (token == null) {
@@ -154,7 +156,7 @@ public class UmsMemberController {
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
         }
-        return CommonResult.success(null,"成功");
+        return CommonResult.success(null, "成功");
     }
 
     @ApiOperation("facebook登录")
@@ -164,11 +166,27 @@ public class UmsMemberController {
 
         LOGGER.info("facebook login begin");
         try {
-            String email = UrlUtil.getInstance().facebookAuth(idtokenstr,tpLogin);
-            memberService.register(email, "", "","",2);
+            String email = UrlUtil.getInstance().facebookAuth(idtokenstr, tpLogin);
+            memberService.register(email, "", "", "", 2);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
         }
-        return CommonResult.success(null,"成功");
+        return CommonResult.success(null, "成功");
+    }
+
+
+    @ApiOperation("设置引导状态")
+    @RequestMapping(value = "/setGuided", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult setGuided() {
+
+        UmsMember member = memberService.getCurrentMember();
+        try {
+            int i = memberService.updateGuidedFlag(member.getId());
+            return CommonResult.success(i);
+        } catch (Exception e) {
+            LOGGER.error("setGuided", e);
+            return CommonResult.failed("setGuided failed");
+        }
     }
 }

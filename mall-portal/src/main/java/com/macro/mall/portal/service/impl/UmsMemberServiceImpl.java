@@ -248,4 +248,12 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return authCode.equals(realAuthCode);
     }
 
+    @Override
+    public int updateGuidedFlag(Long id) {
+        UmsMember tempMember = new UmsMember();
+        tempMember.setId(id);
+        tempMember.setGuidedFlag(1);
+        return this.memberMapper.updateByPrimaryKeySelective(tempMember);
+    }
+
 }
