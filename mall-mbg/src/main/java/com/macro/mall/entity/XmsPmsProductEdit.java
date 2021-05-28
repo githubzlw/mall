@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-27
+ * @since 2021-05-28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -170,6 +170,15 @@ public class XmsPmsProductEdit implements Serializable {
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+
+    @ApiModelProperty(value = "shopify的Collections")
+    private String shopifyCollections;
+
+    @ApiModelProperty(value = "shopify的Type")
+    private String shopifyType;
+
+    @ApiModelProperty(value = "shopify的Tags")
+    private String shopifyTags;
 
 
 }

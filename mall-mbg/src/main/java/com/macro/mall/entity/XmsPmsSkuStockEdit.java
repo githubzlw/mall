@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-27
+ * @since 2021-05-28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -99,6 +99,16 @@ public class XmsPmsSkuStockEdit implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
+
+    private String plugStandard;
+
+    private String shipsFrom;
+
+    private BigDecimal cost;
+
+    private String shipping;
+
+    private BigDecimal comparedAtPrice;
 
 
 }

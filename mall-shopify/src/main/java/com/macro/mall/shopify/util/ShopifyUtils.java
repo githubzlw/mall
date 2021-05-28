@@ -170,7 +170,10 @@ public class ShopifyUtils {
         // customerProduct.setShopifyPrice();
         customerProduct.setSyncTime(new Date());
         customerProduct.setStatus(9);
-
+        customerProduct.setTitle(shopifyProduct.getString("title"));
+        if(shopifyProduct.containsKey("image") && shopifyProduct.getJSONObject("image").containsKey("src")){
+            customerProduct.setImg(shopifyProduct.getJSONObject("image").getString("src"));
+        }
         return customerProduct;
 
     }

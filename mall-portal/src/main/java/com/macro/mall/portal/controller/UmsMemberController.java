@@ -81,11 +81,13 @@ public class UmsMemberController {
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
 
+        UmsMember currentMember = memberService.getCurrentMember();
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid)) {
-            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+            this.sourcingUtils.mergeSourcingList(currentMember, uuid);
         }
-        tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
+        UmsMember byId = memberService.getById(currentMember.getId());
+        tokenMap.put("guidedFlag", String.valueOf(byId.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 

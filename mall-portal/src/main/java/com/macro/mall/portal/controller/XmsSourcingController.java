@@ -64,6 +64,8 @@ public class XmsSourcingController {
     private IXmsPmsProductEditService xmsPmsProductEditService;
     @Autowired
     private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
+    @Autowired
+    private PmsPortalProductService pmsPortalProductService;
 
 
     @ApiOperation("sourcingList列表")
@@ -91,26 +93,25 @@ public class XmsSourcingController {
     @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
     public CommonResult saveSourcingProduct(SourcingProductParam sourcingProductParam) {
         Assert.notNull(sourcingProductParam, "sourcingProductParam null");
-        Assert.isTrue(null != sourcingProductParam.getProductId() && sourcingProductParam.getProductId() > 0, "productId null");
-        Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
-        Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
+        Assert.isTrue(null != sourcingProductParam.getId() && sourcingProductParam.getId() > 0, "productId null");
+        Assert.isTrue(CollectionUtil.isNotEmpty(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             // 检查数据是否存在
-            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingProductParam.getSourcingId());
-            if (null == xmsSourcingList) {
+            PmsPortalProductDetail detail = this.pmsPortalProductService.detail(sourcingProductParam.getId());
+            if (null == detail) {
                 return CommonResult.validateFailed("No data available");
             }
 
-            List<XmsPmsSkuStockEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), XmsPmsSkuStockEdit.class);
+            List<XmsPmsSkuStockEdit> stockEditList = sourcingProductParam.getSkuList();
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
 
             // 判断是否存在编辑表数据
             QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getProductId());
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getId());
 
             int count = this.xmsPmsProductEditService.count(productEditWrapper);
 
@@ -118,7 +119,7 @@ public class XmsSourcingController {
             if (count > 0) {
                 // 处理sku数据
                 QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
-                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
+                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getId());
                 List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
                 if (CollectionUtil.isNotEmpty(editList)) {
                     Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();

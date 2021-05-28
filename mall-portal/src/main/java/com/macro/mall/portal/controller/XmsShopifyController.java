@@ -223,4 +223,34 @@ public class XmsShopifyController {
         }
     }
 
+
+    @PostMapping(value = "/addProduct")
+    @ApiOperation("铺货到shopify商品")
+    @ResponseBody
+    public CommonResult addToShopifyProducts(@RequestParam Long productId) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("shopname", byId.getShopifyName());
+            param.put("pid", String.valueOf(productId));
+            param.put("published", "");
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            return commonResult;
+        } catch (Exception e) {
+            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
 }
