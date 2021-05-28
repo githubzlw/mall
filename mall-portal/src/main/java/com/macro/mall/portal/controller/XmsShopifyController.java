@@ -38,7 +38,7 @@ import java.util.*;
 @Api(tags = "ShopifyController", description = "客户的Shopify操作")
 @RequestMapping("/shopify")
 @Slf4j
-public class ShopifyController {
+public class XmsShopifyController {
 
 
     @Autowired

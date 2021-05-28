@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 @Api(tags = "FreightCalculateController", description = "运费计算管理")
 @RequestMapping("/freight")
 @Slf4j
-public class FreightCalculateController {
+public class XmsFreightCalculateController {
 
 
     private final TrafficFreightUtils freightUtils;
     private final FbaFreightUtils fbaFreightUtils;
 
     @Autowired
-    public FreightCalculateController(TrafficFreightUtils freightUtils, FbaFreightUtils fbaFreightUtils) {
+    public XmsFreightCalculateController(TrafficFreightUtils freightUtils, FbaFreightUtils fbaFreightUtils) {
         this.freightUtils = freightUtils;
         this.fbaFreightUtils = fbaFreightUtils;
     }

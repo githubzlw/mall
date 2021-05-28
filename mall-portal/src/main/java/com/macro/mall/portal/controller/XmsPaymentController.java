@@ -34,7 +34,7 @@ import java.util.*;
 @RestController
 @Slf4j
 @RequestMapping("/payment")
-public class PaymentController {
+public class XmsPaymentController {
 
     @Autowired
     private UmsMemberService umsMemberService;

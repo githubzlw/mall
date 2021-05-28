@@ -30,7 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/fileUpload")
 @Slf4j
-public class FileUploadController {
+public class XmsFileUploadController {
 
     @Autowired
     private ExcelUtils excelUtils;

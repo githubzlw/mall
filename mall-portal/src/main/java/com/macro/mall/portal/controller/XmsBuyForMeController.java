@@ -33,14 +33,14 @@ import java.util.Map;
 @RestController
 @Slf4j
 @RequestMapping("/buyForMe")
-public class BuyForMeController {
+public class XmsBuyForMeController {
 
     private final SourcingUtils sourcingUtils;
 
     private final UmsMemberService umsMemberService;
 
     @Autowired
-    public BuyForMeController(SourcingUtils sourcingUtils, UmsMemberService umsMemberService) {
+    public XmsBuyForMeController(SourcingUtils sourcingUtils, UmsMemberService umsMemberService) {
         this.sourcingUtils = sourcingUtils;
         this.umsMemberService = umsMemberService;
     }
