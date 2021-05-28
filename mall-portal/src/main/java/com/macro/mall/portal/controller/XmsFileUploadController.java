@@ -26,7 +26,7 @@ import java.util.List;
  * @description: com.macro.mall.portal.controller
  * @date:2021-05-24
  */
-@Api(tags = "FileUploadController", description = "文件上传相关接口")
+@Api(tags = "XmsFileUploadController", description = "文件上传相关接口")
 @RestController
 @RequestMapping("/fileUpload")
 @Slf4j

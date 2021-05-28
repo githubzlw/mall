@@ -30,7 +30,7 @@ import java.util.*;
  * @description: com.macro.mall.portal.controller
  * @date:2021-04-29
  */
-@Api(tags = "PaymentController", description = "支付调用接口")
+@Api(tags = "XmsPaymentController", description = "支付调用接口")
 @RestController
 @Slf4j
 @RequestMapping("/payment")

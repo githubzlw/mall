@@ -35,7 +35,7 @@ import java.util.*;
  * @date:2021-04-30
  */
 @RestController
-@Api(tags = "ShopifyController", description = "客户的Shopify操作")
+@Api(tags = "XmsShopifyController", description = "客户的Shopify操作")
 @RequestMapping("/shopify")
 @Slf4j
 public class XmsShopifyController {
