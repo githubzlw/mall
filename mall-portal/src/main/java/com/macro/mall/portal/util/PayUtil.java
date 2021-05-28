@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsPayment;
 import com.macro.mall.entity.XmsRecordOfChangeInBalance;
 import com.macro.mall.mapper.UmsMemberMapper;
@@ -15,7 +16,7 @@ import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.PayConfig;
 import com.macro.mall.portal.domain.GenerateOrderResult;
 import com.macro.mall.portal.domain.PayPalParam;
-import com.macro.mall.portal.domain.SiteEnum;
+import com.macro.mall.common.enums.SiteEnum;
 import com.macro.mall.portal.service.IXmsPaymentService;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.RelatedResources;
@@ -73,7 +74,7 @@ public class PayUtil {
         requestMap.put("successUrl", payConfig.getSuccessUrl());
         requestMap.put("cancelUrl", payConfig.getCancelUrl());
         try {
-            String resUrl = microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_PAY + "paypal/" + payPalParam.getSiteName() + "/create/";
+            String resUrl = microServiceConfig.getPayUrl() + "/" + payPalParam.getSiteName() + "/create/";
             JSONObject jsonObject = instance.postURL(resUrl, requestMap);
             return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
         } catch (IOException e) {
@@ -92,7 +93,7 @@ public class PayUtil {
         requestMap.put("paymentId", paymentId);
         requestMap.put("payerId", payerId);
         try {
-            JSONObject jsonObject = instance.postURL(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_PAY + "paypal/" + siteName + "/execute/", requestMap);
+            JSONObject jsonObject = instance.postURL(microServiceConfig.getPayUrl() + "/" + siteName + "/execute/", requestMap);
             commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
             if (commonResult.getCode() == 200) {
                 CommonResult.success(new Gson().fromJson(commonResult.getData().toString(), CommonResult.class));

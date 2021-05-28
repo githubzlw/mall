@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @date:2021-04-14
  */
 @RestController
-@Api(tags = "FreightCalculateController", description = "运费计算管理")
+@Api(tags = "XmsFreightCalculateController", description = "运费计算管理")
 @RequestMapping("/freight")
 @Slf4j
 public class XmsFreightCalculateController {

@@ -9,8 +9,8 @@ import com.macro.mall.model.PmsProduct;
 import com.macro.mall.service.PmsProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
  * 商品管理Controller
  * Created by macro on 2018/4/26.
  */
-@Controller
+@RestController
 @Api(tags = "PmsProductController", description = "商品管理")
 @RequestMapping("/product")
 public class PmsProductController {
@@ -45,6 +45,23 @@ public class PmsProductController {
         PmsProductResult productResult = productService.getUpdateInfo(id);
         return CommonResult.success(productResult);
     }
+
+    @GetMapping(value = "/getProductInfo")
+    @ApiOperation("根据id获得产品数据")
+    @ResponseBody
+    public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
+        PmsProductResult productResult = productService.getUpdateInfo(id);
+        return CommonResult.success(productResult);
+    }
+
+    @GetMapping(value = "/getCustomProductInfo")
+    @ApiOperation("根据id获得产品数据")
+    @ResponseBody
+    public CommonResult getCustomProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
+        PmsProductResult productResult = productService.getUpdateInfo(id);
+        return CommonResult.success(productResult);
+    }
+
 
     @ApiOperation("更新商品")
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)

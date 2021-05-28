@@ -29,7 +29,7 @@ import java.util.Map;
  * @description: com.macro.mall.portal.buyforme
  * @date:2021-04-15
  */
-@Api(tags = "BuyForMeController", description = "buyForMe的调用接口")
+@Api(tags = "XmsBuyForMeController", description = "buyForMe的调用接口")
 @RestController
 @Slf4j
 @RequestMapping("/buyForMe")

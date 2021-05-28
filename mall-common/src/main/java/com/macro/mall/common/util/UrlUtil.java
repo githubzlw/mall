@@ -1,4 +1,4 @@
-package com.macro.mall.portal.util;
+package com.macro.mall.common.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -180,6 +180,47 @@ public class UrlUtil {
 
         return executeCall(url, request);
     }
+
+    /**
+     * do post
+     *
+     * @param url
+     * @param tp
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public JSONObject doPostForImgUpload(String url, String tp, String fileName, String key, String secret) throws IOException {
+        //log.info("url:{} tp:{} fileName:{}", url, tp, fileName);
+
+        File file = new File(fileName);
+        // .addFormDataPart("imgcode", file.getName(),
+        //                        RequestBody.create(MediaType.parse("image/jpeg"), file))
+        RequestBody body = RequestBody.create(MediaType.parse("image/*"), file);
+        RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("imgcode", file.getName(), body)
+                .addFormDataPart("key", key)
+                .addFormDataPart("secret", secret)
+                .addFormDataPart("api_name", "upload_img")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+        // Create a new Call object with put method.
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            //log.error("response:{}", response);
+
+            throw new IOException("doPostForImgUpload's response is not successful");
+        }
+        String rs = response.body().string();
+        System.err.println(rs);
+        return response.body() != null ?
+                JSON.parseObject(rs) : null;
+    }
+
 
     /**
      * getInstance

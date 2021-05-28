@@ -2,10 +2,10 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
-import com.macro.mall.portal.util.UrlUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -77,13 +77,15 @@ public class UmsMemberController {
         }
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
+
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
 
         // 整合sourcing数据
-        if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+        if (StrUtil.isNotEmpty(uuid)) {
             this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
         }
+        tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 
@@ -141,7 +143,7 @@ public class UmsMemberController {
         ImmutablePair<String, String> pair = null;
         try {
             pair = memberService.googleAuth(idtokenstr);
-            memberService.register(pair.getRight(), pair.getRight(),"","",1);
+            memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
 
             String token = memberService.login(pair.getRight(), pair.getRight());
             if (token == null) {
@@ -180,5 +182,21 @@ public class UmsMemberController {
                                        @RequestParam String monthlyOrderQuantity) {
         int info = memberService.updateUserInfo(niceName, monthlyOrderQuantity);
         return CommonResult.success(info, "修改客户信息成功");
+    }
+
+
+    @ApiOperation("设置引导状态")
+    @RequestMapping(value = "/setGuided", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult setGuided() {
+
+        UmsMember member = memberService.getCurrentMember();
+        try {
+            int i = memberService.updateGuidedFlag(member.getId());
+            return CommonResult.success(i);
+        } catch (Exception e) {
+            LOGGER.error("setGuided", e);
+            return CommonResult.failed("setGuided failed");
+        }
     }
 }

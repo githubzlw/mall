@@ -41,17 +41,37 @@ logging:
 logstash:
   host: 192.168.1.31
 
-microService:
-  importApi:
-      url: http://127.0.0.1:18005/api
-      exchangeRate: ${microService.importApi.url}/utils-service/fx
+localService:
   shopifyApi:
     url: http://127.0.0.1:8086/shopify
+  oneboundApi:
+    url: http://127.0.0.1:8091/oneBound
+  payApi:
+    url: http://127.0.0.1:8085/paypal
+  exchangeRateApi:
+    url: http://127.0.0.1:8085/exchangeRate/fx
+  productApi:
+    url: http://127.0.0.1:8091/product
 
-paypal:
-  cancelUrlType: 1
-  successUrl: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
-  cancelUrl: http://127.0.0.1:8087/myaccount
-  businessId: 584JZVFU6PPVU
+#mq
+rabbitmq:
+  rpc:
+    qname: refund_rpc
 
+#paypal
+PAYPAL:
+  SANDBOX: false
+  MODE: live
+  CLIENT_ID: AThgVASXxfMFwUBJ4AkzT904jBiUVv3x-24uhd9-Pvtv1B4f-lpWzdLbVVrdZceZ4t3xu4Hhi_3OrgLg
+  CLIENT_SECRET: EMEITkagpydY3InoI73i_fati6Qz4pWMwmP1jZTVxqlxksr8w6uh4WsVTAw6owBhnS5GP516BNH_M3r_
+  CANCEL_URL_TYPE: 1
+  SUCCESS_URL: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
+  CANCEL_URL: http://127.0.0.1:8085/myaccount
+  BUSINESS_ID: 584JZVFU6PPVU
+
+#stripe
+STRIPE:
+  MODE: true
+  PK_KEY: pk_live_QCAh5yO1BVKOkG59Mpeo0Vpg00q0KkoaVQ
+  SK_KEY: sk_live_h8CwB8wMJL65RITyizSSywlG00LW0zDEKs
 
