@@ -27,6 +27,13 @@ public interface PmsProductService {
     PmsProductResult getUpdateInfo(Long id);
 
     /**
+     * 获取客户编辑的商品数据
+     * @param id
+     * @return
+     */
+    PmsProductResult getCustomUpdateInfo(Long id);
+
+    /**
      * 更新商品
      */
     @Transactional

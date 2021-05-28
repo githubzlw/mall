@@ -1,6 +1,7 @@
 package com.macro.mall.portal.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.macro.mall.common.util.UrlUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,12 +21,13 @@ import java.util.Map;
 public class ExchangeRateUtils {
 
 
-    @Value("${microService.importApi.exchangeRate}")
+    @Value("${localService.exchangeRateApi.url}")
     private String exchangeRateUrl;
 
     private double usdToCnyRate = 0;// 美元对人名币汇率
 
     public double getUsdToCnyRate() {
+
         if (this.usdToCnyRate <= 5) {
             synchronized (ExchangeRateUtils.class) {
                 getByLocalUrl();
@@ -42,7 +44,7 @@ public class ExchangeRateUtils {
      *
      * @return
      */
-    private Map<String, Double> getByLocalUrl() {
+    private void getByLocalUrl() {
         // {"USDEUR":0.902959,"USDGBP":0.772016,"USDCNY":7.0261,"USDAUD":1.471267,"USDCAD":1.32071}
 
         try {
@@ -64,10 +66,10 @@ public class ExchangeRateUtils {
                 map.put("USDCNY", rateJson.getDouble("USDCNY"));
                 this.usdToCnyRate = rateJson.getDouble("USDCNY");
             }
-            return map;
+            //return map;
         } catch (IOException e) {
             log.error("getByLocalUrl", e);
-            throw new RuntimeException("call exchangeRate error");
+            // throw new RuntimeException("call exchangeRate error");
         }
     }
 

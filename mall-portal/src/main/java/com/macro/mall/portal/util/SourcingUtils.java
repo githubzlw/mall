@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.UmsMember;
@@ -348,7 +349,7 @@ public class SourcingUtils {
         return null;
     }
 
-    @Async
+    /*@Async
     public void imgSearchCache(File file, String uuid, String imgSearchUrl, String today) {
         imgSearchByTaoBao(file, uuid, today);
     }
@@ -356,42 +357,17 @@ public class SourcingUtils {
 
     public boolean imgSearchCacheSync(File file, String uuid, String imgSearchUrl, String today) {
         return imgSearchByTaoBao(file, uuid, today);
-    }
+    }*/
 
 
-    public boolean imgSearchByTaoBao(File file, String uuid, String today) {
-        boolean isSu = false;
-        try {
-            String url = microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688.replace("18005", "18003")
-                    .replace("api/ali1688-service/", "");
-            JSONObject json = instance.postFile(file, "file", url + "searchimg/upload");
 
-            Map<String, Object> objectMap = redisUtil.hmgetObj(SOURCING_TAOBAO_IMG);
-            if (objectMap == null) {
-                objectMap = new HashMap<>();
-            }
-            if (json.getInteger("code") == 200 && StrUtil.isNotBlank(json.getString("data")) && StrUtil.isNotBlank(json.getJSONObject("data").getString("items"))) {
-                objectMap.put(uuid, json.getJSONObject("data").getJSONObject("items"));
-                objectMap.put(uuid + REDIS_TAOBAO_IMG, IMG_SEARCH_PATH.substring(1) + "/" + today
-                        + "/" + file.getName());
-                redisUtil.hmsetObj(SOURCING_TAOBAO_IMG, objectMap, EXPIRATION_TIME_7_DAY);
-                isSu = true;
-            } else {
-                log.error("imgSearchByTaoBao file[{}],error:[{}]", file, json);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("imgSearchByTaoBao file[{}],error:", file, e);
-        }
-        return isSu;
-    }
 
 
     public CommonResult getAliExpressDetails(String pid) {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "aliExpress/details/" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi()  + "/aliExpress/details/" + pid);
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -409,51 +385,15 @@ public class SourcingUtils {
     }
 
 
-    public CommonResult getTaoBaoDetails(String pid) {
 
-        try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "searchimg/details/" + pid);
-            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
-                JSONObject dataJson = jsonObject.getJSONObject("data");
-                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
-                // 放入redis中
-                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALI1688.getFlag(), dataJson);
-                return CommonResult.success(dataJson);
-            } else {
-                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("taobaoDetails pid[{}],  error:", pid, e);
-            return CommonResult.failed(e.getMessage());
-        }
-    }
 
-    public CommonResult getAmazonDetails(UrlUtil instance, String pid) {
-
-        try {
-
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
-            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
-                JSONObject dataJson = jsonObject.getJSONObject("data");
-                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
-                return CommonResult.success(dataJson);
-            } else {
-                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("getAmazonDetails pid[{}],  error:", pid, e);
-            return CommonResult.failed(e.getMessage());
-        }
-    }
 
     public CommonResult getAliBabaDetails(String pid) {
 
         try {
 
-            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "alibaba?pid=" + pid);
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/alibaba/details?pid=" + pid);
             if (null != jsonObject && jsonObject.containsKey("item")) {
                 JSONObject dataJson = jsonObject.getJSONObject("item");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -526,6 +466,76 @@ public class SourcingUtils {
 
         }
     }
+
+    public CommonResult getTaoBaoDetails(String pid) {
+
+        try {
+
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/tb1688/details/" + pid);
+            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
+                JSONObject dataJson = jsonObject.getJSONObject("data");
+                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
+                // 放入redis中
+                redisUtil.hmsetObj(SOURCING_GOODS, pid + "_" + SiteFlagEnum.ALI1688.getFlag(), dataJson);
+                return CommonResult.success(dataJson);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("taobaoDetails pid[{}],  error:", pid, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    /*public boolean imgSearchByTaoBao(File file, String uuid, String today) {
+        boolean isSu = false;
+        try {
+            String url = microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688.replace("18005", "18003")
+                    .replace("api/ali1688-service/", "");
+            JSONObject json = instance.postFile(file, "file", url + "searchimg/upload");
+
+            Map<String, Object> objectMap = redisUtil.hmgetObj(SOURCING_TAOBAO_IMG);
+            if (objectMap == null) {
+                objectMap = new HashMap<>();
+            }
+            if (json.getInteger("code") == 200 && StrUtil.isNotBlank(json.getString("data")) && StrUtil.isNotBlank(json.getJSONObject("data").getString("items"))) {
+                objectMap.put(uuid, json.getJSONObject("data").getJSONObject("items"));
+                objectMap.put(uuid + REDIS_TAOBAO_IMG, IMG_SEARCH_PATH.substring(1) + "/" + today
+                        + "/" + file.getName());
+                redisUtil.hmsetObj(SOURCING_TAOBAO_IMG, objectMap, EXPIRATION_TIME_7_DAY);
+                isSu = true;
+            } else {
+                log.error("imgSearchByTaoBao file[{}],error:[{}]", file, json);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("imgSearchByTaoBao file[{}],error:", file, e);
+        }
+        return isSu;
+    }
+
+
+
+    public CommonResult getAmazonDetails(UrlUtil instance, String pid) {
+
+        try {
+
+            JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getImportUrl() + UrlUtil.MICRO_SERVICE_1688 + "amazon/details/" + pid);
+            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
+                JSONObject dataJson = jsonObject.getJSONObject("data");
+                dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
+                return CommonResult.success(dataJson);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getAmazonDetails pid[{}],  error:", pid, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }*/
 
 
     /**

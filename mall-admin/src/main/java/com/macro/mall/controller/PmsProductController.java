@@ -54,6 +54,14 @@ public class PmsProductController {
         return CommonResult.success(productResult);
     }
 
+    @GetMapping(value = "/getCustomProductInfo")
+    @ApiOperation("根据id获得产品数据")
+    @ResponseBody
+    public CommonResult getCustomProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
+        PmsProductResult productResult = productService.getUpdateInfo(id);
+        return CommonResult.success(productResult);
+    }
+
 
     @ApiOperation("更新商品")
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
