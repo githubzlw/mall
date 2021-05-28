@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@Api("PayPal支付接口")
+@Api(tags = "XmsPayPalController", description = "PayPal支付接口")
 @RequestMapping("/paypal")
 public class XmsPayPalController {
 

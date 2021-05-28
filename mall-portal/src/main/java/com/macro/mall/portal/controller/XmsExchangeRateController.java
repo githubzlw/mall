@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @RestController
 @Slf4j
-@Api(tags = "汇率查询接口")
+@Api(tags = "XmsExchangeRateController", description = "汇率查询接口")
 @RequestMapping("/exchangeRate")
 public class XmsExchangeRateController {
 

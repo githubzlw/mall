@@ -3,11 +3,14 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
+import com.macro.mall.entity.XmsPmsProductEdit;
+import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
@@ -57,6 +60,10 @@ public class XmsSourcingController {
     private IPmsSkuStockService iPmsSkuStockService;
     @Autowired
     private PayUtil payUtil;
+    @Autowired
+    private IXmsPmsProductEditService xmsPmsProductEditService;
+    @Autowired
+    private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
 
 
     @ApiOperation("sourcingList列表")
@@ -77,6 +84,85 @@ public class XmsSourcingController {
             e.printStackTrace();
             log.error("sourcingList,sourcingParam[{}],error:", sourcingParam, e);
             return CommonResult.failed("query failed");
+        }
+    }
+
+    @ApiOperation("SourcingList保存客户编辑的信息")
+    @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
+    public CommonResult saveSourcingProduct(SourcingProductParam sourcingProductParam) {
+        Assert.notNull(sourcingProductParam, "sourcingProductParam null");
+        Assert.isTrue(null != sourcingProductParam.getProductId() && sourcingProductParam.getProductId() > 0, "productId null");
+        Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 检查数据是否存在
+            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingProductParam.getSourcingId());
+            if (null == xmsSourcingList) {
+                return CommonResult.validateFailed("No data available");
+            }
+
+            List<XmsPmsSkuStockEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), XmsPmsSkuStockEdit.class);
+            if (CollectionUtil.isEmpty(stockEditList)) {
+                return CommonResult.validateFailed("No sku available");
+            }
+
+            // 判断是否存在编辑表数据
+            QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getProductId());
+
+            int count = this.xmsPmsProductEditService.count(productEditWrapper);
+
+            // 如果存在，则进行更新处理，sku查询是否重复处理
+            if (count > 0) {
+                // 处理sku数据
+                QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
+                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
+                List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
+                if (CollectionUtil.isNotEmpty(editList)) {
+                    Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();
+                    editList.forEach(e -> skuStockEditMap.put(e.getSkuCode(), e));
+
+                    List<XmsPmsSkuStockEdit> updateList = stockEditList.stream().filter(e -> skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+                    List<XmsPmsSkuStockEdit> insertList = stockEditList.stream().filter(e -> !skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+
+                    if (CollectionUtil.isNotEmpty(updateList)) {
+                        updateList.forEach(e -> {
+                            e.setId(skuStockEditMap.get(e.getSkuCode()).getId());
+                            e.setSpData(skuStockEditMap.get(e.getSkuCode()).getSpData());
+                            e.setPrice(skuStockEditMap.get(e.getSkuCode()).getPrice());
+                        });
+                        this.xmsPmsSkuStockEditService.saveOrUpdateBatch(updateList);
+                        updateList.clear();
+                    }
+
+                    if (CollectionUtil.isNotEmpty(insertList)) {
+                        this.xmsPmsSkuStockEditService.saveBatch(insertList);
+                        insertList.clear();
+                    }
+
+                    editList.clear();
+                } else {
+                    this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+                    stockEditList.clear();
+                }
+            } else {
+                // 如果不存在，则进行插入处理
+                // 插入product数据
+                XmsPmsProductEdit pmsProductEdit = new XmsPmsProductEdit();
+                BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
+                pmsProductEdit.setMemberId(currentMember.getId());
+                this.xmsPmsProductEditService.save(pmsProductEdit);
+                // 插入sku数据
+                this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+                stockEditList.clear();
+            }
+            return CommonResult.success(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("saveSourcingProduct,sourcingProductParam[{}],error:", sourcingProductParam, e);
+            return CommonResult.failed("saveSourcingProduct failed");
         }
     }
 
