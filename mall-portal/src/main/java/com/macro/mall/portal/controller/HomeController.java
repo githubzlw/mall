@@ -1,18 +1,23 @@
 package com.macro.mall.portal.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.entity.XmsPmsProductEdit;
+import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.model.CmsSubject;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsProductCategory;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.HomeContentResult;
 import com.macro.mall.portal.service.HomeService;
-import com.macro.mall.portal.util.UrlUtil;
+import com.macro.mall.portal.service.IXmsPmsProductEditService;
+import com.macro.mall.portal.service.IXmsPmsSkuStockEditService;
+import com.macro.mall.portal.service.UmsMemberService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +37,12 @@ public class HomeController {
     private UrlUtil urlUtil = UrlUtil.getInstance();
     @Autowired
     private MicroServiceConfig microServiceConfig;
+    @Autowired
+    private UmsMemberService umsMemberService;
+    @Autowired
+    private IXmsPmsProductEditService xmsPmsProductEditService;
+    @Autowired
+    private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
 
     @ApiOperation("首页内容页信息展示")
     @RequestMapping(value = "/content", method = RequestMethod.GET)
@@ -90,11 +101,21 @@ public class HomeController {
     @ApiOperation("根据id获得产品数据")
     @ResponseBody
     public CommonResult getProductInfo(@RequestParam Long id) {
-        try{
-            JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id);
-            CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
-            return commonResult;
-        }catch (Exception e){
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, id);
+            int count = this.xmsPmsProductEditService.count(productEditWrapper);
+            if (count == 0) {
+                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id);
+                CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+                return commonResult;
+            } else {
+                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getCustomProductInfo?id=" + id);
+                CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+                return commonResult;
+            }
+        } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }
     }

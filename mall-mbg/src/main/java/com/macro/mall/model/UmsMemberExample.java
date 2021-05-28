@@ -1741,6 +1741,66 @@ public class UmsMemberExample {
             addCriterion("shopify_flag not between", value1, value2, "shopifyFlag");
             return (Criteria) this;
         }
+
+        public Criteria andGuidedFlagIsNull() {
+            addCriterion("guided_flag is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagIsNotNull() {
+            addCriterion("guided_flag is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagEqualTo(Integer value) {
+            addCriterion("guided_flag =", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagNotEqualTo(Integer value) {
+            addCriterion("guided_flag <>", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagGreaterThan(Integer value) {
+            addCriterion("guided_flag >", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagGreaterThanOrEqualTo(Integer value) {
+            addCriterion("guided_flag >=", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagLessThan(Integer value) {
+            addCriterion("guided_flag <", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagLessThanOrEqualTo(Integer value) {
+            addCriterion("guided_flag <=", value, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagIn(List<Integer> values) {
+            addCriterion("guided_flag in", values, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagNotIn(List<Integer> values) {
+            addCriterion("guided_flag not in", values, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagBetween(Integer value1, Integer value2) {
+            addCriterion("guided_flag between", value1, value2, "guidedFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andGuidedFlagNotBetween(Integer value1, Integer value2) {
+            addCriterion("guided_flag not between", value1, value2, "guidedFlag");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

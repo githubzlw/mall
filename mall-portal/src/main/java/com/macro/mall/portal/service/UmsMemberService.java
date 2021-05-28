@@ -79,4 +79,6 @@ public interface UmsMemberService {
      * google登录验证
      */
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
+
+    int updateGuidedFlag(Long id);
 }
