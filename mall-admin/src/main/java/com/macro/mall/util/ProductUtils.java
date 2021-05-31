@@ -345,6 +345,9 @@ public class ProductUtils {
         if(StrUtil.isEmpty(price)){
             return "";
         }
+        if(!price.contains("<") && !price.contains("[")){
+            return price;
+        }
         StringBuilder result = new StringBuilder();
         Document doc = Jsoup.parse(price);
         //alibaba
