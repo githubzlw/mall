@@ -54,6 +54,7 @@ secure:
       - /minio/upload
       - /syncData/**
       - /product/getProductInfo
+      - /oneBound/**
 
 
 aliyun:

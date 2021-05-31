@@ -42,6 +42,8 @@ secure:
       - /chrome/upload
       - /freight/**
       - /dataSync/**
+      - /exchangeRate/fx
+      - /paypal/**
 
 # 自定义redis key
 redis:
