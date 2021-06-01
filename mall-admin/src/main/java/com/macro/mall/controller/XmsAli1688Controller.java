@@ -46,7 +46,7 @@ public class XmsAli1688Controller {
 
     @GetMapping("/pids/{pids}")
     public List<JSONObject> pid(@PathVariable("pids") Long[] pids,
-                                @RequestParam(value = "isCache", required = false, defaultValue = "true") boolean isCache) {
+                                @RequestParam(value = "isCache", required = false, defaultValue = "false") boolean isCache) {
 
         if (!isRunnable(false)) {
             return null;
@@ -69,7 +69,7 @@ public class XmsAli1688Controller {
      * @return
      */
     @GetMapping("/alibaba/details")
-    public JSONObject getAlibabaDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "true") boolean isCache) {
+    public JSONObject getAlibabaDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "false") boolean isCache) {
 
         return ali1688Service.getAlibabaDetail(pid, isCache);
     }
@@ -81,7 +81,7 @@ public class XmsAli1688Controller {
      * @return
      */
     @GetMapping("/aliexpress")
-    public JSONObject getAliexpressDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "true") boolean isCache) {
+    public JSONObject getAliexpressDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "false") boolean isCache) {
 
         return ali1688Service.getAliexpressDetail(pid, isCache);
     }

@@ -50,14 +50,14 @@ public class XmsAli1688ServiceImpl implements XmsAli1688Service {
     /**
      * 获取商品详情（1688）
      */
-    private final static String URL_ITEM_GET = "%s1688/api_call.php?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en";
+    private final static String URL_ITEM_GET = "%s1688/api_call.php?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en&cache=no";
 
     /**
      * 获取商品详情（Alibaba）
      */
-    private final static String URL_ITEM_GET_ALIBABA = "%salibaba/item_get/?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en";
+    private final static String URL_ITEM_GET_ALIBABA = "%salibaba/item_get/?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en&cache=no";
 
-    private final static String URL_ITEM_GET_ALIEXPRESS = "%saliexpress/item_get/?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en";
+    private final static String URL_ITEM_GET_ALIEXPRESS = "%saliexpress/item_get/?key=%s&secret=%s&num_iid=%s&api_name=item_get&lang=en&cache=no";
 
     /**
      * img_upload API URL

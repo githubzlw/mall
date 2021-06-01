@@ -50,10 +50,10 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
     /**
      * 获取商品详情
      */
-    private final static String URL_ITEM_SEARCH = "https://api.onebound.cn/aliexpress/api_call.php?key=%s&secret=%s&q=%s&api_name=item_search&lang=en&page=%s";// &sort=_sale
+    private final static String URL_ITEM_SEARCH = "https://api.onebound.cn/aliexpress/api_call.php?key=%s&secret=%s&q=%s&api_name=item_search&lang=en&page=%s&cache=no";// &sort=_sale
 
 
-    private final static String URL_ITEM_DETAILS = "https://api.onebound.cn/aliexpress/api_call.php?api_name=item_get&lang=en&key=%s&secret=%s&num_iid=%s";
+    private final static String URL_ITEM_DETAILS = "https://api.onebound.cn/aliexpress/api_call.php?api_name=item_get&lang=en&key=%s&secret=%s&num_iid=%s&cache=no";
 
     @Autowired
     public XmsAliExpressServiceImpl(StringRedisTemplate redisTemplate, XmsAliExpressCacheService cacheService, OneBoundConfig config) {
@@ -102,7 +102,7 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
 
     @Override
     public CommonResult getDetails(String pid) {
-        JSONObject itemInfo = getItemInfo(pid, true);
+        JSONObject itemInfo = getItemInfo(pid, false);
         // 转换成bean
         if (null != itemInfo && itemInfo.containsKey("item")) {
             ItemDetails itemDetail = new ItemDetails();
