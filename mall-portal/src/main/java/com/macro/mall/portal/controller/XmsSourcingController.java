@@ -4,8 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
@@ -68,17 +70,31 @@ public class XmsSourcingController {
 
     @ApiOperation("sourcingList列表")
     @RequestMapping(value = "/sourcingList", method = RequestMethod.GET)
-    public CommonResult sourcingList(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                     @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public CommonResult sourcingList(XmsSourcingInfoParam sourcingParam) {
 
-        XmsSourcingInfoParam sourcingParam = new XmsSourcingInfoParam();
+        Assert.isTrue(null != sourcingParam, "sourcingParam null");
+
+
         try {
 
-            sourcingParam.setPageNum(pageNum);
-            sourcingParam.setPageSize(pageSize);
+            if (null == sourcingParam.getPageNum() || sourcingParam.getPageNum() == 0) {
+                sourcingParam.setPageNum(1);
+            }
+            if (null == sourcingParam.getPageSize() || sourcingParam.getPageSize() == 0) {
+                sourcingParam.setPageSize(10);
+            }
             sourcingParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             sourcingParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
+
+            if(CollectionUtil.isNotEmpty(listPage.getRecords())){
+                listPage.getRecords().forEach(e-> {
+                    if(StrUtil.isEmpty(e.getCost())){
+                        e.setCost("");
+                    }
+                });
+            }
+
             return CommonResult.success(listPage);
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,6 +102,58 @@ public class XmsSourcingController {
             return CommonResult.failed("query failed");
         }
     }
+
+
+    @ApiOperation("sourcingList统计")
+    @RequestMapping(value = "/sourcingListStatistics", method = RequestMethod.GET)
+    public CommonResult sourcingListStatistics() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+
+        try {
+
+
+            LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
+            lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
+            lambdaQuery.ge(XmsSourcingList::getStatus, -1);
+            List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
+
+            Map<String, Integer> mapStatistics = new HashMap<>();
+            mapStatistics.put("all", 0);
+            mapStatistics.put("inProgressing", 0);
+            mapStatistics.put("Pending", 0);
+            mapStatistics.put("Failed", 0);
+            mapStatistics.put("Success", 0);
+            mapStatistics.put("Cancel", 0);
+
+            if (CollectionUtil.isNotEmpty(list)) {
+                mapStatistics.put("all", list.size());
+                // 状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；
+                int Pending = (int) list.stream().filter(e-> 0 == e.getStatus()).count();
+                mapStatistics.put("Pending", Pending);
+
+                int inProgressing = (int) list.stream().filter(e-> 1 == e.getStatus()).count();
+                mapStatistics.put("inProgressing", inProgressing);
+
+                int Failed = (int) list.stream().filter(e-> 5 == e.getStatus()).count();
+                mapStatistics.put("Failed", Failed);
+
+                int Success = (int) list.stream().filter(e-> 2 == e.getStatus()).count();
+                mapStatistics.put("Success", Success);
+
+                int Cancel = (int) list.stream().filter(e-> 4 == e.getStatus()).count();
+                mapStatistics.put("Cancel", Cancel);
+
+                list.clear();
+            }
+            return CommonResult.success(mapStatistics);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingListStatistics,currentMember[{}],error:", currentMember, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
 
     @ApiOperation("SourcingList保存客户编辑的信息")
     @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
@@ -189,6 +257,23 @@ public class XmsSourcingController {
         }
     }
 
+
+    @ApiOperation("SourcingList批量删除")
+    @RequestMapping(value = "/deleteBatchSourcing", method = RequestMethod.POST)
+    public CommonResult deleteBatchSourcing(@RequestParam("sourcingIdList") List<Long> sourcingIdList) {
+        Assert.isTrue(CollectionUtil.isNotEmpty(sourcingIdList), "sourcingIdList null");
+        try {
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().in(XmsSourcingList::getId, sourcingIdList).set(XmsSourcingList::getStatus, -1);
+            boolean update = this.xmsSourcingListService.update(null, updateWrapper);
+            return CommonResult.success(update);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("deleteBatchSourcing,sourcingIdList[{}],error:", sourcingIdList, e);
+            return CommonResult.failed("deleteSourcing error");
+        }
+    }
 
 
     @ApiOperation("SourcingList添加到客户产品表")
