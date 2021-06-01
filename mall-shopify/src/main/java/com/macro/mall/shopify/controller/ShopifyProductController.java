@@ -1,9 +1,17 @@
 package com.macro.mall.shopify.controller;
 
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @Slf4j
@@ -11,4 +19,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/shopify")
 @Api(tags = "shopify铺货调用接口")
 public class ShopifyProductController {
+
+
+
+    @Autowired
+    private ShopifyUtils shopifyUtils;
+
+
+    @PostMapping("/getCollectionByShopifyName")
+    public CommonResult getCollectionByShopifyName(String shopifyName) {
+        Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
+        try {
+            int total = this.shopifyUtils.getCollectionByShopifyName(shopifyName);
+            return CommonResult.success(total);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCollectionByShopifyName, shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
 }
