@@ -16,4 +16,6 @@ public class SkuVal {
 	private String freeSkuPrice;
 	private String actSkuPrice;
 	private String skuPrice;
+	private String key;
+	private String value;
 }

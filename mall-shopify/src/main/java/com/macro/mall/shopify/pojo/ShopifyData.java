@@ -1,6 +1,7 @@
 package com.macro.mall.shopify.pojo;
 
 import com.google.common.collect.Lists;
+import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -45,4 +46,11 @@ public class ShopifyData implements Serializable {
     private boolean bodyHtml = false;
     @ApiModelProperty(value = "选择的sku", required = true)
     private List<String> skus = Lists.newArrayList();
+    @ApiModelProperty(value ="sku",required = true)
+    private List<XmsPmsSkuStockEdit> skuList;
+    @ApiModelProperty(value = "标签", required = true)
+    private String tags;
+    @ApiModelProperty(value = "商品类型", required = true)
+    private String productType;
+
 }
