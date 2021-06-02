@@ -42,7 +42,7 @@ public class SiteSourcingParam {
     private String stateName;
 
     @ApiModelProperty("定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
-    private Integer customType;
+    private String customType;
 
     @ApiModelProperty("备注或者补充信息")
     private String data;

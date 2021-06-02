@@ -7,8 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-18
+ * @since 2021-06-01
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -64,11 +62,9 @@ public class XmsSourcingList implements Serializable {
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     @ApiModelProperty(value = "更新时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
@@ -94,7 +90,7 @@ public class XmsSourcingList implements Serializable {
     private String stateName;
 
     @ApiModelProperty(value = "定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
-    private Integer customType;
+    private String customType;
 
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
@@ -105,7 +101,11 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "客户备注")
     private String remark;
 
+    @ApiModelProperty(value = "1货源已处理")
+    private Integer prcFlag;
+
     @ApiModelProperty(value = "aliexpress处理")
     private String pricePs;
+
 
 }

@@ -43,7 +43,7 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
             lambdaQuery.eq(XmsSourcingList::getStatus, sourcingParam.getStatus());
         }
         if (StrUtil.isNotEmpty(sourcingParam.getUrl())) {
-            lambdaQuery.and(wrapper -> wrapper.like(XmsSourcingList::getUrl, sourcingParam.getUrl()).or().eq(XmsSourcingList::getTitle, sourcingParam.getUrl()));
+            lambdaQuery.and(wrapper -> wrapper.like(XmsSourcingList::getUrl, sourcingParam.getUrl()).or().like(XmsSourcingList::getTitle, sourcingParam.getUrl()));
         }
         lambdaQuery.orderByDesc(XmsSourcingList::getCreateTime);
         return this.xmsSourcingListMapper.selectPage(page, lambdaQuery);

@@ -106,7 +106,7 @@ public class XmsSourcingController {
 
     @ApiOperation("sourcingList统计")
     @RequestMapping(value = "/sourcingListStatistics", method = RequestMethod.GET)
-    public CommonResult sourcingListStatistics() {
+    public CommonResult sourcingListStatistics(String url) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
 
@@ -116,6 +116,9 @@ public class XmsSourcingController {
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
             lambdaQuery.ge(XmsSourcingList::getStatus, -1);
+            if(StrUtil.isNotEmpty(url)){
+                lambdaQuery.and(query-> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
+            }
             List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
 
             Map<String, Integer> mapStatistics = new HashMap<>();
