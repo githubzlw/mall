@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-17
+ * @since 2021-06-01
  */
 public interface XmsSourcingListMapper extends BaseMapper<XmsSourcingList> {
 

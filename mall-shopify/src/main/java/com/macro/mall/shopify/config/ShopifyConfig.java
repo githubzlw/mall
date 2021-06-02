@@ -38,6 +38,13 @@ public class ShopifyConfig {
     @Value("${shopify.uri_oauth}")
     public String SHOPIFY_URI_OAUTH;
 
+    @Value("${shopify.uri_custom_collections}")
+    public String SHOPIFY_URI_CUSTOM_COLLECTIONS;
+
+    @Value("${shopify.uri_smart_collections}")
+    public String SHOPIFY_URI_SMART_COLLECTIONS;
+
+
     @Value("")
     public String SHOPUFY_HOST;
 

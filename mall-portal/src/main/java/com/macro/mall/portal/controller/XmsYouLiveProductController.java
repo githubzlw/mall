@@ -36,11 +36,11 @@ import java.util.stream.Collectors;
  * @description: com.macro.mall.portal.controller
  * @date:2021-05-07
  */
-@Api(tags = "YouLiveProductController", description = "YouLiveProduct操作相关接口")
+@Api(tags = "XmsYouLiveProductController", description = "YouLiveProduct操作相关接口")
 @RestController
 @RequestMapping("/youLiveProduct")
 @Slf4j
-public class YouLiveProductController {
+public class XmsYouLiveProductController {
 
     @Autowired
     private UmsMemberService umsMemberService;

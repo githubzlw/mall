@@ -30,7 +30,7 @@ public class XmsChromeUploadController {
     @ApiOperation("上传")
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult upload(@RequestBody XmsChromeUploadParam xmsChromeUploadParam) {
+    public CommonResult upload(XmsChromeUploadParam xmsChromeUploadParam) {
 
         xmsChromeUploadService.upload(xmsChromeUploadParam);
         return CommonResult.success(null,"上传成功");
