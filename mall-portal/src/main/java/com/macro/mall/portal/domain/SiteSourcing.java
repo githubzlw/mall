@@ -67,6 +67,12 @@ public class SiteSourcing {
     private String stateName;
 
     @ApiModelProperty("定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
-    private Integer customType;
+    private String customType;
+
+    @ApiModelProperty(value = "cif的港口")
+    private String cifPort;
+
+    @ApiModelProperty(value = "amazon的fba地址")
+    private String fbaWarehouse;
 
 }

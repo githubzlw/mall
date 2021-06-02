@@ -268,6 +268,10 @@ public class SourcingUtils {
         xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
         xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
 
+        /*xmsSourcingList.setCustomType(siteSourcing.getCustomType());
+        xmsSourcingList.setChooseType(siteSourcing.getChooseType());
+        xmsSourcingList.setCountryName(siteSourcing.getCountryName());*/
+
         xmsSourcingListService.save(xmsSourcingList);
     }
 
