@@ -284,7 +284,7 @@ public class ProductUtils {
         sourcingInfo.setCountryId(this.getCountId(shipingbyC));
         sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC) && shipingbyC.indexOf(";")>0 ?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
-        sourcingInfo.setStatus(chromeUpload.getStatus());
+        sourcingInfo.setStatus(0);
         sourcingInfo.setCreateTime(new Date());
         sourcingInfo.setUpdateTime(new Date());
         return sourcingInfo;
