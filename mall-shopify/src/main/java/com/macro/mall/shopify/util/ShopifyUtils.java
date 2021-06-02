@@ -6,9 +6,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.gson.Gson;
 import com.macro.mall.entity.XmsShopifyCollections;
@@ -46,8 +43,6 @@ public class ShopifyUtils {
 
     @Autowired
     private ShopifyRestTemplate shopifyRestTemplate;
-    @Autowired
-    private ShopifyUtil shopifyUtil;
     @Autowired
     private ShopifyConfig shopifyConfig;
     @Autowired
@@ -96,7 +91,7 @@ public class ShopifyUtils {
     private void getSingleCollection(String shopName, String url, String accessToken, String keyName) {
 
         // custom_collections , smart_collections
-        String json = this.shopifyUtil.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
         JSONObject jsonObject = JSONObject.parseObject(json);
 
         List<XmsShopifyCollections> list = new ArrayList<>();
@@ -397,7 +392,7 @@ public class ShopifyUtils {
     public OrdersWraper getOrders(String shopName) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
-        String json = this.shopifyUtil.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
     }
