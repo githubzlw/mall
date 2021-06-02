@@ -3,16 +3,19 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.entity.XmsShopifyCollections;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
+import com.macro.mall.portal.service.IXmsShopifyCollectionsService;
 import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
 import com.macro.mall.portal.service.UmsMemberService;
 import io.swagger.annotations.Api;
@@ -54,6 +57,9 @@ public class XmsShopifyController {
     private IXmsShopifyOrderinfoService shopifyOrderinfoService;
 
     private final Map<String, UmsMember> umsMemberMap = new HashMap<>();
+
+    @Autowired
+    private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
 
 
     @PostMapping(value = "/authorization")
@@ -190,6 +196,24 @@ public class XmsShopifyController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("list,orderinfoParam[{}],error:", orderinfoParam, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+
+    @ApiOperation("shopify的Collection列表")
+    @RequestMapping(value = "/collections", method = RequestMethod.GET)
+    public CommonResult collections() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyCollections::getShopName, currentMember.getShopifyName());
+            List<XmsShopifyCollections> list = this.xmsShopifyCollectionsService.list(queryWrapper);
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("collections,currentMember[{}],error:", currentMember, e);
             return CommonResult.failed("query failed");
         }
     }

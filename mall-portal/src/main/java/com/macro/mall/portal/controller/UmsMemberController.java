@@ -187,6 +187,7 @@ public class UmsMemberController {
     }
 
 
+
     @ApiOperation("设置引导状态")
     @RequestMapping(value = "/setGuided", method = RequestMethod.POST)
     @ResponseBody

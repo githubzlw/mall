@@ -45,6 +45,8 @@ secure:
       - /brand/**
       - /chrome/upload
       - /freight/**
+      - /exchangeRate/fx
+      - /paypal/**
 
 # 自定义redis key
 redis:

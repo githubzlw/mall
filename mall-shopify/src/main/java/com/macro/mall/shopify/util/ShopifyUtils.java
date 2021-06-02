@@ -2,12 +2,19 @@ package com.macro.mall.shopify.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.gson.Gson;
+import com.macro.mall.entity.XmsShopifyCollections;
+import com.macro.mall.entity.XmsShopifyOrderAddress;
+import com.macro.mall.entity.XmsShopifyOrderDetails;
+import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.entity.*;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
@@ -40,6 +47,8 @@ public class ShopifyUtils {
     @Autowired
     private ShopifyRestTemplate shopifyRestTemplate;
     @Autowired
+    private ShopifyUtil shopifyUtil;
+    @Autowired
     private ShopifyConfig shopifyConfig;
     @Autowired
     private IXmsShopifyAuthService xmsShopifyAuthService;
@@ -49,6 +58,8 @@ public class ShopifyUtils {
     private IXmsShopifyOrderDetailsService shopifyOrderDetailsService;
     @Autowired
     private IXmsShopifyOrderAddressService shopifyOrderAddressService;
+    @Autowired
+    private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
     @Autowired
     private IXmsCustomerProductService customerProductService;
 
@@ -71,6 +82,60 @@ public class ShopifyUtils {
         return total.get();
     }
 
+
+    public int getCollectionByShopifyName(String shopName) {
+
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
+        String url = String.format(shopifyConfig.SHOPIFY_URI_CUSTOM_COLLECTIONS, shopName);
+        this.getSingleCollection(shopName, url, accessToken, "custom_collections");
+        url = String.format(shopifyConfig.SHOPIFY_URI_SMART_COLLECTIONS, shopName);
+        this.getSingleCollection(shopName, url, accessToken, "smart_collections");
+        return 2;
+    }
+
+    private void getSingleCollection(String shopName, String url, String accessToken, String keyName) {
+
+        // custom_collections , smart_collections
+        String json = this.shopifyUtil.exchange(url, accessToken);
+        JSONObject jsonObject = JSONObject.parseObject(json);
+
+        List<XmsShopifyCollections> list = new ArrayList<>();
+
+        JSONArray jsonArray = jsonObject.getJSONArray(keyName);
+        if (null != jsonArray && jsonArray.size() > 0) {
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject tempJson = jsonArray.getJSONObject(i);
+
+                XmsShopifyCollections shopifyCollections = new XmsShopifyCollections();
+                shopifyCollections.setCollectionsId(tempJson.getLongValue("id"));
+                if (tempJson.containsKey("image") && tempJson.getJSONObject("image").containsKey("src")) {
+                    shopifyCollections.setImage(tempJson.getJSONObject("image").getString("src"));
+                }
+                shopifyCollections.setTitle(tempJson.getString("title"));
+                shopifyCollections.setShopName(shopName);
+                shopifyCollections.setCollectionJson(tempJson.toJSONString());
+                list.add(shopifyCollections);
+            }
+
+            QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyCollections::getShopName, shopName);
+            List<XmsShopifyCollections> hasList = xmsShopifyCollectionsService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(hasList)) {
+                Set<Long> coIdSet = new HashSet<>();
+                hasList.forEach(e -> coIdSet.add(e.getCollectionsId()));
+                List<XmsShopifyCollections> collect = list.stream().filter(e -> !coIdSet.contains(e.getCollectionsId())).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    xmsShopifyCollectionsService.saveBatch(collect);
+                    collect.clear();
+                }
+                coIdSet.clear();
+                hasList.clear();
+            } else {
+                xmsShopifyCollectionsService.saveBatch(list);
+                list.clear();
+            }
+        }
+    }
 
     public int getProductsByShopifyName(String shopifyName, Long memberId, String userName) {
         if (StrUtil.isNotEmpty(shopifyName)) {
@@ -332,7 +397,7 @@ public class ShopifyUtils {
     public OrdersWraper getOrders(String shopName) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
-        String json = this.shopifyRestTemplate.exchange(url, accessToken);
+        String json = this.shopifyUtil.exchange(url, accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
     }
@@ -370,8 +435,19 @@ public class ShopifyUtils {
         if (CollectionUtil.isNotEmpty(existList)) {
             // 过滤已经存在的订单
             Map<Long, XmsShopifyOrderinfo> idSet = new HashMap<>(existList.size() * 2);
-            existList.forEach(e -> idSet.put(e.getOrderNo(), e));
-            insertList = shopifyOrderList.stream().filter(e -> !idSet.containsKey(e.getId())).collect(Collectors.toList());
+            existList.forEach(e -> idSet.put(e.getId(), e));
+            insertList = shopifyOrderList.stream().filter(e -> {
+                if (idSet.containsKey(e.getId())) {
+                    XmsShopifyOrderinfo tempOrder = idSet.get(e.getId());
+                    if (!tempOrder.getTotalPriceUsd().equalsIgnoreCase(e.getTotal_price_usd())
+                            || !tempOrder.getFinancialStatus().equalsIgnoreCase(e.getFinancial_status())) {
+                        return true;
+                    }
+                    return false;
+                } else {
+                    return true;
+                }
+            }).collect(Collectors.toList());
             idSet.clear();
         } else {
             insertList = new ArrayList<>(shopifyOrderList);
@@ -415,7 +491,6 @@ public class ShopifyUtils {
         }
         shopifyOrderList.clear();
     }
-
 
     /**
      * shopify过来的数据转换成可存储数据
