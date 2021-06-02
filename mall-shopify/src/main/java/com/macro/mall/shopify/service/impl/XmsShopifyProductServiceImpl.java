@@ -107,10 +107,6 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         XmsPmsProductEdit pmsProduct = productMapper.selectById(Long.valueOf(wrap.getPid()));
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
-        // 产品sku数据查询
-//        PmsSkuStockExample example = new PmsSkuStockExample();
-//        example.createCriteria().andProductIdEqualTo(Long.valueOf(wrap.getPid()));
-
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(wrap.getPid()));
         List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
