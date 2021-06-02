@@ -152,11 +152,12 @@ public class UmsMemberController {
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
+            tokenMap.put("mail", pair.getRight());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
+            return CommonResult.failed("googleLogin failed");
         }
-        return CommonResult.success(null, "成功");
     }
 
     @ApiOperation("facebook登录")
