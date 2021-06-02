@@ -154,6 +154,17 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
+    public int updateUserInfo(String niceName, String monthlyOrderQuantity) {
+        UmsMember currentMember = this.getCurrentMember();
+        UmsMember umsMember = new UmsMember();
+        umsMember.setId(currentMember.getId());
+        //umsMember.setUsername(currentMember.getUsername());
+        umsMember.setNickname(niceName);
+        umsMember.setMonthlyOrders(monthlyOrderQuantity);
+        return memberMapper.updateByPrimaryKeySelective(umsMember);
+    }
+
+    @Override
     public UmsMember getCurrentMember() {
         SecurityContext ctx = SecurityContextHolder.getContext();
         Authentication auth = ctx.getAuthentication();

@@ -175,6 +175,17 @@ public class UmsMemberController {
     }
 
 
+    @ApiOperation("修改客户信息")
+    @RequestMapping(value = "/updateUserInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult updatePassword(@RequestParam String niceName,
+                                       @RequestParam String monthlyOrderQuantity) {
+        int info = memberService.updateUserInfo(niceName, monthlyOrderQuantity);
+        return CommonResult.success(info, "修改客户信息成功");
+    }
+
+
+
     @ApiOperation("设置引导状态")
     @RequestMapping(value = "/setGuided", method = RequestMethod.POST)
     @ResponseBody

@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-06-01
+ * @since 2021-06-02
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -106,6 +106,12 @@ public class XmsSourcingList implements Serializable {
 
     @ApiModelProperty(value = "aliexpress处理")
     private String pricePs;
+
+    @ApiModelProperty(value = "cif的港口")
+    private String cifPort;
+
+    @ApiModelProperty(value = "amazon的fba地址")
+    private String fbaWarehouse;
 
 
 }
