@@ -1,22 +1,17 @@
 package com.macro.mall.shopify.controller;
 
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.shopify.util.ShopifyUtils;
-import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.shopify.service.XmsShopifyProductService;
+import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @Slf4j

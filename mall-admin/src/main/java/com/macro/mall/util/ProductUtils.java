@@ -259,12 +259,12 @@ public class ProductUtils {
 //                sourcingInfo.setPrice(chromeUpload.getPrice().trim());
 //            }
 //        }
-        sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()));
+        sourcingInfo.setPrice(this.cleaningPrice(chromeUpload.getPrice(),chromeUpload.getSiteType()));
         //阿里价格处理
-        sourcingInfo.setPricePs(cleaningAliPrice(this.cleaningPrice(chromeUpload.getPrice().trim(),chromeUpload.getSiteType()),chromeUpload.getSiteType()));
+        sourcingInfo.setPricePs(cleaningAliPrice(this.cleaningPrice(chromeUpload.getPrice(),chromeUpload.getSiteType()),chromeUpload.getSiteType()));
 
         // 处理 shippingFee
-        sourcingInfo.setCost(this.cleaningShippingFee(chromeUpload.getShippingFee().trim(),chromeUpload.getSiteType()));
+        sourcingInfo.setCost(this.cleaningShippingFee(chromeUpload.getShippingFee(),chromeUpload.getSiteType()));
 //        // Shipping: US $5.14
 //        if (StrUtil.isNotEmpty(chromeUpload.getShippingFee())) {
 //            if (chromeUpload.getShippingFee().contains("Shipping: US $")) {
@@ -280,7 +280,7 @@ public class ProductUtils {
 //            sourcingInfo.setShipping(chromeUpload.getShippingBy());
 //        }
         // 处理 shippingFee
-        String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy().trim(),chromeUpload.getSiteType());
+        String shipingbyC = this.cleaningShippingBy(chromeUpload.getShippingBy(),chromeUpload.getSiteType());
         sourcingInfo.setCountryId(this.getCountId(shipingbyC));
         sourcingInfo.setShipping(StringUtil.isNotEmpty(shipingbyC) && shipingbyC.indexOf(";")>0 ?shipingbyC.split(";")[1]:shipingbyC);
         sourcingInfo.setSiteType(chromeUpload.getSiteType());
