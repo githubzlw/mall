@@ -47,4 +47,10 @@ public class SiteSourcingParam {
     @ApiModelProperty("备注或者补充信息")
     private String data;
 
+    @ApiModelProperty(value = "cif的港口")
+    private String cifPort;
+
+    @ApiModelProperty(value = "amazon的fba地址")
+    private String fbaWarehouse;
+
 }
