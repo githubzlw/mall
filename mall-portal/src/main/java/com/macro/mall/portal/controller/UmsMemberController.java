@@ -53,12 +53,17 @@ public class UmsMemberController {
     public CommonResult register(@RequestParam String username,
                                  @RequestParam String password,
                                  @RequestParam String organizationname,
-                                 @RequestParam String monthlyOrders) {
+                                 @RequestParam String monthlyOrders, String uuid) {
         memberService.register(username, password, organizationname, monthlyOrders, 0);
         String token = memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
+        // 整合sourcing数据
+        if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+        }
+
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
@@ -82,7 +87,7 @@ public class UmsMemberController {
         tokenMap.put("mail", usernamez);
 
         // 整合sourcing数据
-        if (StrUtil.isNotEmpty(uuid)) {
+        if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
             this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
         }
         tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
