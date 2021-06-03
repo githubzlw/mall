@@ -119,4 +119,18 @@ public class HomeController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+    @GetMapping(value = "/updateProductCancle")
+    @ApiOperation("产品取消")
+    @ResponseBody
+    public CommonResult updateProductCancle(@RequestParam("ids") Long id,
+                                            @RequestParam("productStatus") Integer productStatus) {
+        try {
+                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/updateProductCancle?id=" + id+"&productStatus="+productStatus);
+                CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+                return commonResult;
+        } catch (Exception e) {
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }

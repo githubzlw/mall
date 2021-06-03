@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -158,4 +159,35 @@ public class PmsProductController {
             return CommonResult.failed();
         }
     }
+
+    @ApiOperation("批量修改产品状态发布")
+    @RequestMapping(value = "/update/productStatus", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult updateProductStatus(@RequestParam("ids") List<Long> ids,
+                                           @RequestParam("productStatus") Integer productStatus) {
+        int count = productService.updateProductStatus(ids, productStatus);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+
+
+    @GetMapping(value = "/updateProductCancle")
+    @ApiOperation("前台取消商品")
+    @ResponseBody
+    public CommonResult updateProductCancle(@ApiParam(name = "id", value = "产品id", required = true) Long id
+    ,@ApiParam(name = "productStatus", value = "状态", required = true) Integer productStatus) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(id);
+        int count = productService.updateProductStatus(ids, productStatus);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+
+
 }
