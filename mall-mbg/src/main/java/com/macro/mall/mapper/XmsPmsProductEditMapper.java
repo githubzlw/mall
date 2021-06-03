@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-27
+ * @since 2021-05-31
  */
 public interface XmsPmsProductEditMapper extends BaseMapper<XmsPmsProductEdit> {
 

@@ -1,4 +1,4 @@
-package com.macro.mall.domain;
+package com.macro.mall.shopify.pojo.product;
 
 import lombok.Builder;
 import lombok.Data;
