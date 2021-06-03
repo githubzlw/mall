@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
 import io.swagger.annotations.Api;
@@ -80,17 +81,19 @@ public class UmsMemberController {
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
+        MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(usernamez);
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
-
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
 
+        UmsMember currentMember = memberService.getById(userinfo.getUmsMember().getId());
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
-            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+            this.sourcingUtils.mergeSourcingList(currentMember, uuid);
         }
-        tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
+        tokenMap.put("nickName", currentMember.getNickname());
+        tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 

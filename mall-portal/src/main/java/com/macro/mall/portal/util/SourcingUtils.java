@@ -318,8 +318,8 @@ public class SourcingUtils {
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
-                // 价格除以汇率
-                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
+                // 价格除以汇率 / this.exchangeRateUtils.getUsdToCnyRate()
+                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() , 2));
                 return jsonObject;
             }
         }
