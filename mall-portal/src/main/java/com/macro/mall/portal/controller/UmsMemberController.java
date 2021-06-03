@@ -87,12 +87,14 @@ public class UmsMemberController {
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
-        tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+
+        UmsMember currentMember = memberService.getById(userinfo.getUmsMember().getId());
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
-            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+            this.sourcingUtils.mergeSourcingList(currentMember, uuid);
         }
-        tokenMap.put("guidedFlag", String.valueOf(memberService.getCurrentMember().getGuidedFlag()));
+        tokenMap.put("nickName", currentMember.getNickname());
+        tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 

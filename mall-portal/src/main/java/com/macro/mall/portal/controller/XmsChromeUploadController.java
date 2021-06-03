@@ -1,5 +1,6 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsChromeUpload;
@@ -31,7 +32,9 @@ public class XmsChromeUploadController {
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult upload(XmsChromeUploadParam xmsChromeUploadParam) {
-
+        if(StrUtil.isNotEmpty(xmsChromeUploadParam.getUrl()) && xmsChromeUploadParam.getUrl().length() > 300){
+            xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getUrl().substring(0, 300));
+        }
         xmsChromeUploadService.upload(xmsChromeUploadParam);
         return CommonResult.success(null,"上传成功");
     }
