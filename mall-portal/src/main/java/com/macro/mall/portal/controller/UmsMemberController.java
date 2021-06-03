@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
 import io.swagger.annotations.Api;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -75,12 +77,12 @@ public class UmsMemberController {
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
+        MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(usernamez);
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
-
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
-
+        tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid)) {
             this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
@@ -149,10 +151,13 @@ public class UmsMemberController {
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
+            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
+
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
+            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
