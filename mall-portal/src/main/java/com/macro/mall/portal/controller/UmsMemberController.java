@@ -105,6 +105,15 @@ public class UmsMemberController {
         return CommonResult.success(member);
     }
 
+    @ApiOperation("获取会员信息")
+    @RequestMapping(value = "/getInfo", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult getInfo() {
+        UmsMember member = memberService.getCurrentMember();
+        UmsMember byId = this.memberService.getById(member.getId());
+        return CommonResult.success(byId);
+    }
+
     @ApiOperation("获取验证码")
     @RequestMapping(value = "/getAuthCode", method = RequestMethod.GET)
     @ResponseBody
