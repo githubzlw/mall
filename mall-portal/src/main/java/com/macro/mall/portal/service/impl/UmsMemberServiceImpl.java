@@ -1,5 +1,6 @@
 package com.macro.mall.portal.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -161,6 +162,9 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         //umsMember.setUsername(currentMember.getUsername());
         umsMember.setNickname(niceName);
         umsMember.setMonthlyOrders(monthlyOrderQuantity);
+        if(StrUtil.isNotEmpty(niceName)){
+            currentMember.setNickname(niceName);
+        }
         return memberMapper.updateByPrimaryKeySelective(umsMember);
     }
 
