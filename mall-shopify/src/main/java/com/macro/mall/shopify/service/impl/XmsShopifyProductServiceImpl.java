@@ -16,9 +16,6 @@ import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsPmsProductEdit;
 import com.macro.mall.entity.XmsPmsSkuStockEdit;
-import com.macro.mall.domain.*;
-import com.macro.mall.entity.XmsPmsProductEdit;
-import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyPidInfo;
 import com.macro.mall.mapper.XmsPmsProductEditMapper;
@@ -26,7 +23,7 @@ import com.macro.mall.mapper.XmsPmsSkuStockEditMapper;
 import com.macro.mall.mapper.XmsShopifyAuthMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.shopify.config.ShopifyConfig;
-import com.macro.mall.shopify.config.ShopifyUtil;
+import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.exception.ShopifyException;
 import com.macro.mall.shopify.pojo.ProductRequestWrap;
 import com.macro.mall.shopify.pojo.ShopifyData;
@@ -34,14 +31,6 @@ import com.macro.mall.shopify.pojo.SkuVal;
 import com.macro.mall.shopify.pojo.product.*;
 import com.macro.mall.shopify.service.XmsShopifyProductService;
 import com.macro.mall.shopify.util.StrUtils;
-import com.macro.mall.mapper.*;
-import com.macro.mall.model.PmsProduct;
-import com.macro.mall.model.PmsSkuStock;
-import com.macro.mall.model.PmsSkuStockExample;
-import com.macro.mall.service.XmsShopifyService;
-import com.macro.mall.util.Config;
-import com.macro.mall.util.ShopifyUtil;
-import com.macro.mall.util.StrUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +60,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     @Autowired
     private XmsShopifyAuthMapper xmsShopifyAuthMapper;
 
-    private final ShopifyUtil shopifyUtil;
+    @Autowired
+    private ShopifyRestTemplate shopifyRestTemplate;
 
     private final ShopifyConfig config;
 
@@ -81,10 +71,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private XmsPmsSkuStockEditMapper xmsPmsSkuStockEditMapper;
 
 
-    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyUtil shopifyUtil) {
+    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
         this.config = config;
-        this.shopifyUtil = shopifyUtil;
     }
 
     @Override
@@ -487,7 +476,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             String token = shopifyAuth.getAccessToken();
 
             LOGGER.info("add product to myself shop:[{}]",shopName);
-            String returnJson = shopifyUtil.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
+            String returnJson = shopifyRestTemplate.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
             LOGGER.info("returnJson:[{}]", returnJson);
             result = gson.fromJson(returnJson, ProductWraper.class);
 
