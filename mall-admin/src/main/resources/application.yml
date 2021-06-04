@@ -76,12 +76,6 @@ minio:
   accessKey: admin #访问的key
   secretKey: xxxxxx #访问的秘钥
 
-shopify:
-  uri_products: https://%s.myshopify.com/admin/api/2020-04/products.json
-
-  api_key: 5cc8320a1e4e227580f72a0c0cddfa8f
-  api_key_secret: c884cb55401548d4bc42af8898a1b5cd
-
 #每周一和周四运行（按万次收费）
 ali1688api:
   dates:

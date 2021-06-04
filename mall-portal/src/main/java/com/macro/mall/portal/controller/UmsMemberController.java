@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -166,14 +167,18 @@ public class UmsMemberController {
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
+            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
+
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
+            tokenMap.put("mail", pair.getRight());
+            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
+            return CommonResult.failed("googleLogin failed");
         }
-        return CommonResult.success(null, "成功");
     }
 
     @ApiOperation("facebook登录")
