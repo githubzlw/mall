@@ -68,6 +68,9 @@ public class XmsYouLiveProductController {
             productParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
+            if(CollectionUtil.isNotEmpty(productPage.getRecords())){
+                productPage.getRecords().forEach(e-> e.setShopifyJson(null));
+            }
             return CommonResult.success(productPage);
         } catch (Exception e) {
             e.printStackTrace();
