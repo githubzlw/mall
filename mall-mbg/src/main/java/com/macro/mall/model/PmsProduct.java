@@ -130,6 +130,9 @@ public class PmsProduct implements Serializable {
     @ApiModelProperty(value = "抓取的运输方式(新加字段)")
     private String shippingBy;
 
+    @ApiModelProperty(value = "产品状态：0:pending等待状态;1:success完成状态;2:release发布状态;3:failed删除状态;4:cancled前端取消状态")
+    private Integer productStatus;
+
     @ApiModelProperty(value = "商品描述")
     private String description;
 
@@ -503,6 +506,14 @@ public class PmsProduct implements Serializable {
         this.shippingBy = shippingBy;
     }
 
+    public Integer getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(Integer productStatus) {
+        this.productStatus = productStatus;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -586,6 +597,7 @@ public class PmsProduct implements Serializable {
         sb.append(", sourcePrice=").append(sourcePrice);
         sb.append(", shippingFee=").append(shippingFee);
         sb.append(", shippingBy=").append(shippingBy);
+        sb.append(", productStatus=").append(productStatus);
         sb.append(", description=").append(description);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);
