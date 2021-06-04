@@ -217,12 +217,12 @@ public class SourcingUtils {
         if (null != currentMember && StrUtil.isNotEmpty(uuid)) {
             // TOURIST_b0596503-cf0a-422c-8a5f-500b5284bc77
             UpdateWrapper<XmsSourcingList> updateSourcingWrapper = new UpdateWrapper<>();
-            updateSourcingWrapper.lambda().eq(XmsSourcingList::getUsername, "TOURIST_" + uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
+            updateSourcingWrapper.lambda().eq(XmsSourcingList::getUsername, uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
             this.xmsSourcingListService.update(null, updateSourcingWrapper);
 
             // upload表也进行更新
             UpdateWrapper<XmsChromeUpload> updateUploadWrapper = new UpdateWrapper<>();
-            updateUploadWrapper.lambda().eq(XmsChromeUpload::getUsername, "TOURIST_" + uuid).set(XmsChromeUpload::getMemberId, currentMember.getId()).set(XmsChromeUpload::getUsername, currentMember.getUsername());
+            updateUploadWrapper.lambda().eq(XmsChromeUpload::getUsername, uuid).set(XmsChromeUpload::getMemberId, currentMember.getId()).set(XmsChromeUpload::getUsername, currentMember.getUsername());
             this.xmsChromeUploadService.update(null, updateUploadWrapper);
         }
 
