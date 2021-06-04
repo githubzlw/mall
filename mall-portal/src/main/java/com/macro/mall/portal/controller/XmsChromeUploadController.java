@@ -35,6 +35,9 @@ public class XmsChromeUploadController {
         if(StrUtil.isNotEmpty(xmsChromeUploadParam.getUrl()) && xmsChromeUploadParam.getUrl().length() > 300){
             xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getUrl().substring(0, 300));
         }
+        if(StrUtil.isNotEmpty(xmsChromeUploadParam.getImages()) && xmsChromeUploadParam.getImages().length() > 2500){
+            xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getImages().substring(0, 2500));
+        }
         xmsChromeUploadService.upload(xmsChromeUploadParam);
         return CommonResult.success(null,"上传成功");
     }
