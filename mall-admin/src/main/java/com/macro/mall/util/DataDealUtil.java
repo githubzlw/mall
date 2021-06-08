@@ -45,7 +45,7 @@ public class DataDealUtil {
 
     public static String changeAliPrice(String price) {
         double tempPrice = Double.parseDouble(price.trim());
-        if (tempPrice > 0D) {
+        /*if (tempPrice > 0D) {
             if(tempPrice < 0.1){
                 tempPrice = 0.2D;
             } else if (tempPrice < 10D) {
@@ -55,7 +55,7 @@ public class DataDealUtil {
             } else if (tempPrice < 100D) {
                 tempPrice = tempPrice * 0.95;
             }
-        }
+        }*/
         return new BigDecimal(tempPrice).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
     }
 
