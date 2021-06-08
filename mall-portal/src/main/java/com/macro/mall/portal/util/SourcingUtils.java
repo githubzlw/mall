@@ -279,7 +279,7 @@ public class SourcingUtils {
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
 
         // 判断ALIEXPRESS
-        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
+        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
 
@@ -449,6 +449,7 @@ public class SourcingUtils {
                 siteSourcing.setCatid(siteFlagEnum.getCatid());
                 switch (siteFlagEnum.getFlag()) {
                     case 2:
+                    case 3:
                     case 8:
                         // 解析aliexpress
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
