@@ -1,6 +1,7 @@
 package com.macro.mall.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -78,6 +79,14 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
             }
 
         }
+
+    }
+
+    @Override
+    public void updateSourceStatus(XmsSourcingList sourcingInfo) {
+        UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(XmsSourcingList::getStatus, sourcingInfo.getStatus()).eq(XmsSourcingList::getId, sourcingInfo.getId());
+        this.xmsSourcingListMapper.update(null, updateWrapper);
 
     }
 

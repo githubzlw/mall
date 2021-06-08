@@ -19,4 +19,6 @@ public interface IXmsSourcingListService extends IService<XmsSourcingList> {
 
     void updateSourceLink(XmsSourcingList sourcingInfo);
 
+    void updateSourceStatus(XmsSourcingList sourcingInfo);
+
 }
