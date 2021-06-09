@@ -39,15 +39,12 @@ logging:
     com.macro.mall: debug
 
 logstash:
-  host: 192.168.1.31
+  host: 127.0.0.1
 
 shopify:
-  api_key: 5cc8320a1e4e227580f72a0c0cddfa8f
-  api_key_secret: c884cb55401548d4bc42af8898a1b5cd
-  api_key_shopname: kr-cart-test
-  client_id: 9f988fdfe6704027985552eb75ae1076
-  client_secret: 4cb255298c6bf7142fe9b04000cfa81c
+  api_key_shopname: importx
+  client_id: 67fa9f936d97c0643d628cb3866711bd
+  client_secret: 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
   scope: write_orders,read_customers,write_products,read_fulfillments,write_fulfillments,read_assigned_fulfillment_orders,write_assigned_fulfillment_orders,read_merchant_managed_fulfillment_orders,write_merchant_managed_fulfillment_orders,read_third_party_fulfillment_orders,write_third_party_fulfillment_orders,read_locales,read_inventory
-  redirect_uri: http://guu8pd.natappfree.cc/shopify/auth/callback
-  fulfillment_service_callback: http://guu8pd.natappfree.cc/shopify/fulfillmentCallback
+  redirect_uri: https://app.importx.com/linkStore
 

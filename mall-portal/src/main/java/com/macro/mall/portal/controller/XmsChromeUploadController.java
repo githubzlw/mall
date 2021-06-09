@@ -2,6 +2,7 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.binarywang.java.emoji.EmojiConverter;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.portal.domain.XmsChromeUploadParam;
@@ -28,12 +29,26 @@ public class XmsChromeUploadController {
     @Autowired
     private IXmsChromeUploadService xmsChromeUploadService;
 
+    private EmojiConverter emojiConverter = EmojiConverter.getInstance();
+
     @ApiOperation("上传")
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult upload(XmsChromeUploadParam xmsChromeUploadParam) {
         if(StrUtil.isNotEmpty(xmsChromeUploadParam.getUrl()) && xmsChromeUploadParam.getUrl().length() > 300){
             xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getUrl().substring(0, 300));
+        }
+        if(StrUtil.isNotEmpty(xmsChromeUploadParam.getImages()) && xmsChromeUploadParam.getImages().length() > 2500){
+            xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getImages().substring(0, 2500));
+        }
+        // 处理productDescription和productDetail的emoji表情
+        if(StrUtil.isNotEmpty(xmsChromeUploadParam.getProductDetail())){
+            String alias = this.emojiConverter.toAlias(xmsChromeUploadParam.getProductDetail());
+            xmsChromeUploadParam.setProductDetail(alias);
+        }
+        if(StrUtil.isNotEmpty(xmsChromeUploadParam.getProductDescription())){
+            String alias = this.emojiConverter.toAlias(xmsChromeUploadParam.getProductDescription());
+            xmsChromeUploadParam.setProductDescription(alias);
         }
         xmsChromeUploadService.upload(xmsChromeUploadParam);
         return CommonResult.success(null,"上传成功");

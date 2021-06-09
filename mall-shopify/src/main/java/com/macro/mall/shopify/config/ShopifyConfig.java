@@ -12,12 +12,6 @@ public class ShopifyConfig {
     @Value("${shopify.client_secret}")
     public String SHOPIFY_CLIENT_SECRET;
 
-    @Value("${shopify.api_key}")
-    public String SHOPIFY_API_KEY;
-
-    @Value("${shopify.api_key_secret}")
-    public String SHOPIFY_API_KEY_SECRET;
-
     @Value("${shopify.api_key_shopname}")
     public String SHOPIFY_API_KEY_SHOPNAME;
 

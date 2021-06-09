@@ -138,6 +138,12 @@
             <artifactId>minio</artifactId>
         </dependency>
 
+        <dependency>
+          <groupId>com.github.binarywang</groupId>
+          <artifactId>java-emoji-converter</artifactId>
+          <version>0.1.1</version>
+        </dependency>
+
         <!-- excel上传使用-->
         <dependency>
             <groupId>org.apache.poi</groupId>

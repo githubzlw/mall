@@ -69,5 +69,25 @@ public class XmsSourcingController {
         }
     }
 
+    @ApiOperation("客户Sourcing状态更新")
+    @ApiImplicitParams({@ApiImplicitParam(name = "id", value = "XmsSourcingList的ID", dataType = "Long", required = true),
+            @ApiImplicitParam(name = "status", value = "状态：0已接收;1处理中;2已处理;4取消;5无效数据;-1->删除", dataType = "String", required = true)})
+    @RequestMapping(value = "/updateSourceStatus", method = RequestMethod.POST)
+    public CommonResult updateSourceStatus(Long id, Integer status) {
+        Assert.isTrue(null != id && id > 0, "id null");
+        Assert.isTrue(null != status && status > -2, "status null");
+        XmsSourcingList sourcingInfo = new XmsSourcingList();
+        try {
+            sourcingInfo.setId(id);
+            sourcingInfo.setStatus(status);
+            this.xmsSourcingListService.updateSourceStatus(sourcingInfo);
+            return CommonResult.success(sourcingInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("updateSourceStatus,sourcingInfo[{}],error:", sourcingInfo, e);
+            return CommonResult.failed("query list error!");
+        }
+    }
+
 
 }
