@@ -3045,6 +3045,126 @@ public class PmsProductExample {
             addCriterion("product_status not between", value1, value2, "productStatus");
             return (Criteria) this;
         }
+
+        public Criteria andCreateTimeIsNull() {
+            addCriterion("create_time is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeIsNotNull() {
+            addCriterion("create_time is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeEqualTo(Date value) {
+            addCriterion("create_time =", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeNotEqualTo(Date value) {
+            addCriterion("create_time <>", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeGreaterThan(Date value) {
+            addCriterion("create_time >", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeGreaterThanOrEqualTo(Date value) {
+            addCriterion("create_time >=", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeLessThan(Date value) {
+            addCriterion("create_time <", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeLessThanOrEqualTo(Date value) {
+            addCriterion("create_time <=", value, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeIn(List<Date> values) {
+            addCriterion("create_time in", values, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeNotIn(List<Date> values) {
+            addCriterion("create_time not in", values, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeBetween(Date value1, Date value2) {
+            addCriterion("create_time between", value1, value2, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreateTimeNotBetween(Date value1, Date value2) {
+            addCriterion("create_time not between", value1, value2, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusIsNull() {
+            addCriterion("free_status is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusIsNotNull() {
+            addCriterion("free_status is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusEqualTo(Integer value) {
+            addCriterion("free_status =", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusNotEqualTo(Integer value) {
+            addCriterion("free_status <>", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusGreaterThan(Integer value) {
+            addCriterion("free_status >", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusGreaterThanOrEqualTo(Integer value) {
+            addCriterion("free_status >=", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusLessThan(Integer value) {
+            addCriterion("free_status <", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusLessThanOrEqualTo(Integer value) {
+            addCriterion("free_status <=", value, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusIn(List<Integer> values) {
+            addCriterion("free_status in", values, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusNotIn(List<Integer> values) {
+            addCriterion("free_status not in", values, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusBetween(Integer value1, Integer value2) {
+            addCriterion("free_status between", value1, value2, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andFreeStatusNotBetween(Integer value1, Integer value2) {
+            addCriterion("free_status not between", value1, value2, "freeStatus");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {
