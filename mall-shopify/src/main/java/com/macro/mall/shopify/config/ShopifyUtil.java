@@ -98,7 +98,7 @@ public class ShopifyUtil {
         headers.setContentType(MediaType.APPLICATION_JSON);
         try {
             BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                    new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                    new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
             restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
             restTemplate.delete(uri);
             return 1;
@@ -140,7 +140,7 @@ public class ShopifyUtil {
     public String getObject(String uri) {
 
         BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
 
         restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
         HttpHeaders headers = new HttpHeaders();
@@ -160,7 +160,7 @@ public class ShopifyUtil {
     public String postObject(String uri, String json) {
 
         BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
 
         restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
         HttpHeaders headers = new HttpHeaders();

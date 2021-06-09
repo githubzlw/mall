@@ -47,10 +47,8 @@ logstash:
   host: logstash
 
 shopify:
-  api_key: 5cc8320a1e4e227580f72a0c0cddfa8f
-  api_key_secret: c884cb55401548d4bc42af8898a1b5cd
-  api_key_shopname: kr-cart-test
+  api_key_shopname: importx
   client_id: 9f988fdfe6704027985552eb75ae1076
   client_secret: 4cb255298c6bf7142fe9b04000cfa81c
   scope: write_orders,read_customers,write_products
-  redirect_uri: http://guu8pd.natappfree.cc/shopify/auth/callback
+  redirect_uri: https://app.importx.com/linkStore
