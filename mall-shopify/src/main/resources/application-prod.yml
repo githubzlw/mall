@@ -38,4 +38,4 @@ shopify:
   client_id: 9f988fdfe6704027985552eb75ae1076
   client_secret: 4cb255298c6bf7142fe9b04000cfa81c
   scope: write_orders,read_customers,write_products
-  redirect_uri: https://app.importx.com/linkStore
+  redirect_uri: https://app.importexpress.com/linkStore
