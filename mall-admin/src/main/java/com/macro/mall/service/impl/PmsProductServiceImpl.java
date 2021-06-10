@@ -129,6 +129,8 @@ public class PmsProductServiceImpl implements PmsProductService {
         //更新商品信息
         PmsProduct product = productParam;
         product.setId(id);
+        //编辑完成
+        product.setProductStatus(1);
         productMapper.updateByPrimaryKeySelective(product);
         //会员价格
         PmsMemberPriceExample pmsMemberPriceExample = new PmsMemberPriceExample();
@@ -233,6 +235,7 @@ public class PmsProductServiceImpl implements PmsProductService {
         if (productQueryParam.getProductCategoryId() != null) {
             criteria.andProductCategoryIdEqualTo(productQueryParam.getProductCategoryId());
         }
+        productExample.setOrderByClause(" id desc");
         return productMapper.selectByExample(productExample);
     }
 
@@ -289,10 +292,21 @@ public class PmsProductServiceImpl implements PmsProductService {
     public int updateDeleteStatus(List<Long> ids, Integer deleteStatus) {
         PmsProduct record = new PmsProduct();
         record.setDeleteStatus(deleteStatus);
+        record.setProductStatus(3);
         PmsProductExample example = new PmsProductExample();
         example.createCriteria().andIdIn(ids);
         return productMapper.updateByExampleSelective(record, example);
     }
+
+    @Override
+    public int updateProductStatus(List<Long> ids, Integer status) {
+        PmsProduct record = new PmsProduct();
+        record.setProductStatus(status);
+        PmsProductExample example = new PmsProductExample();
+        example.createCriteria().andIdIn(ids);
+        return productMapper.updateByExampleSelective(record, example);
+    }
+
 
     @Override
     public List<PmsProduct> list(String keyword) {

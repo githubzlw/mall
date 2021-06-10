@@ -74,6 +74,11 @@ public interface PmsProductService {
     int updateDeleteStatus(List<Long> ids, Integer deleteStatus);
 
     /**
+     * 更新产品状态
+     */
+    int updateProductStatus(List<Long> ids, Integer status);
+
+    /**
      * 根据商品名称或者货号模糊查询
      */
     List<PmsProduct> list(String keyword);

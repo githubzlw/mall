@@ -40,6 +40,14 @@ public interface UmsMemberService {
     void updatePassword(String telephone, String password, String authCode);
 
     /**
+     * 修改昵称和每月订单量
+     * @param niceName
+     * @param monthlyOrderQuantity
+     * @return
+     */
+    int updateUserInfo(String niceName, String monthlyOrderQuantity);
+
+    /**
      * 获取当前登录会员
      */
     UmsMember getCurrentMember();

@@ -2985,6 +2985,66 @@ public class PmsProductExample {
             addCriterion("shipping_by not between", value1, value2, "shippingBy");
             return (Criteria) this;
         }
+
+        public Criteria andProductStatusIsNull() {
+            addCriterion("product_status is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusIsNotNull() {
+            addCriterion("product_status is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusEqualTo(Integer value) {
+            addCriterion("product_status =", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusNotEqualTo(Integer value) {
+            addCriterion("product_status <>", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusGreaterThan(Integer value) {
+            addCriterion("product_status >", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusGreaterThanOrEqualTo(Integer value) {
+            addCriterion("product_status >=", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusLessThan(Integer value) {
+            addCriterion("product_status <", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusLessThanOrEqualTo(Integer value) {
+            addCriterion("product_status <=", value, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusIn(List<Integer> values) {
+            addCriterion("product_status in", values, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusNotIn(List<Integer> values) {
+            addCriterion("product_status not in", values, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusBetween(Integer value1, Integer value2) {
+            addCriterion("product_status between", value1, value2, "productStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andProductStatusNotBetween(Integer value1, Integer value2) {
+            addCriterion("product_status not between", value1, value2, "productStatus");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

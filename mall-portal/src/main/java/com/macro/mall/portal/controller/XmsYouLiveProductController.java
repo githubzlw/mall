@@ -36,11 +36,11 @@ import java.util.stream.Collectors;
  * @description: com.macro.mall.portal.controller
  * @date:2021-05-07
  */
-@Api(tags = "YouLiveProductController", description = "YouLiveProduct操作相关接口")
+@Api(tags = "XmsYouLiveProductController", description = "YouLiveProduct操作相关接口")
 @RestController
 @RequestMapping("/youLiveProduct")
 @Slf4j
-public class YouLiveProductController {
+public class XmsYouLiveProductController {
 
     @Autowired
     private UmsMemberService umsMemberService;
@@ -68,6 +68,9 @@ public class YouLiveProductController {
             productParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
+            if(CollectionUtil.isNotEmpty(productPage.getRecords())){
+                productPage.getRecords().forEach(e-> e.setShopifyJson(null));
+            }
             return CommonResult.success(productPage);
         } catch (Exception e) {
             e.printStackTrace();

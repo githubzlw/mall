@@ -1,4 +1,4 @@
-package com.macro.mall.service.impl;
+package com.macro.mall.shopify.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -12,20 +12,23 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.domain.*;
+import com.macro.mall.entity.XmsPmsProductEdit;
+import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyPidInfo;
-import com.macro.mall.mapper.PmsProductMapper;
-import com.macro.mall.mapper.PmsSkuStockMapper;
+import com.macro.mall.mapper.XmsPmsProductEditMapper;
+import com.macro.mall.mapper.XmsPmsSkuStockEditMapper;
 import com.macro.mall.mapper.XmsShopifyAuthMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
-import com.macro.mall.model.PmsProduct;
-import com.macro.mall.model.PmsSkuStock;
-import com.macro.mall.model.PmsSkuStockExample;
-import com.macro.mall.service.XmsShopifyService;
-import com.macro.mall.util.Config;
-import com.macro.mall.util.ShopifyUtil;
-import com.macro.mall.util.StrUtils;
+import com.macro.mall.shopify.config.ShopifyConfig;
+import com.macro.mall.shopify.config.ShopifyUtil;
+import com.macro.mall.shopify.exception.ShopifyException;
+import com.macro.mall.shopify.pojo.ProductRequestWrap;
+import com.macro.mall.shopify.pojo.ShopifyData;
+import com.macro.mall.shopify.pojo.SkuVal;
+import com.macro.mall.shopify.pojo.product.*;
+import com.macro.mall.shopify.service.XmsShopifyProductService;
+import com.macro.mall.shopify.util.StrUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +47,15 @@ import java.util.stream.Collectors;
  * Created by zlw on 2021/5/10.
  */
 @Service
-public class XmsShopifyServiceImpl implements XmsShopifyService {
+public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(XmsShopifyServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(XmsShopifyProductServiceImpl.class);
     private static String chineseChar = "([\\一-\\龥]+)";//()表示匹配字符串，[]表示在首尾字符范围  从 \\一 到 \\龥字符之间，+号表示至少出现一次
 
     @Autowired
-    private PmsProductMapper productMapper;
+    private XmsPmsProductEditMapper productMapper;
     @Autowired
-    private PmsSkuStockMapper skuStockMapper;
+    private XmsPmsSkuStockEditMapper skuStockMapper;
     @Autowired
     private XmsShopifyPidInfoMapper shopifyPidInfoMapper;
     @Autowired
@@ -60,10 +63,10 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
 
     private final ShopifyUtil shopifyUtil;
 
-    private final Config config;
+    private final ShopifyConfig config;
 
 
-    public XmsShopifyServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, Config config, ShopifyUtil shopifyUtil) {
+    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyUtil shopifyUtil) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
         this.config = config;
         this.shopifyUtil = shopifyUtil;
@@ -101,13 +104,12 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
             return productWraper;
         }
         // 产品信息数据查询
-        PmsProduct pmsProduct = productMapper.selectByPrimaryKey(Long.valueOf(wrap.getPid()));
+        XmsPmsProductEdit pmsProduct = productMapper.selectById(Long.valueOf(wrap.getPid()));
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
-        // 产品sku数据查询
-        PmsSkuStockExample example = new PmsSkuStockExample();
-        example.createCriteria().andProductIdEqualTo(Long.valueOf(wrap.getPid()));
-        List<PmsSkuStock> skuList= skuStockMapper.selectByExample(example);
+        QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(wrap.getPid()));
+        List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
         goods.setSkuList(skuList);
 
         goods.setSkus(wrap.getSkus());
@@ -123,7 +125,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
      * @param site
      * @return
      */
-    public static ShopifyData composeShopifyData(PmsProduct goods, int site) {
+    public static ShopifyData composeShopifyData(XmsPmsProductEdit goods, int site) {
 
         ShopifyData data = new ShopifyData();
         data.setPid(String.valueOf(goods.getId()));
@@ -134,6 +136,8 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
         data.setImage(image(goods));
         data.setPerWeight(String.valueOf(goods.getWeight()));
         data.setCategory(String.valueOf(goods.getProductCategoryId()));
+        data.setTags(goods.getShopifyTags());
+        data.setProductType(goods.getShopifyType());
         return data;
     }
 
@@ -150,6 +154,8 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
 
         product.setVendor(goods.getVendor());
         product.setProduct_type(goods.getCategory());
+        product.setTags(goods.getTags());
+        product.setProduct_type(goods.getProductType());
         OptionWrap wrap;
         try {
             wrap = optionVariant(goods.getSkuList());
@@ -204,7 +210,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
     }
 
     private Variants variant(String goodsPrice,String weight) throws ShopifyException{
-        if(org.apache.commons.lang.StringUtils.isBlank(goodsPrice)){
+        if(StringUtils.isBlank(goodsPrice)){
             throw  new ShopifyException("The price is not valid");
         }
         goodsPrice  = goodsPrice.split("-")[0];
@@ -245,7 +251,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
         return sb;
     }
 
-    private static List<String> detail(PmsProduct goods) {
+    private static List<String> detail(XmsPmsProductEdit goods) {
         String detail = goods.getDescription();
         List<String> list = Lists.newArrayList();
         if (StringUtils.isNotBlank(detail) && detail.length() > 2) {
@@ -272,7 +278,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
         return list;
     }
 
-    private static List<String> image(PmsProduct goods) {
+    private static List<String> image(XmsPmsProductEdit goods) {
         List<String> imgList = Lists.newArrayList();
         String imgMain = goods.getPic();
         if (StringUtils.isNotBlank(imgMain)) {
@@ -375,7 +381,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
     /**解析sku,转成shopify网站的Options以及Variants
      * @param skuList
      */
-    public OptionWrap optionVariant(List<PmsSkuStock> skuList) throws Exception {
+    public OptionWrap optionVariant(List<XmsPmsSkuStockEdit> skuList) throws Exception {
         if(skuList == null || skuList.isEmpty()){
             return OptionWrap.builder().lstImages(Lists.newArrayList())
                     .options(Lists.newArrayList()).variants(Lists.newArrayList()).build();
@@ -396,6 +402,7 @@ public class XmsShopifyServiceImpl implements XmsShopifyService {
             variants.setInventory_policy("deny");
             variants.setInventory_quantity(skuList.get(i).getStock());
             variants.setInventory_management("shopify");
+            variants.setCompare_at_price(String.valueOf(skuList.get(i).getComparedAtPrice()));
             image.add(skuList.get(i).getPic());
             // 规格数据
             Gson gson = new Gson();

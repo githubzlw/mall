@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-18
+ * @since 2021-06-02
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -56,7 +56,7 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "费用")
     private String cost;
 
-    @ApiModelProperty(value = "状态：0->已接收；1->已处理；5->无效数据")
+    @ApiModelProperty(value = "状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；")
     private Integer status;
 
     @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;9 图片11 shopify")
@@ -68,8 +68,8 @@ public class XmsSourcingList implements Serializable {
     private Date createTime;
 
     @ApiModelProperty(value = "更新时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
     @ApiModelProperty(value = "sku的json数据")
@@ -94,7 +94,7 @@ public class XmsSourcingList implements Serializable {
     private String stateName;
 
     @ApiModelProperty(value = "定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
-    private Integer customType;
+    private String customType;
 
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
@@ -105,7 +105,17 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "客户备注")
     private String remark;
 
+    @ApiModelProperty(value = "1货源已处理")
+    private Integer prcFlag;
+
     @ApiModelProperty(value = "aliexpress处理")
     private String pricePs;
+
+    @ApiModelProperty(value = "cif的港口")
+    private String cifPort;
+
+    @ApiModelProperty(value = "amazon的fba地址")
+    private String fbaWarehouse;
+
 
 }

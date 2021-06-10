@@ -217,12 +217,12 @@ public class SourcingUtils {
         if (null != currentMember && StrUtil.isNotEmpty(uuid)) {
             // TOURIST_b0596503-cf0a-422c-8a5f-500b5284bc77
             UpdateWrapper<XmsSourcingList> updateSourcingWrapper = new UpdateWrapper<>();
-            updateSourcingWrapper.lambda().eq(XmsSourcingList::getUsername, "TOURIST_" + uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
+            updateSourcingWrapper.lambda().eq(XmsSourcingList::getUsername, uuid).set(XmsSourcingList::getMemberId, currentMember.getId()).set(XmsSourcingList::getUsername, currentMember.getUsername());
             this.xmsSourcingListService.update(null, updateSourcingWrapper);
 
             // upload表也进行更新
             UpdateWrapper<XmsChromeUpload> updateUploadWrapper = new UpdateWrapper<>();
-            updateUploadWrapper.lambda().eq(XmsChromeUpload::getUsername, "TOURIST_" + uuid).set(XmsChromeUpload::getMemberId, currentMember.getId()).set(XmsChromeUpload::getUsername, currentMember.getUsername());
+            updateUploadWrapper.lambda().eq(XmsChromeUpload::getUsername, uuid).set(XmsChromeUpload::getMemberId, currentMember.getId()).set(XmsChromeUpload::getUsername, currentMember.getUsername());
             this.xmsChromeUploadService.update(null, updateUploadWrapper);
         }
 
@@ -268,6 +268,10 @@ public class SourcingUtils {
         xmsSourcingList.setOrderQuantity(siteSourcing.getAverageDailyOrder() > 0 ? siteSourcing.getAverageDailyOrder() : siteSourcing.getOneTimeOrderOnly());
         xmsSourcingList.setPrice(String.valueOf(siteSourcing.getPrice()));
 
+        /*xmsSourcingList.setCustomType(siteSourcing.getCustomType());
+        xmsSourcingList.setChooseType(siteSourcing.getChooseType());
+        xmsSourcingList.setCountryName(siteSourcing.getCountryName());*/
+
         xmsSourcingListService.save(xmsSourcingList);
     }
 
@@ -275,7 +279,7 @@ public class SourcingUtils {
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
 
         // 判断ALIEXPRESS
-        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
+        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
 
@@ -314,8 +318,8 @@ public class SourcingUtils {
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
                 siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
-                // 价格除以汇率
-                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() / this.exchangeRateUtils.getUsdToCnyRate(), 2));
+                // 价格除以汇率 / this.exchangeRateUtils.getUsdToCnyRate()
+                siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() , 2));
                 return jsonObject;
             }
         }
@@ -445,6 +449,7 @@ public class SourcingUtils {
                 siteSourcing.setCatid(siteFlagEnum.getCatid());
                 switch (siteFlagEnum.getFlag()) {
                     case 2:
+                    case 3:
                     case 8:
                         // 解析aliexpress
                         pid = dealAliExpressOrTaoBaoUrl(siteSourcing.getUrl());
