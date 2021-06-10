@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class ShopifyUtil {
+public class ShopifyRestTemplate {
 
 
     @Autowired
@@ -36,6 +36,7 @@ public class ShopifyUtil {
         // Do any additional configuration here
         return builder.build();
     }
+
 
     /**
      * postForEntity

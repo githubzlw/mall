@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://db:3306/mall?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: reader
-    password: 123456
+    url: jdbc:mysql://34.210.160.177:3306/mall?useUnicode=true&allowMultiQueries=true&useSSL=false
+    username: importuser
+    password: jtl08qb8xfxx
     druid:
       initial-size: 5 #连接池初始化大小
       min-idle: 10 #最小空闲连接数
@@ -16,24 +16,24 @@ spring:
         login-username: druid
         login-password: druid
 
-  data:
-    mongodb:
-      host: mongo
-      port: 27017
-      database: mall-port
+  #data:
+    #mongodb:
+      #host: mongo
+      #port: 27017
+      #database: mall-port
 
   redis:
-    host: redis # Redis服务器地址
+    host: 127.0.0.1 # Redis服务器地址
     database: 0 # Redis数据库索引（默认为0）
     port: 6379 # Redis服务器连接端口
     password: '@Import_Express.Auth_123'# Redis服务器连接密码（默认为空）
     timeout: 300ms # 连接超时时间（毫秒）
 
   rabbitmq:
-    host: rabbit
+    host: 127.0.0.1
     port: 5672
     virtual-host: /mall
-    username: mall
+    username: importuser
     password: mall
 
 logging:
