@@ -67,6 +67,9 @@ public class SourcingUtils {
 
     private static final long BUYFORME_PID_EXPIRE = 1000 * 60 * 60 * 24 * 7;
 
+    public static final String RETRIEVE_PASSWORD_KEY = "sourcing:retrievePassword";
+
+
     private UrlUtil instance = UrlUtil.getInstance();
 
     @Autowired

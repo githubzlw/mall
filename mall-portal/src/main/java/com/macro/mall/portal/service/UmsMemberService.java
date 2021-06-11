@@ -40,6 +40,12 @@ public interface UmsMemberService {
     void updatePassword(String telephone, String password, String authCode);
 
     /**
+     * 重置密码
+     */
+    @Transactional
+    void resetPassword(Long memberId, String password);
+
+    /**
      * 修改昵称和每月订单量
      * @param niceName
      * @param monthlyOrderQuantity

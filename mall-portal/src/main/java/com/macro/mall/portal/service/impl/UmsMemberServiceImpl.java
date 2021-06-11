@@ -155,6 +155,16 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
+    public void resetPassword(Long memberId, String password) {
+
+        UmsMember record = new UmsMember();
+        record.setId(memberId);
+        record.setPassword(passwordEncoder.encode(password));
+        memberMapper.updateByPrimaryKeySelective(record);
+        memberCacheService.delMember(memberId);
+    }
+
+    @Override
     public int updateUserInfo(String niceName, String monthlyOrderQuantity) {
         UmsMember currentMember = this.getCurrentMember();
         UmsMember umsMember = new UmsMember();
