@@ -61,8 +61,6 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private XmsShopifyAuthMapper xmsShopifyAuthMapper;
 
     private final ShopifyRestTemplate shopifyRestTemplate;
-    @Autowired
-    private ShopifyRestTemplate shopifyRestTemplate;
 
     private final ShopifyConfig config;
 
