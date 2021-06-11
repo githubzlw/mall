@@ -60,6 +60,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     @Autowired
     private XmsShopifyAuthMapper xmsShopifyAuthMapper;
 
+    private final ShopifyRestTemplate shopifyRestTemplate;
     @Autowired
     private ShopifyRestTemplate shopifyRestTemplate;
 
@@ -70,10 +71,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     @Autowired
     private XmsPmsSkuStockEditMapper xmsPmsSkuStockEditMapper;
 
-
-    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config) {
+    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
         this.config = config;
+        this.shopifyRestTemplate = shopifyRestTemplate;
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.entity.*;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
+import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
@@ -25,13 +26,7 @@ import com.macro.mall.shopify.pojo.orders.Shipping_address;
 import com.macro.mall.shopify.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,39 +62,6 @@ public class ShopifyUtils {
     @Autowired
     private IXmsSourcingListService sourcingListService;
 
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        // Do any additional configuration here
-        return builder.build();
-    }
-
-    /**
-     * postForObject
-     * @param uri
-     * @param token
-     * @param json
-     * @return
-     */
-    public String postForObject(String uri, String token, String json) {
-
-        log.info("uri:[{}] token:[{}]  json:[{}]",uri,token,json);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Shopify-Access-Token", token);
-        HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
-
-        try {
-            return restTemplate.postForObject(uri, requestEntity, String.class);
-        } catch (Exception e) {
-            log.error("postForObject",e);
-            throw e;
-        }
-
-    }
 
     /**
      * 根据shopify的店铺名称获取订单信息

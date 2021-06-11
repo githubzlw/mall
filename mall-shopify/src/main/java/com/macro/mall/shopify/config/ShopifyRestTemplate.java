@@ -38,6 +38,7 @@ public class ShopifyRestTemplate {
         return builder.build();
     }
 
+
     /**
      * postForEntity
      * @param shopname
