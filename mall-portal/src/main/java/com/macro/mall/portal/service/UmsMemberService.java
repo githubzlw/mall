@@ -41,11 +41,12 @@ public interface UmsMemberService {
 
     /**
      * 修改昵称和每月订单量
+     *
      * @param niceName
      * @param monthlyOrderQuantity
      * @return
      */
-    int updateUserInfo(String niceName, String monthlyOrderQuantity);
+    int updateUserInfo(String niceName, String monthlyOrderQuantity, String organizationName);
 
     /**
      * 获取当前登录会员

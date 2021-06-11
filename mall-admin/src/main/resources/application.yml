@@ -55,7 +55,7 @@ secure:
       - /syncData/**
       - /product/getProductInfo
       - /oneBound/**
-
+      - /product/updateProductCancle
 
 aliyun:
   oss:

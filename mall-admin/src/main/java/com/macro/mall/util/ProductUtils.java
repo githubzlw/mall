@@ -163,6 +163,8 @@ public class ProductUtils {
             productParam.setName(xmsSourcingList.getTitle());
             //主图
             productParam.setPic(xmsSourcingList.getImages());
+            //橱窗图
+            productParam.setAlbumPics(cleaningWinPic(chromeUpload.getImages(),"",chromeUpload.getSiteType()));
             //描述
             productParam.setDescription(chromeUpload.getProductDetail());
             //详情
@@ -245,7 +247,7 @@ public class ProductUtils {
         }
         // 处理img
         if (StrUtil.isNotEmpty(chromeUpload.getImages())) {
-            sourcingInfo.setImages(chromeUpload.getImages());
+            sourcingInfo.setImages(cleaningPic(chromeUpload.getImages(),chromeUpload.getSiteType()));
         }
         // 处理价格
 //        // US $9.86 - 13.50 US $12.33 - 16.88-20%
@@ -337,6 +339,36 @@ public class ProductUtils {
     }
 
 
+    // 主图处理
+    public String cleaningPic(String pic,int site) {
+
+        if(StrUtil.isEmpty(pic)){
+            return "";
+        }
+        // Wayfair
+        if(site == 5){
+            pic = pic.split(";")[0];
+        }
+
+        return pic;
+    }
+
+    // 橱窗图处理
+    public String cleaningWinPic(String pic,String winPic,int site) {
+
+        if(StrUtil.isEmpty(pic)){
+            return "";
+        }
+        // Wayfair
+        if(site == 5){
+            pic = pic.replace(";",",");
+            pic = pic.substring(pic.indexOf(",")+1);
+        }else{
+            pic = winPic;
+        }
+
+        return pic;
+    }
 
     // price clean
     // 价格
