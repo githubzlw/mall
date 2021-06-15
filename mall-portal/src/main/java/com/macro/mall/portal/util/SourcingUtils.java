@@ -292,7 +292,7 @@ public class SourcingUtils {
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 return jsonObject;
             }
         } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
@@ -306,7 +306,7 @@ public class SourcingUtils {
                 String price = jsonObject.getJSONObject("item").getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 return jsonObject;
             }
         } else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
@@ -320,7 +320,7 @@ public class SourcingUtils {
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 // 价格除以汇率 / this.exchangeRateUtils.getUsdToCnyRate()
                 siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() , 2));
                 return jsonObject;
