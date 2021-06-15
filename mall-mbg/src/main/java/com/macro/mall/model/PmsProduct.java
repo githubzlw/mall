@@ -133,6 +133,12 @@ public class PmsProduct implements Serializable {
     @ApiModelProperty(value = "产品状态：0:pending等待状态;1:success完成状态;2:release发布状态;3:failed删除状态;4:cancled前端取消状态")
     private Integer productStatus;
 
+    @ApiModelProperty(value = "创建时间")
+    private Date createTime;
+
+    @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
+    private Integer freeStatus;
+
     @ApiModelProperty(value = "商品描述")
     private String description;
 
@@ -514,6 +520,22 @@ public class PmsProduct implements Serializable {
         this.productStatus = productStatus;
     }
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Integer getFreeStatus() {
+        return freeStatus;
+    }
+
+    public void setFreeStatus(Integer freeStatus) {
+        this.freeStatus = freeStatus;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -598,6 +620,8 @@ public class PmsProduct implements Serializable {
         sb.append(", shippingFee=").append(shippingFee);
         sb.append(", shippingBy=").append(shippingBy);
         sb.append(", productStatus=").append(productStatus);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", freeStatus=").append(freeStatus);
         sb.append(", description=").append(description);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);

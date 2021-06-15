@@ -172,9 +172,10 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         //umsMember.setUsername(currentMember.getUsername());
         umsMember.setNickname(niceName);
         umsMember.setMonthlyOrders(monthlyOrderQuantity);
-        if(StrUtil.isNotEmpty(niceName)){
+        if (StrUtil.isNotEmpty(niceName)) {
             currentMember.setNickname(niceName);
         }
+        umsMember.setOrganizationname(organizationName);
         return memberMapper.updateByPrimaryKeySelective(umsMember);
     }
 
