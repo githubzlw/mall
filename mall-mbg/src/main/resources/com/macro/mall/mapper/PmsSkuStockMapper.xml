@@ -22,6 +22,13 @@
     <result column="volume_lenght" jdbcType="INTEGER" property="volumeLenght" />
     <result column="volume_width" jdbcType="INTEGER" property="volumeWidth" />
     <result column="volume_height" jdbcType="INTEGER" property="volumeHeight" />
+    <result column="volume" jdbcType="DOUBLE" property="volume" />
+    <result column="ships_from" jdbcType="VARCHAR" property="shipsFrom" />
+    <result column="profit" jdbcType="VARCHAR" property="profit" />
+    <result column="standard" jdbcType="VARCHAR" property="standard" />
+    <result column="skuValue1" jdbcType="VARCHAR" property="skuvalue1" />
+    <result column="skuValue2" jdbcType="VARCHAR" property="skuvalue2" />
+    <result column="skuValue3" jdbcType="VARCHAR" property="skuvalue3" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -84,7 +91,7 @@
   <sql id="Base_Column_List">
     id, product_id, sku_code, price, stock, low_stock, pic, sale, promotion_price, lock_stock, 
     sp_data, min_price, max_price, moq, min_moq, max_moq, weight, volume_lenght, volume_width, 
-    volume_height
+    volume_height, volume, ships_from, profit, standard, skuValue1, skuValue2, skuValue3
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.PmsSkuStockExample" resultMap="BaseResultMap">
     select
@@ -126,14 +133,18 @@
       sp_data, min_price, max_price, 
       moq, min_moq, max_moq, 
       weight, volume_lenght, volume_width, 
-      volume_height)
+      volume_height, volume, ships_from, 
+      profit, standard, skuValue1, 
+      skuValue2, skuValue3)
     values (#{productId,jdbcType=BIGINT}, #{skuCode,jdbcType=VARCHAR}, #{price,jdbcType=DECIMAL}, 
       #{stock,jdbcType=INTEGER}, #{lowStock,jdbcType=INTEGER}, #{pic,jdbcType=VARCHAR}, 
       #{sale,jdbcType=INTEGER}, #{promotionPrice,jdbcType=DECIMAL}, #{lockStock,jdbcType=INTEGER}, 
       #{spData,jdbcType=VARCHAR}, #{minPrice,jdbcType=DECIMAL}, #{maxPrice,jdbcType=DECIMAL}, 
       #{moq,jdbcType=INTEGER}, #{minMoq,jdbcType=INTEGER}, #{maxMoq,jdbcType=INTEGER}, 
       #{weight,jdbcType=DECIMAL}, #{volumeLenght,jdbcType=INTEGER}, #{volumeWidth,jdbcType=INTEGER}, 
-      #{volumeHeight,jdbcType=INTEGER})
+      #{volumeHeight,jdbcType=INTEGER}, #{volume,jdbcType=DOUBLE}, #{shipsFrom,jdbcType=VARCHAR}, 
+      #{profit,jdbcType=VARCHAR}, #{standard,jdbcType=VARCHAR}, #{skuvalue1,jdbcType=VARCHAR}, 
+      #{skuvalue2,jdbcType=VARCHAR}, #{skuvalue3,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsSkuStock">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -198,6 +209,27 @@
       <if test="volumeHeight != null">
         volume_height,
       </if>
+      <if test="volume != null">
+        volume,
+      </if>
+      <if test="shipsFrom != null">
+        ships_from,
+      </if>
+      <if test="profit != null">
+        profit,
+      </if>
+      <if test="standard != null">
+        standard,
+      </if>
+      <if test="skuvalue1 != null">
+        skuValue1,
+      </if>
+      <if test="skuvalue2 != null">
+        skuValue2,
+      </if>
+      <if test="skuvalue3 != null">
+        skuValue3,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="productId != null">
@@ -256,6 +288,27 @@
       </if>
       <if test="volumeHeight != null">
         #{volumeHeight,jdbcType=INTEGER},
+      </if>
+      <if test="volume != null">
+        #{volume,jdbcType=DOUBLE},
+      </if>
+      <if test="shipsFrom != null">
+        #{shipsFrom,jdbcType=VARCHAR},
+      </if>
+      <if test="profit != null">
+        #{profit,jdbcType=VARCHAR},
+      </if>
+      <if test="standard != null">
+        #{standard,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue1 != null">
+        #{skuvalue1,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue2 != null">
+        #{skuvalue2,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue3 != null">
+        #{skuvalue3,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -328,6 +381,27 @@
       <if test="record.volumeHeight != null">
         volume_height = #{record.volumeHeight,jdbcType=INTEGER},
       </if>
+      <if test="record.volume != null">
+        volume = #{record.volume,jdbcType=DOUBLE},
+      </if>
+      <if test="record.shipsFrom != null">
+        ships_from = #{record.shipsFrom,jdbcType=VARCHAR},
+      </if>
+      <if test="record.profit != null">
+        profit = #{record.profit,jdbcType=VARCHAR},
+      </if>
+      <if test="record.standard != null">
+        standard = #{record.standard,jdbcType=VARCHAR},
+      </if>
+      <if test="record.skuvalue1 != null">
+        skuValue1 = #{record.skuvalue1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.skuvalue2 != null">
+        skuValue2 = #{record.skuvalue2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.skuvalue3 != null">
+        skuValue3 = #{record.skuvalue3,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -354,7 +428,14 @@
       weight = #{record.weight,jdbcType=DECIMAL},
       volume_lenght = #{record.volumeLenght,jdbcType=INTEGER},
       volume_width = #{record.volumeWidth,jdbcType=INTEGER},
-      volume_height = #{record.volumeHeight,jdbcType=INTEGER}
+      volume_height = #{record.volumeHeight,jdbcType=INTEGER},
+      volume = #{record.volume,jdbcType=DOUBLE},
+      ships_from = #{record.shipsFrom,jdbcType=VARCHAR},
+      profit = #{record.profit,jdbcType=VARCHAR},
+      standard = #{record.standard,jdbcType=VARCHAR},
+      skuValue1 = #{record.skuvalue1,jdbcType=VARCHAR},
+      skuValue2 = #{record.skuvalue2,jdbcType=VARCHAR},
+      skuValue3 = #{record.skuvalue3,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -419,6 +500,27 @@
       <if test="volumeHeight != null">
         volume_height = #{volumeHeight,jdbcType=INTEGER},
       </if>
+      <if test="volume != null">
+        volume = #{volume,jdbcType=DOUBLE},
+      </if>
+      <if test="shipsFrom != null">
+        ships_from = #{shipsFrom,jdbcType=VARCHAR},
+      </if>
+      <if test="profit != null">
+        profit = #{profit,jdbcType=VARCHAR},
+      </if>
+      <if test="standard != null">
+        standard = #{standard,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue1 != null">
+        skuValue1 = #{skuvalue1,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue2 != null">
+        skuValue2 = #{skuvalue2,jdbcType=VARCHAR},
+      </if>
+      <if test="skuvalue3 != null">
+        skuValue3 = #{skuvalue3,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -442,7 +544,14 @@
       weight = #{weight,jdbcType=DECIMAL},
       volume_lenght = #{volumeLenght,jdbcType=INTEGER},
       volume_width = #{volumeWidth,jdbcType=INTEGER},
-      volume_height = #{volumeHeight,jdbcType=INTEGER}
+      volume_height = #{volumeHeight,jdbcType=INTEGER},
+      volume = #{volume,jdbcType=DOUBLE},
+      ships_from = #{shipsFrom,jdbcType=VARCHAR},
+      profit = #{profit,jdbcType=VARCHAR},
+      standard = #{standard,jdbcType=VARCHAR},
+      skuValue1 = #{skuvalue1,jdbcType=VARCHAR},
+      skuValue2 = #{skuvalue2,jdbcType=VARCHAR},
+      skuValue3 = #{skuvalue3,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>
