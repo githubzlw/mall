@@ -22,4 +22,7 @@ public class PayPalParam {
 
     @ApiModelProperty(value = "网站名称")
     private String siteName;
+
+    @ApiModelProperty(value = "回调页面地址")
+    private String successUrlType;
 }

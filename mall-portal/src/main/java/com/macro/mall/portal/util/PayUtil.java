@@ -71,7 +71,11 @@ public class PayUtil {
         requestMap.put("total", String.valueOf(payPalParam.getTotalAmount()));
         requestMap.put("orderNo", payPalParam.getOrderNo());
         requestMap.put("customMsg", payPalParam.getCustomMsg());
-        requestMap.put("successUrl", payConfig.getSuccessUrl());
+        if ("2".equals(payPalParam.getSuccessUrlType())) {
+            requestMap.put("successUrl", payConfig.getSuccessUrl2());
+        } else {
+            requestMap.put("successUrl", payConfig.getSuccessUrl1());
+        }
         requestMap.put("cancelUrl", payConfig.getCancelUrl());
         try {
             String resUrl = microServiceConfig.getPayUrl() + "/" + payPalParam.getSiteName() + "/create/";

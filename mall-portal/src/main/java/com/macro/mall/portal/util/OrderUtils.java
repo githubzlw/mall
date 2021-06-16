@@ -186,6 +186,8 @@ public class OrderUtils {
                     order.setBalanceAmount(tempBalance);
 
                 }
+            } else {
+                payAmount = totalAmount;
             }
             order.setTotalAmount(new BigDecimal(productCost));
             order.setPayAmount(new BigDecimal(payAmount));
