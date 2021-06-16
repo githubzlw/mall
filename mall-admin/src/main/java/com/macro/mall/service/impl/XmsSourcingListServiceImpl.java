@@ -1,5 +1,6 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -14,6 +15,8 @@ import com.macro.mall.service.IXmsSourcingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -38,9 +41,34 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
 
         Page<XmsSourcingList> page = new Page<>(sourcingParam.getPageNum(), sourcingParam.getPageSize());
         LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.eq(XmsSourcingList::getUsername, sourcingParam.getUsername());
+        // username
+        if(StrUtil.isNotEmpty(sourcingParam.getUsername())){
+            lambdaQuery.eq(XmsSourcingList::getUsername, sourcingParam.getUsername());
+        }
+
+        // status
         if (null != sourcingParam.getStatus() && sourcingParam.getStatus() > -1) {
             lambdaQuery.eq(XmsSourcingList::getStatus, sourcingParam.getStatus());
+        }
+        lambdaQuery.gt(XmsSourcingList::getStatus, -2);
+        // url
+        if (StrUtil.isNotEmpty(sourcingParam.getUrl())) {
+            lambdaQuery.nested(wrapper -> wrapper.like(XmsSourcingList::getUrl, sourcingParam.getUrl()).or().like(XmsSourcingList::getTitle, sourcingParam.getUrl()));
+        }
+        // beginTime
+        if (StrUtil.isNotEmpty(sourcingParam.getBeginTime())) {
+            lambdaQuery.ge(XmsSourcingList::getCreateTime, sourcingParam.getBeginTime() + " 00:00:00");
+        }
+        // endTime
+        if (StrUtil.isNotEmpty(sourcingParam.getEndTime())) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime dateTime = LocalDateTime.parse(sourcingParam.getEndTime(), dateTimeFormatter);
+            LocalDateTime plusDays = dateTime.plusDays(1);
+            lambdaQuery.lt(XmsSourcingList::getCreateTime, plusDays.format(dateTimeFormatter) + " 00:00:00");
+        }
+        // siteType
+        if(null != sourcingParam.getSiteType() && sourcingParam.getSiteType() > 0){
+            lambdaQuery.eq(XmsSourcingList::getSiteType, sourcingParam.getSiteType() + " 00:00:00");
         }
         lambdaQuery.orderByDesc(XmsSourcingList::getCreateTime);
         return this.xmsSourcingListMapper.selectPage(page, lambdaQuery);

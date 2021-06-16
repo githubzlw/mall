@@ -33,12 +33,18 @@ public class XmsSourcingController {
     private IXmsSourcingListService xmsSourcingListService;
 
     @ApiOperation("客户Sourcing列表")
-    @RequestMapping(value = "/list", method = {RequestMethod.POST, RequestMethod.GET})
-    public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public CommonResult list(XmsSourcingInfoParam sourcingParam) {
 
-        XmsSourcingInfoParam sourcingParam = new XmsSourcingInfoParam();
+        Assert.notNull(sourcingParam, "sourcingParam null");
         try {
+            if(null == sourcingParam.getPageSize() || sourcingParam.getPageSize() <= 0){
+                sourcingParam.setPageSize(10);
+            }
+            if(null == sourcingParam.getPageNum() || sourcingParam.getPageNum() <= 0){
+                sourcingParam.setPageNum(1);
+            }
+
             Page<XmsSourcingList> sourcingListPage = this.xmsSourcingListService.list(sourcingParam);
             return CommonResult.success(sourcingListPage);
         } catch (Exception e) {

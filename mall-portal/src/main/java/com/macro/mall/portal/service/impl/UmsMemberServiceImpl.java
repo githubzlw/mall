@@ -165,7 +165,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
-    public int updateUserInfo(String niceName, String monthlyOrderQuantity) {
+    public int updateUserInfo(String niceName, String monthlyOrderQuantity, String organizationName) {
         UmsMember currentMember = this.getCurrentMember();
         UmsMember umsMember = new UmsMember();
         umsMember.setId(currentMember.getId());
