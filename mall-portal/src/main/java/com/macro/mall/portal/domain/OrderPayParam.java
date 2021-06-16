@@ -44,4 +44,7 @@ public class OrderPayParam {
     @ApiModelProperty(value = "详细地址")
     private String receiverDetailAddress;
 
+    @ApiModelProperty(value = "运费")
+    private Double shippingCostValue;
+
 }
