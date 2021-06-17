@@ -171,8 +171,9 @@ public class XmsSourcingController {
     @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
     public CommonResult saveSourcingProduct(SourcingProductParam sourcingProductParam) {
         Assert.notNull(sourcingProductParam, "sourcingProductParam null");
-        Assert.isTrue(null != sourcingProductParam.getId() && sourcingProductParam.getId() > 0, "productId null");
-        Assert.isTrue(CollectionUtil.isNotEmpty(sourcingProductParam.getSkuList()), "skuList null");
+        Assert.isTrue(null != sourcingProductParam.getProductId() && sourcingProductParam.getProductId() > 0, "productId null");
+        Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
