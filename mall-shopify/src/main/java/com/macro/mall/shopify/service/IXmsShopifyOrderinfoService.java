@@ -17,4 +17,6 @@ public interface IXmsShopifyOrderinfoService extends IService<XmsShopifyOrderinf
 
     List<XmsShopifyOrderinfo> queryListByShopifyName(String shopifyName);
 
+    List<XmsShopifyOrderinfo> queryListByOrderNo(Long orderNo);
+
 }
