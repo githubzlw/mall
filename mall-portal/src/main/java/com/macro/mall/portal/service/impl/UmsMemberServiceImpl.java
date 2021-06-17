@@ -282,4 +282,21 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return this.memberMapper.updateByPrimaryKeySelective(tempMember);
     }
 
+    @Override
+    public String verifyOldPassword(String username, String password) {
+
+        //密码需要客户端加密后传递
+        try {
+            UserDetails userDetails = loadUserByUsername(username);
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+                return "fail";
+            }
+            return "success";
+        } catch (Exception e) {
+            LOGGER.warn("登录异常:{}", e.getMessage());
+            return "fail";
+        }
+
+    }
+
 }

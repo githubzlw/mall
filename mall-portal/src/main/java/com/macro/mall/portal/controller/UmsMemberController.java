@@ -310,4 +310,13 @@ public class UmsMemberController {
     }
 
 
+    @ApiOperation("验证旧密码")
+    @RequestMapping(value = "/verifyOldPassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult verifyOldPassword(@RequestParam String username,
+                                          @RequestParam String password) {
+        String token = memberService.verifyOldPassword(username, password);
+        return CommonResult.success(token);
+    }
+
 }
