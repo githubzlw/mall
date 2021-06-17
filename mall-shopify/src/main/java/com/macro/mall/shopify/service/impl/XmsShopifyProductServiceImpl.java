@@ -1,5 +1,7 @@
 package com.macro.mall.shopify.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -36,10 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +64,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     private final ShopifyConfig config;
 
+    @Autowired
+    private XmsPmsProductEditMapper xmsPmsProductEditMapper;
+    @Autowired
+    private XmsPmsSkuStockEditMapper xmsPmsSkuStockEditMapper;
 
     public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
@@ -76,18 +79,18 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     public CommonResult pushProduct(String pid, String shopName, boolean published) {
         try {
 
-            LOGGER.info("begin push product[{}] to shopify[{}]",pid,shopName);
+            LOGGER.info("begin push product[{}] to shopify[{}]", pid, shopName);
             ProductRequestWrap wrap = new ProductRequestWrap();
             wrap.setPid(pid);
             wrap.setPublished(published);
             wrap.setShopname(shopName);
 
             ProductWraper wraper = pushProductWFW(wrap);
-            if(wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()){
+            if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
                 return CommonResult.success("PUSH SUCCESSED");
-            }else if(wraper != null && wraper.isPush()){
+            } else if (wraper != null && wraper.isPush()) {
                 return CommonResult.failed("PRODUCT HAD PUSHED");
-            }else{
+            } else {
                 return CommonResult.failed("NO PRODUCT TO PUSH");
             }
 
@@ -100,7 +103,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     public ProductWraper pushProductWFW(ProductRequestWrap wrap) throws ShopifyException {
         //验证是否已经铺货过
         ProductWraper productWraper = checkPush(wrap.getShopname(), wrap.getPid());
-        if(productWraper != null){
+        if (productWraper != null) {
             return productWraper;
         }
         // 产品信息数据查询

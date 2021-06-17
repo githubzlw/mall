@@ -47,6 +47,7 @@ shopify:
   client_secret: 4cb255298c6bf7142fe9b04000cfa81c
   scope: write_orders,read_customers,write_products
   redirect_uri: https://app.importexpress.com/linkStore
+  fulfillment_service_callback: https://app.importexpress.com/shopify/fulfillmentCallback
 
 
 

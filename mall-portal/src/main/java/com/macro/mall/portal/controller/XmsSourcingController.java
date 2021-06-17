@@ -73,6 +73,8 @@ public class XmsSourcingController {
     @Autowired
     private MicroServiceConfig microServiceConfig;
     private UrlUtil urlUtil = UrlUtil.getInstance();
+    @Autowired
+    private PmsPortalProductService pmsPortalProductService;
 
 
     @ApiOperation("sourcingList列表")
@@ -94,9 +96,9 @@ public class XmsSourcingController {
             sourcingParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
 
-            if (CollectionUtil.isNotEmpty(listPage.getRecords())) {
-                listPage.getRecords().forEach(e -> {
-                    if (StrUtil.isEmpty(e.getCost())) {
+            if(CollectionUtil.isNotEmpty(listPage.getRecords())){
+                listPage.getRecords().forEach(e-> {
+                    if(StrUtil.isEmpty(e.getCost())){
                         e.setCost("");
                     }
                 });
@@ -123,8 +125,8 @@ public class XmsSourcingController {
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
             lambdaQuery.ge(XmsSourcingList::getStatus, -1);
-            if (StrUtil.isNotEmpty(url)) {
-                lambdaQuery.and(query -> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
+            if(StrUtil.isNotEmpty(url)){
+                lambdaQuery.and(query-> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
             }
             List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
 
@@ -139,19 +141,19 @@ public class XmsSourcingController {
             if (CollectionUtil.isNotEmpty(list)) {
                 mapStatistics.put("all", list.size());
                 // 状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；
-                int Pending = (int) list.stream().filter(e -> 0 == e.getStatus()).count();
+                int Pending = (int) list.stream().filter(e-> 0 == e.getStatus()).count();
                 mapStatistics.put("Pending", Pending);
 
-                int inProgressing = (int) list.stream().filter(e -> 1 == e.getStatus()).count();
+                int inProgressing = (int) list.stream().filter(e-> 1 == e.getStatus()).count();
                 mapStatistics.put("inProgressing", inProgressing);
 
-                int Failed = (int) list.stream().filter(e -> 5 == e.getStatus()).count();
+                int Failed = (int) list.stream().filter(e-> 5 == e.getStatus()).count();
                 mapStatistics.put("Failed", Failed);
 
-                int Success = (int) list.stream().filter(e -> 2 == e.getStatus()).count();
+                int Success = (int) list.stream().filter(e-> 2 == e.getStatus()).count();
                 mapStatistics.put("Success", Success);
 
-                int Cancel = (int) list.stream().filter(e -> 4 == e.getStatus()).count();
+                int Cancel = (int) list.stream().filter(e-> 4 == e.getStatus()).count();
                 mapStatistics.put("Cancel", Cancel);
 
                 list.clear();
@@ -169,9 +171,8 @@ public class XmsSourcingController {
     @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
     public CommonResult saveSourcingProduct(SourcingProductParam sourcingProductParam) {
         Assert.notNull(sourcingProductParam, "sourcingProductParam null");
-        Assert.isTrue(null != sourcingProductParam.getProductId() && sourcingProductParam.getProductId() > 0, "productId null");
-        Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
-        Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
+        Assert.isTrue(null != sourcingProductParam.getId() && sourcingProductParam.getId() > 0, "productId null");
+        Assert.isTrue(CollectionUtil.isNotEmpty(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
@@ -290,7 +291,6 @@ public class XmsSourcingController {
     @RequestMapping(value = "/addToYouLiveProductList", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
     public CommonResult addToYouLiveProductList(Long sourcingId) {
-        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             // 检查数据是否存在
             XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingId);
@@ -300,8 +300,8 @@ public class XmsSourcingController {
 
             // 检查数据是否插入
             XmsCustomerProduct product = new XmsCustomerProduct();
-            product.setMemberId(currentMember.getId());
-            product.setUsername(currentMember.getUsername());
+            product.setMemberId(this.umsMemberService.getCurrentMember().getId());
+            product.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             product.setSourcingId(sourcingId.intValue());
             boolean isCheck = this.xmsSourcingListService.checkHasXmsCustomerProduct(product);
 
@@ -316,25 +316,7 @@ public class XmsSourcingController {
             product.setCreateTime(new Date());
             product.setUpdateTime(new Date());
             this.xmsCustomerProductService.save(product);
-
-
-            // 调用shopify铺货
-            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            if (StrUtil.isEmpty(byId.getShopifyName())) {
-                return CommonResult.validateFailed("Please bind the store first");
-            }
-
-            Map<String, String> mapParam = Maps.newHashMap();
-            mapParam.put("pid ", String.valueOf(xmsSourcingList.getProductId()));
-            mapParam.put("published ", "0");
-            mapParam.put("shopname ", byId.getShopifyName());
-
-            JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", mapParam);
-
-            if (null != jsonObject) {
-                return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
-            }
-            return CommonResult.failed("addProduct error");
+            return CommonResult.success(product);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("addToMyProductList,sourcingId[{}],error:", sourcingId, e);

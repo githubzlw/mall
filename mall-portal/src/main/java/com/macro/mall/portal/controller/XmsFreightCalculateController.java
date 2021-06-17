@@ -159,14 +159,14 @@ public class XmsFreightCalculateController {
 
 
             // 原商品的0.75
-            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.75, 2));
+            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
 
             EstimatedCost importXStandard = new EstimatedCost();
             EstimatedCost importXPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
-            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
+            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
+            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
 
 
             // importXStandard cost 照抄
@@ -176,7 +176,13 @@ public class XmsFreightCalculateController {
             double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
             double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
-            importXPremium.setCost(rsFreight);
+            if (null != estimatedCostParam.getOriginalShippingFee() && estimatedCostParam.getOriginalShippingFee() > 0) {
+                // 直接用集运价格
+                importXPremium.setCost(BigDecimalUtil.truncateDouble(centralizedFreight, 2));
+            } else {
+                importXPremium.setCost(rsFreight);
+            }
+
 
             estimatedCostResult.setImportXStandard(importXStandard);
             estimatedCostResult.setImportXPremium(importXPremium);
