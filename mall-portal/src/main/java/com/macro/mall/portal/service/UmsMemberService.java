@@ -82,7 +82,7 @@ public interface UmsMemberService {
      * @param shopifyFlag
      * @return
      */
-    int updateShopifyInfo(Long id, String shopifyName,Integer shopifyFlag);
+    int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag);
 
     /**
      * google登录验证
@@ -90,4 +90,6 @@ public interface UmsMemberService {
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
 
     int updateGuidedFlag(Long id);
+
+    String verifyOldPassword(String username, String password);
 }
