@@ -34,8 +34,8 @@ logstash:
   host: logstash
 
 shopify:
-  api_key_shopname: importx
-  client_id: 9f988fdfe6704027985552eb75ae1076
-  client_secret: 4cb255298c6bf7142fe9b04000cfa81c
-  scope: write_orders,read_customers,write_products
+  api_key_shopname: app.importexpress
+  client_id: 96d0c1ceb092aaec8ae6b9734ba2905c
+  client_secret: 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
+  scope: write_orders,read_customers,write_products,read_fulfillments,write_fulfillments,read_assigned_fulfillment_orders,write_assigned_fulfillment_orders,read_merchant_managed_fulfillment_orders,write_merchant_managed_fulfillment_orders,read_third_party_fulfillment_orders,write_third_party_fulfillment_orders,read_locales,read_inventory
   redirect_uri: https://app.importexpress.com/linkStore
