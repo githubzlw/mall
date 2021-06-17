@@ -4,18 +4,22 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsPmsProductEdit;
 import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
@@ -66,6 +70,9 @@ public class XmsSourcingController {
     private IXmsPmsProductEditService xmsPmsProductEditService;
     @Autowired
     private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
+    private UrlUtil urlUtil = UrlUtil.getInstance();
     @Autowired
     private PmsPortalProductService pmsPortalProductService;
 
@@ -170,19 +177,19 @@ public class XmsSourcingController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             // 检查数据是否存在
-            PmsPortalProductDetail detail = this.pmsPortalProductService.detail(sourcingProductParam.getId());
-            if (null == detail) {
+            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingProductParam.getSourcingId());
+            if (null == xmsSourcingList) {
                 return CommonResult.validateFailed("No data available");
             }
 
-            List<XmsPmsSkuStockEdit> stockEditList = sourcingProductParam.getSkuList();
+            List<XmsPmsSkuStockEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), XmsPmsSkuStockEdit.class);
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
 
             // 判断是否存在编辑表数据
             QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getId());
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getProductId());
 
             int count = this.xmsPmsProductEditService.count(productEditWrapper);
 
@@ -190,7 +197,7 @@ public class XmsSourcingController {
             if (count > 0) {
                 // 处理sku数据
                 QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
-                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getId());
+                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
                 List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
                 if (CollectionUtil.isNotEmpty(editList)) {
                     Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();

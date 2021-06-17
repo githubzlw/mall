@@ -141,6 +141,8 @@ public class XmsYouLiveProductController {
             skuStockList.clear();
             pmsSkuStockList.clear();
 
+            orderResult.setTotalFreight(orderPayParam.getShippingCostValue());
+
             return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
         } catch (Exception e) {
             e.printStackTrace();

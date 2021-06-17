@@ -2,11 +2,16 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
+import com.macro.mall.tools.bean.MailTemplateBean;
+import com.macro.mall.tools.bean.WelcomeMailTemplateBean;
+import com.macro.mall.tools.service.EmailService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -25,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 会员登录注册管理Controller
@@ -48,6 +54,10 @@ public class UmsMemberController {
 
     @Autowired
     private SourcingUtils sourcingUtils;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private EmailService emailService;
 
     @ApiOperation("会员注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -208,7 +218,6 @@ public class UmsMemberController {
     }
 
 
-
     @ApiOperation("设置引导状态")
     @RequestMapping(value = "/setGuided", method = RequestMethod.POST)
     @ResponseBody
@@ -223,4 +232,82 @@ public class UmsMemberController {
             return CommonResult.failed("setGuided failed");
         }
     }
+
+
+    @ApiOperation("找回密码")
+    @RequestMapping(value = "/retrievePassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult retrievePassword(@RequestParam("userName") String userName) {
+
+        try {
+            UmsMember member = memberService.getByUsername(userName);
+            if (null == member || member.getId() == 0) {
+                return CommonResult.failed("No such user");
+            }
+            // 生产随机码，放入redis
+            String uuid = UUID.randomUUID().toString();
+            redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 5);
+            // 发送邮件
+
+            String linkUrl = "https://app.importexpress.com/#/retrievePassword?userName=" + userName + "&uuid=" + uuid;
+            WelcomeMailTemplateBean mailTemplateBean = new WelcomeMailTemplateBean();
+            mailTemplateBean.setName(userName);
+            mailTemplateBean.setSubject("retrievePassword");
+            mailTemplateBean.setActivationCode(linkUrl);
+            mailTemplateBean.setTo(userName);
+            mailTemplateBean.setTest(false);
+            mailTemplateBean.setTemplateType(MailTemplateType.ACCOUNT_UPDATE);
+            emailService.send(mailTemplateBean);
+            return CommonResult.success(linkUrl);
+        } catch (Exception e) {
+            LOGGER.error("retrievePassword", e);
+            return CommonResult.failed("retrievePassword failed");
+        }
+    }
+
+    @ApiOperation("验证激活参数")
+    @RequestMapping(value = "/checkUUid", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult checkUUid(@RequestParam("userName") String userName, @RequestParam("uuid") String uuid) {
+
+        try {
+            Object tempName = redisUtil.hmgetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            if (null == tempName || !userName.equalsIgnoreCase(tempName.toString())) {
+                return CommonResult.success("uuid or userName invalid");
+            }
+            return CommonResult.success("uuid and userName valid");
+        } catch (Exception e) {
+            LOGGER.error("resetPassword,checkUUid[{}],error:", userName, e);
+            return CommonResult.failed("checkUUid failed");
+        }
+    }
+
+
+    @ApiOperation("重新设置密码")
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult resetPassword(@RequestParam("userName") String userName, @RequestParam("password") String password, @RequestParam("uuid") String uuid) {
+
+        try {
+            Object tempName = redisUtil.hmgetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            if (null == tempName || !userName.equalsIgnoreCase(tempName.toString())) {
+                return CommonResult.success("uuid or userName invalid");
+            }
+            UmsMember member = memberService.getByUsername(userName);
+            if (null == member || member.getId() == 0) {
+                return CommonResult.failed("No such user");
+            }
+            memberService.resetPassword(member.getId(), password);
+            // 激活完成后清除数据
+
+            // redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 10);
+            redisUtil.hDelete(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            return CommonResult.success("resetPassword success");
+        } catch (Exception e) {
+            LOGGER.error("resetPassword,userName[{}],error:", userName, e);
+            return CommonResult.failed("resetPassword failed");
+        }
+    }
+
+
 }

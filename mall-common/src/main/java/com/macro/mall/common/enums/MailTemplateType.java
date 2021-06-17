@@ -11,7 +11,8 @@ import lombok.ToString;
 public enum MailTemplateType {
 
 
-    WELCOME("WELCOME", "welcome.html");
+    WELCOME("WELCOME", "welcome.html"),
+    ACCOUNT_UPDATE("ACCOUNT_UPDATE", "account-update.html");
 
 
     private String name;
