@@ -15,7 +15,7 @@ import com.macro.mall.service.IXmsSourcingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -57,18 +57,18 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         }
         // beginTime
         if (StrUtil.isNotEmpty(sourcingParam.getBeginTime())) {
-            lambdaQuery.ge(XmsSourcingList::getCreateTime, sourcingParam.getBeginTime() + " 00:00:00");
+            lambdaQuery.ge(XmsSourcingList::getCreateTime, sourcingParam.getBeginTime().substring(0, 10) + " 00:00:00");
         }
         // endTime
         if (StrUtil.isNotEmpty(sourcingParam.getEndTime())) {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime dateTime = LocalDateTime.parse(sourcingParam.getEndTime(), dateTimeFormatter);
-            LocalDateTime plusDays = dateTime.plusDays(1);
+            LocalDate dateTime = LocalDate.parse(sourcingParam.getEndTime().substring(0, 10), dateTimeFormatter);
+            LocalDate plusDays = dateTime.plusDays(1);
             lambdaQuery.lt(XmsSourcingList::getCreateTime, plusDays.format(dateTimeFormatter) + " 00:00:00");
         }
         // siteType
         if(null != sourcingParam.getSiteType() && sourcingParam.getSiteType() > 0){
-            lambdaQuery.eq(XmsSourcingList::getSiteType, sourcingParam.getSiteType() + " 00:00:00");
+            lambdaQuery.eq(XmsSourcingList::getSiteType, sourcingParam.getSiteType());
         }
         lambdaQuery.orderByDesc(XmsSourcingList::getCreateTime);
         return this.xmsSourcingListMapper.selectPage(page, lambdaQuery);
@@ -80,7 +80,7 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         XmsSourcingList selectById = this.xmsSourcingListMapper.selectById(sourcingInfo.getId());
         if (null != selectById) {
             selectById.setSourceLink(sourcingInfo.getSourceLink());
-            this.xmsSourcingListMapper.updateById(sourcingInfo);
+            this.xmsSourcingListMapper.updateById(selectById);
 
             // 添加货源后，加入到Upload表中清洗
             LambdaQueryWrapper<XmsChromeUpload> lambdaQuery = Wrappers.lambdaQuery();
@@ -100,6 +100,8 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
                 chromeUpload.setMemberId(selectById.getMemberId());
                 chromeUpload.setUrl(sourcingInfo.getSourceLink());
                 chromeUpload.setClearFlag(0);
+                chromeUpload.setStatus(0);
+                chromeUpload.setSiteType(8);// 默认1688
                 chromeUpload.setSourceFlag(2);
                 chromeUpload.setCreateTime(new Date());
                 chromeUpload.setUpdateTime(new Date());

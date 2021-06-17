@@ -71,7 +71,7 @@ public class XmsSourcingController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("updateSourceLink,sourcingInfo[{}],error:", sourcingInfo, e);
-            return CommonResult.failed("query list error!");
+            return CommonResult.failed("updateSourceLink error:" + e.getMessage());
         }
     }
 
@@ -91,7 +91,7 @@ public class XmsSourcingController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("updateSourceStatus,sourcingInfo[{}],error:", sourcingInfo, e);
-            return CommonResult.failed("query list error!");
+            return CommonResult.failed("updateSourceStatus error:" + e.getMessage());
         }
     }
 
