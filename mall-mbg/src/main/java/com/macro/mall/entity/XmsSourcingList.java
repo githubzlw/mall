@@ -59,7 +59,7 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；")
     private Integer status;
 
-    @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...;9 图片11 shopify")
+    @ApiModelProperty(value = "网站类型：1->ALIBABA;2->ALIEXPRESS;3->ESALIEXPRESS;4->AMAZON;5->WAYFAIR;6->EBAY;7->WALMART;8->ALI1688;9->IMG_ONLY;10->OTHER;11->SHOPIFY;")
     private Integer siteType;
 
     @ApiModelProperty(value = "创建时间")

@@ -11,7 +11,7 @@ import com.macro.mall.entity.XmsShopifyOrderAddress;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.shopify.config.ShopifyConfig;
-import com.macro.mall.shopify.config.ShopifyUtil;
+import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.pojo.orders.Line_items;
 import com.macro.mall.shopify.pojo.orders.Orders;
 import com.macro.mall.shopify.pojo.orders.OrdersWraper;
@@ -19,13 +19,7 @@ import com.macro.mall.shopify.pojo.orders.Shipping_address;
 import com.macro.mall.shopify.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +36,7 @@ import java.util.stream.Collectors;
 public class ShopifyUtils {
 
     @Autowired
-    private ShopifyUtil shopifyUtil;
+    private ShopifyRestTemplate shopifyRestTemplate;
     @Autowired
     private ShopifyConfig shopifyConfig;
     @Autowired
@@ -56,39 +50,6 @@ public class ShopifyUtils {
     @Autowired
     private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
 
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        // Do any additional configuration here
-        return builder.build();
-    }
-
-    /**
-     * postForObject
-     * @param uri
-     * @param token
-     * @param json
-     * @return
-     */
-    public String postForObject(String uri, String token, String json) {
-
-        log.info("uri:[{}] token:[{}]  json:[{}]",uri,token,json);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Shopify-Access-Token", token);
-        HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
-
-        try {
-            return restTemplate.postForObject(uri, requestEntity, String.class);
-        } catch (Exception e) {
-            log.error("postForObject",e);
-            throw e;
-        }
-
-    }
 
     /**
      * 根据shopify的店铺名称获取订单信息
@@ -119,7 +80,7 @@ public class ShopifyUtils {
     private void getSingleCollection(String shopName, String url, String accessToken, String keyName) {
 
         // custom_collections , smart_collections
-        String json = this.shopifyUtil.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
         JSONObject jsonObject = JSONObject.parseObject(json);
 
         List<XmsShopifyCollections> list = new ArrayList<>();
@@ -186,7 +147,7 @@ public class ShopifyUtils {
     public OrdersWraper getOrders(String shopName) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
-        String json = this.shopifyUtil.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
     }

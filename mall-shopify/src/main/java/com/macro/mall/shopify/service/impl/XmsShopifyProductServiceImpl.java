@@ -21,7 +21,7 @@ import com.macro.mall.mapper.XmsPmsSkuStockEditMapper;
 import com.macro.mall.mapper.XmsShopifyAuthMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.shopify.config.ShopifyConfig;
-import com.macro.mall.shopify.config.ShopifyUtil;
+import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.exception.ShopifyException;
 import com.macro.mall.shopify.pojo.ProductRequestWrap;
 import com.macro.mall.shopify.pojo.ShopifyData;
@@ -61,15 +61,15 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     @Autowired
     private XmsShopifyAuthMapper xmsShopifyAuthMapper;
 
-    private final ShopifyUtil shopifyUtil;
+    private final ShopifyRestTemplate shopifyRestTemplate;
 
     private final ShopifyConfig config;
 
 
-    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyUtil shopifyUtil) {
+    public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
         this.config = config;
-        this.shopifyUtil = shopifyUtil;
+        this.shopifyRestTemplate = shopifyRestTemplate;
     }
 
     @Override
@@ -472,7 +472,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             String token = shopifyAuth.getAccessToken();
 
             LOGGER.info("add product to myself shop:[{}]",shopName);
-            String returnJson = shopifyUtil.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
+            String returnJson = shopifyRestTemplate.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
             LOGGER.info("returnJson:[{}]", returnJson);
             result = gson.fromJson(returnJson, ProductWraper.class);
 
