@@ -291,7 +291,7 @@ public class UmsMemberController {
         try {
             Object tempName = redisUtil.hmgetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
             if (null == tempName || !userName.equalsIgnoreCase(tempName.toString())) {
-                return CommonResult.success("uuid or userName invalid");
+                return CommonResult.failed("uuid or userName invalid");
             }
             UmsMember member = memberService.getByUsername(userName);
             if (null == member || member.getId() == 0) {
