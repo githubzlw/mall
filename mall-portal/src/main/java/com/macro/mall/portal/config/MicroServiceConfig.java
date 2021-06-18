@@ -29,4 +29,7 @@ public class MicroServiceConfig {
     @Value("${localService.oneboundApi.url}")
     private String oneBoundApi;
 
+    @Value("${mall.pass_activate.url}")
+    private String mallPassActivate;
+
 }

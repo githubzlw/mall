@@ -6,6 +6,7 @@ import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
@@ -58,6 +59,8 @@ public class UmsMemberController {
     private RedisUtil redisUtil;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
 
     @ApiOperation("会员注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -249,7 +252,7 @@ public class UmsMemberController {
             redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 5);
             // 发送邮件
 
-            String linkUrl = "https://app.importexpress.com/#/retrievePassword?userName=" + userName + "&uuid=" + uuid;
+            String linkUrl = microServiceConfig.getMallPassActivate()+ "?userName=" + userName + "&uuid=" + uuid;
             WelcomeMailTemplateBean mailTemplateBean = new WelcomeMailTemplateBean();
             mailTemplateBean.setName(userName);
             mailTemplateBean.setSubject("retrievePassword");
