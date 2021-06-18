@@ -2,6 +2,7 @@ package com.macro.mall.portal.domain;
 
 import com.macro.mall.entity.XmsPmsProductEdit;
 import com.macro.mall.entity.XmsPmsSkuStockEdit;
+import com.macro.mall.model.PmsProduct;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,8 +17,12 @@ import java.util.List;
  */
 @Data
 @ApiModel("Sourcing商品保存参数")
-public class SourcingProductParam extends XmsPmsProductEdit {
+public class SourcingProductParam extends PmsProduct {
+    @ApiModelProperty(value = "sourcing表的ID")
+    private Long sourcingId;
+    @ApiModelProperty(value = "product表的ID")
+    private Long productId;
 
     @ApiModelProperty(value = "product的sku数据:list的字符串")
-    private List<XmsPmsSkuStockEdit> skuList;
+    private String skuList;
 }

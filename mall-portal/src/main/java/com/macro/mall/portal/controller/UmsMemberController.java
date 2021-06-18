@@ -310,7 +310,6 @@ public class UmsMemberController {
     }
 
 
-
     @ApiOperation("验证旧密码")
     @RequestMapping(value = "/verifyOldPassword", method = RequestMethod.POST)
     @ResponseBody
