@@ -180,5 +180,7 @@ public class XmsPmsProductEdit implements Serializable {
     @ApiModelProperty(value = "shopify的Tags")
     private String shopifyTags;
 
+    private Long productId;
+
 
 }

@@ -32,13 +32,13 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,6 +76,12 @@ public class XmsSourcingController {
     @Autowired
     private PmsPortalProductService pmsPortalProductService;
 
+    @InitBinder
+    protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setLenient(false);
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, false));
+    }
 
     @ApiOperation("sourcingList列表")
     @RequestMapping(value = "/sourcingList", method = RequestMethod.GET)
@@ -96,9 +102,9 @@ public class XmsSourcingController {
             sourcingParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
 
-            if(CollectionUtil.isNotEmpty(listPage.getRecords())){
-                listPage.getRecords().forEach(e-> {
-                    if(StrUtil.isEmpty(e.getCost())){
+            if (CollectionUtil.isNotEmpty(listPage.getRecords())) {
+                listPage.getRecords().forEach(e -> {
+                    if (StrUtil.isEmpty(e.getCost())) {
                         e.setCost("");
                     }
                 });
@@ -125,8 +131,8 @@ public class XmsSourcingController {
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
             lambdaQuery.ge(XmsSourcingList::getStatus, -1);
-            if(StrUtil.isNotEmpty(url)){
-                lambdaQuery.and(query-> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
+            if (StrUtil.isNotEmpty(url)) {
+                lambdaQuery.and(query -> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
             }
             List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
 
@@ -141,19 +147,19 @@ public class XmsSourcingController {
             if (CollectionUtil.isNotEmpty(list)) {
                 mapStatistics.put("all", list.size());
                 // 状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；
-                int Pending = (int) list.stream().filter(e-> 0 == e.getStatus()).count();
+                int Pending = (int) list.stream().filter(e -> 0 == e.getStatus()).count();
                 mapStatistics.put("Pending", Pending);
 
-                int inProgressing = (int) list.stream().filter(e-> 1 == e.getStatus()).count();
+                int inProgressing = (int) list.stream().filter(e -> 1 == e.getStatus()).count();
                 mapStatistics.put("inProgressing", inProgressing);
 
-                int Failed = (int) list.stream().filter(e-> 5 == e.getStatus()).count();
+                int Failed = (int) list.stream().filter(e -> 5 == e.getStatus()).count();
                 mapStatistics.put("Failed", Failed);
 
-                int Success = (int) list.stream().filter(e-> 2 == e.getStatus()).count();
+                int Success = (int) list.stream().filter(e -> 2 == e.getStatus()).count();
                 mapStatistics.put("Success", Success);
 
-                int Cancel = (int) list.stream().filter(e-> 4 == e.getStatus()).count();
+                int Cancel = (int) list.stream().filter(e -> 4 == e.getStatus()).count();
                 mapStatistics.put("Cancel", Cancel);
 
                 list.clear();
@@ -187,10 +193,11 @@ public class XmsSourcingController {
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
+            stockEditList.forEach(e-> e.setMemberId(currentMember.getId()));
 
             // 判断是否存在编辑表数据
             QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getProductId());
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, sourcingProductParam.getProductId());
 
             int count = this.xmsPmsProductEditService.count(productEditWrapper);
 
@@ -232,13 +239,30 @@ public class XmsSourcingController {
                 // 插入product数据
                 XmsPmsProductEdit pmsProductEdit = new XmsPmsProductEdit();
                 BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
+                pmsProductEdit.setProductId(sourcingProductParam.getProductId());
                 pmsProductEdit.setMemberId(currentMember.getId());
                 this.xmsPmsProductEditService.save(pmsProductEdit);
                 // 插入sku数据
                 this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                 stockEditList.clear();
             }
-            return CommonResult.success(1);
+            // 调用shopify铺货
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName())) {
+                return CommonResult.validateFailed("Please bind the store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("pid", String.valueOf(xmsSourcingList.getProductId()));
+            param.put("published", "0");
+            param.put("shopname", byId.getShopifyName());
+
+            JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
+
+            if (null != jsonObject) {
+                return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            }
+            return CommonResult.failed("addProduct error");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("saveSourcingProduct,sourcingProductParam[{}],error:", sourcingProductParam, e);
