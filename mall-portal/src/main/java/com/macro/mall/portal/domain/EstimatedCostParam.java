@@ -13,10 +13,10 @@ import lombok.Data;
 public class EstimatedCostParam {
 
     @ApiModelProperty("原始运费")
-    private Double originalShippingFee;
+    private String originalShippingFee;
 
     @ApiModelProperty("原始价格")
-    private Double originalProductPrice;
+    private String originalProductPrice;
 
     @ApiModelProperty("国家ID-必填")
     private Integer countryId;

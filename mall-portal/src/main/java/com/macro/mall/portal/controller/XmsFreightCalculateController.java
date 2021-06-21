@@ -144,29 +144,48 @@ public class XmsFreightCalculateController {
         try {
 
             EstimatedCostResult estimatedCostResult = new EstimatedCostResult();
-            if (null == estimatedCostParam.getOriginalProductPrice()) {
-                estimatedCostParam.setOriginalProductPrice(0D);
+            if (StrUtil.isEmpty(estimatedCostParam.getOriginalProductPrice())) {
+                estimatedCostParam.setOriginalProductPrice("0");
             }
             estimatedCostResult.setOriginalProductPrice(estimatedCostParam.getOriginalProductPrice());
 
-            if (null == estimatedCostParam.getOriginalShippingFee()) {
-                estimatedCostParam.setOriginalShippingFee(0D);
+            if (StrUtil.isEmpty(estimatedCostParam.getOriginalShippingFee())) {
+                estimatedCostParam.setOriginalShippingFee("0");
             }
             estimatedCostResult.setOriginalShippingFee(estimatedCostParam.getOriginalShippingFee());
 
             estimatedCostResult.setOriginalWeight(estimatedCostParam.getWeight());
             estimatedCostResult.setOriginalVolume(estimatedCostParam.getVolume());
 
+            // 处理原始价格
+            String prefixSymbol = "";
+            if (estimatedCostResult.getOriginalProductPrice().contains("CN¥")) {
+                prefixSymbol = "CN¥";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("€")) {
+                prefixSymbol = "€";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("A$")) {
+                prefixSymbol = "A$";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("£")) {
+                prefixSymbol = "£";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("$")) {
+                prefixSymbol = "$";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("¥")) {
+                prefixSymbol = "¥";
+            }
+
+            if (StrUtil.isNotEmpty(prefixSymbol)) {
+                estimatedCostResult.setOriginalProductPrice(estimatedCostResult.getOriginalProductPrice().replace(prefixSymbol, ""));
+            }
 
             // 原商品的0.75
-            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
+            estimatedCostResult.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
             EstimatedCost importXStandard = new EstimatedCost();
             EstimatedCost importXPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
-            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 1, 2));
+            importXStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+            importXPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
 
             // importXStandard cost 照抄
@@ -176,11 +195,11 @@ public class XmsFreightCalculateController {
             double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
             double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
-            if (null != estimatedCostParam.getOriginalShippingFee() && estimatedCostParam.getOriginalShippingFee() > 0) {
+            if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
                 // 直接用集运价格
-                importXPremium.setCost(BigDecimalUtil.truncateDouble(centralizedFreight, 2));
+                importXPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
             } else {
-                importXPremium.setCost(rsFreight);
+                importXPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
             }
 
 
