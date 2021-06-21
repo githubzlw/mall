@@ -352,7 +352,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId());
+                .andMemberIdEqualTo(member.getId())
+                .andReceiverCountryIsNotNull();
         if(status!=null){
             criteria.andStatusEqualTo(status);
         }
