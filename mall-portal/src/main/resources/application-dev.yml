@@ -76,3 +76,7 @@ STRIPE:
   PK_KEY: pk_test_jJC2UiuLGAjY4Kv1jFbWRmnA00js5Qr1T9
   SK_KEY: sk_test_WxV6MvmlX39hDsGIBW5os04E00PCTGsGoS
 
+#找回邮件的回调URL
+mall:
+  pass_activate:
+    url: http://127.0.0.1:8080/#/passActivate
