@@ -9,6 +9,7 @@ import com.macro.mall.model.OmsCartItem;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
 import com.macro.mall.portal.util.OrderPrefixEnum;
@@ -143,7 +144,7 @@ public class XmsYouLiveProductController {
 
             orderResult.setTotalFreight(orderPayParam.getShippingCostValue());
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.PURCHASE_INVENTORY);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("youLiveProducts,productParam[{}],error:", productParam, e);

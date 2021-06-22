@@ -21,6 +21,7 @@ import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
 import com.macro.mall.portal.util.OrderPrefixEnum;
@@ -416,7 +417,7 @@ public class XmsSourcingController {
             pmsSkuStockList.clear();
             orderNumMap.clear();
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("payBySourcingProduct,sourcingPayParam[{}],error:", sourcingPayParam, e);
