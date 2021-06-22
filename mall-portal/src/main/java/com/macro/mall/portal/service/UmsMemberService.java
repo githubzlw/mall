@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.domain.FacebookPojo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,6 +95,8 @@ public interface UmsMemberService {
      * google登录验证
      */
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
+
+    FacebookPojo facebookAuth(String code);
 
     int updateGuidedFlag(Long id);
 

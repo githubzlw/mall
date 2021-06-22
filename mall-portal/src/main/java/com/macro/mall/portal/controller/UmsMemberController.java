@@ -7,6 +7,7 @@ import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
@@ -48,8 +49,6 @@ public class UmsMemberController {
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
-    @Value("${tpurl.tpLogin}")
-    public String tpLogin;
     @Autowired
     private UmsMemberService memberService;
 
@@ -197,16 +196,28 @@ public class UmsMemberController {
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String idtokenstr) {
+    public CommonResult facebookAuth(@RequestParam String code) {
 
         LOGGER.info("facebook login begin");
         try {
-            String email = UrlUtil.getInstance().facebookAuth(idtokenstr, tpLogin);
-            memberService.register(email, "", "", "", 2);
+            FacebookPojo bean = memberService.facebookAuth(code);
+            memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+            String token = memberService.login(bean.getEmail(), bean.getEmail());
+            if (token == null) {
+                return CommonResult.validateFailed("用户名或密码错误");
+            }
+            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
+
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("token", token);
+            tokenMap.put("tokenHead", tokenHead);
+            tokenMap.put("mail", bean.getEmail());
+            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+            return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
+            return CommonResult.failed("facebookLogin failed");
         }
-        return CommonResult.success(null, "成功");
     }
 
 
