@@ -12,6 +12,9 @@ import com.macro.mall.portal.service.IXmsPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 /**
  * <p>
  * 支付表 服务实现类
@@ -40,6 +43,20 @@ public class XmsPaymentServiceImpl extends ServiceImpl<XmsPaymentMapper, XmsPaym
         }
         if (null != paymentParam.getPayType()) {
             lambdaQuery.eq(XmsPayment::getPayType, paymentParam.getPayType());
+        }
+        if (null != paymentParam.getPayFrom() && paymentParam.getPayFrom() > -1) {
+            lambdaQuery.eq(XmsPayment::getPayFrom, paymentParam.getPayFrom());
+        }
+        // beginTime
+        if (StrUtil.isNotEmpty(paymentParam.getBeginTime())) {
+            lambdaQuery.ge(XmsPayment::getCreateTime, paymentParam.getBeginTime().substring(0, 10) + " 00:00:00");
+        }
+        // endTime
+        if (StrUtil.isNotEmpty(paymentParam.getEndTime())) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate dateTime = LocalDate.parse(paymentParam.getEndTime().substring(0, 10), dateTimeFormatter);
+            LocalDate plusDays = dateTime.plusDays(1);
+            lambdaQuery.lt(XmsPayment::getCreateTime, plusDays.format(dateTimeFormatter) + " 00:00:00");
         }
         lambdaQuery.orderByDesc(XmsPayment::getCreateTime);
         return this.xmsPaymentMapper.selectPage(page, lambdaQuery);

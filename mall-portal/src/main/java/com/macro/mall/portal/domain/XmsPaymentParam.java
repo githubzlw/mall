@@ -27,6 +27,15 @@ public class XmsPaymentParam {
     @ApiModelProperty(value = "0是paypal支付，1 余额支付 ")
     private Integer payType;
 
+    @ApiModelProperty(value = "支付来源 0未知 1采购库存 2sourcing下单 3充值")
+    private Integer payFrom;
+
+    @ApiModelProperty(value = "开始时间")
+    private String beginTime;
+
+    @ApiModelProperty(value = "结束时间")
+    private String endTime;
+
     @ApiModelProperty(value = "页码")
     private Integer pageNum;
 
