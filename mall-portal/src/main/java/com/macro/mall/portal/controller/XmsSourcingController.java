@@ -272,7 +272,7 @@ public class XmsSourcingController {
     }
 
 
-    @ApiOperation("SourcingList删除")
+    @ApiOperation("SourcingList取消")
     @RequestMapping(value = "/deleteSourcing", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
     public CommonResult deleteSourcing(Long sourcingId) {
@@ -284,7 +284,7 @@ public class XmsSourcingController {
             }
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, 4);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(update);
         } catch (Exception e) {
@@ -295,14 +295,14 @@ public class XmsSourcingController {
     }
 
 
-    @ApiOperation("SourcingList批量删除")
+    @ApiOperation("SourcingList批量取消")
     @RequestMapping(value = "/deleteBatchSourcing", method = RequestMethod.POST)
     public CommonResult deleteBatchSourcing(@RequestParam("sourcingIdList") List<Long> sourcingIdList) {
         Assert.isTrue(CollectionUtil.isNotEmpty(sourcingIdList), "sourcingIdList null");
         try {
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().in(XmsSourcingList::getId, sourcingIdList).set(XmsSourcingList::getStatus, -1);
+            updateWrapper.lambda().in(XmsSourcingList::getId, sourcingIdList).set(XmsSourcingList::getStatus, 4);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(update);
         } catch (Exception e) {
