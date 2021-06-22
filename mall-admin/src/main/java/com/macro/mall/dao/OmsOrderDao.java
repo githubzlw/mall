@@ -29,5 +29,9 @@ public interface OmsOrderDao {
      */
     OmsOrderDetail getDetail(@Param("id") Long id);
 
+    OmsOrderDetail getDetailByOrderNo(@Param("orderNo") String orderNo);
+
     List<OmsOrder> getListByParam(SyncOrderParam orderParam);
+
+    int updateOrderStatus(@Param("orderNo") String orderNo, @Param("status") Integer status);
 }
