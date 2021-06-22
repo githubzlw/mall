@@ -1,5 +1,6 @@
 package com.macro.mall.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.*;
@@ -9,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -109,4 +111,35 @@ public class OmsOrderController {
         }
         return CommonResult.failed();
     }
+
+    @ApiOperation("更新订单状态")
+    @RequestMapping(value = "/updateOrderState", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult updateOrderState(String orderNo, Integer status, String key) {
+
+        Assert.isTrue(StrUtil.isNotBlank(orderNo),"orderNo  null");
+        Assert.isTrue(null != status && status > -1,"status  null");
+        Assert.isTrue(StrUtil.isNotBlank(key),"key  null");
+        try {
+            if (!"busySellUpdateKey".equalsIgnoreCase(key)) {
+                return CommonResult.failed("key is invalid");
+            }
+            OmsOrder omsOrder = orderService.queryOrderByOrderNo(orderNo);
+
+            if (null == omsOrder) {
+                return CommonResult.failed("order null");
+            }
+            if (omsOrder.getStatus() == 4 || omsOrder.getStatus() == 5) {
+                return CommonResult.failed("orderId status is 已关闭or无效订单");
+            }
+            int i = orderService.updateOrderStatus(orderNo, status);
+            return CommonResult.success(i);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed(e.getMessage());
+        }
+
+    }
+
+
 }

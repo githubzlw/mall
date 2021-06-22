@@ -164,4 +164,16 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         PageHelper.startPage(orderParam.getPageNum(), orderParam.getPageSize());
         return this.orderDao.getListByParam(orderParam);
     }
+
+    @Override
+    public OmsOrder queryOrderByOrderNo(String orderNo) {
+        return this.orderDao.getDetailByOrderNo(orderNo);
+    }
+
+    @Override
+    public int updateOrderStatus(String orderNo, Integer status) {
+        OmsOrderDetail detail = this.orderDao.getDetailByOrderNo(orderNo);
+        detail.setStatus(status);
+        return this.orderDao.updateOrderStatus(orderNo, status);
+    }
 }

@@ -61,4 +61,10 @@ public interface OmsOrderService {
 
     List<OmsOrder>  list(SyncOrderParam orderParam);
 
+
+    OmsOrder queryOrderByOrderNo(String orderNo);
+
+
+    int updateOrderStatus(String orderNo, Integer state);
+
 }
