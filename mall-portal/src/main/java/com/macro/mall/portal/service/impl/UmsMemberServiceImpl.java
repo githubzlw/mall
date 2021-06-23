@@ -50,9 +50,10 @@ import java.util.*;
 public class UmsMemberServiceImpl implements UmsMemberService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberServiceImpl.class);
 
-    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/user/facebookLogin&client_id=%s&client_secret=%s&code=%s";
+    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/sso/facebookLogin&scope=email,public_profile&fields=name,email";
+    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/sso/facebookLogin&client_id=%s&client_secret=%s&code=%s";
     private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=%s";
-    private final static String SITE_URL = "https://app.busysell.com/";
+    private final static String SITE_URL = "https://app.busysell.com";
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -247,13 +248,17 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
 
-        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
+//        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
 
         try {
 
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(configValues.getGoogleClientId())).build();
+                    .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
+
+            LOGGER.info("idToken", idTokenString);
+            LOGGER.info("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID);
+
             GoogleIdToken idToken = verifier.verify(idTokenString);
             GoogleIdToken.Payload payload = idToken.getPayload();
             String googleUserId = payload.getSubject();
@@ -264,6 +269,17 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         } catch (GeneralSecurityException | IOException e) {
             throw new IOException("googleAuth.GeneralSecurityException");
         }
+    }
+
+    /**
+     * get facebook login url
+     * @return
+     */
+    @Override
+    public String getFacebookUrl() {
+
+        return String.format(FACEBOOK_LOGIN_URL
+                , FACE_BOOK_CLIENTID, SITE_URL);
     }
 
 
@@ -281,6 +297,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         String accessTokenUrl = String.format(FACEBOOK_ME_URL
                 ,SITE_URL, FACE_BOOK_CLIENTID, FACE_BOOK_CLIENT_SECRET, code);
         LOGGER.info("accessTokenURL:[{}]", accessTokenUrl);
+        LOGGER.info("faceCode", code);
         RestTemplate restTemplate = new RestTemplate();
         HashMap<String, String> result = restTemplate.getForObject(accessTokenUrl, HashMap.class);
         assert result != null;

@@ -23,12 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -173,6 +171,11 @@ public class UmsMemberController {
         ImmutablePair<String, String> pair = null;
         try {
             pair = memberService.googleAuth(idtokenstr);
+
+            if(pair == null){
+                return CommonResult.failed("mail get failed");
+            }
+
             memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
 
             String token = memberService.login(pair.getRight(), pair.getRight());
@@ -193,6 +196,19 @@ public class UmsMemberController {
         }
     }
 
+    @GetMapping("/getFacebookURL")
+    @ApiOperation("get FacebookURL")
+    public CommonResult getFacebookUrl() {
+
+        try{
+            return CommonResult.success(URLEncoder.encode(memberService.getFacebookUrl(),"utf-8"));
+
+        }catch (Exception e){
+            return CommonResult.failed(e.getMessage());
+        }
+
+    }
+
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
@@ -201,6 +217,9 @@ public class UmsMemberController {
         LOGGER.info("facebook login begin");
         try {
             FacebookPojo bean = memberService.facebookAuth(code);
+            if(bean == null){
+                return CommonResult.failed("mail get failed");
+            }
             memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
             String token = memberService.login(bean.getEmail(), bean.getEmail());
             if (token == null) {
