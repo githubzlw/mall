@@ -196,8 +196,9 @@ public class UmsMemberController {
         }
     }
 
-    @GetMapping("/getFacebookURL")
+    @RequestMapping(value = "/getFacebookURL", method = RequestMethod.GET)
     @ApiOperation("get FacebookURL")
+    @ResponseBody
     public CommonResult getFacebookUrl() {
 
         try{
