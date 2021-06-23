@@ -20,5 +20,7 @@ public class XmsCustomerSkuStockParam implements Serializable {
 
     private Integer pageSize;
 
+    @ApiModelProperty(value = "产品标题")
+    private String title;
 
 }

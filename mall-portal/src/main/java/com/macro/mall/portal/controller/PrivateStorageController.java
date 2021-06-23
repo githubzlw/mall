@@ -37,7 +37,7 @@ public class PrivateStorageController {
     @ApiOperation("获取客户产品列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize, String title) {
 
         XmsCustomerSkuStockParam skuStockParam = new XmsCustomerSkuStockParam();
         try {
@@ -45,6 +45,7 @@ public class PrivateStorageController {
             skuStockParam.setPageSize(pageSize);
             skuStockParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             skuStockParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
+            skuStockParam.setTitle(title);
             Page<XmsCustomerSkuStock> skuStockPage = this.iXmsCustomerSkuStockService.list(skuStockParam);
             // 可能需要加工一下，合并相同sku的数据
             return CommonResult.success(skuStockPage);
