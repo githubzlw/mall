@@ -67,7 +67,7 @@ rabbitmq:
 
 # 第三方登录
 tpurl:
-  googleid: BzGb3mP2qVGk9Qi_DLazVIqe
+  googleid: 742516350332-3vt0v4ce3itc467so7hi3k0e84nlkke8.apps.googleusercontent.com
   facebookClientId: 502611367678191
   facebookClientSecret: 6502c8168439b13c73aa1bd8a8eaab5e
 
