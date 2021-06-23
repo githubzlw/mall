@@ -68,8 +68,8 @@ rabbitmq:
 # 第三方登录
 tpurl:
   googleid: BzGb3mP2qVGk9Qi_DLazVIqe
-  facebookClientId: 2497316763877909
-  facebookClientSecret: 691977937952b7220d1388b3497cc58f
+  facebookClientId: 502611367678191
+  facebookClientSecret: 6502c8168439b13c73aa1bd8a8eaab5e
 
 aliyun:
   oss:
