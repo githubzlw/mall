@@ -70,8 +70,9 @@ PAYPAL:
   CLIENT_ID: AaYrawhmyep4w1VQ_Q8r9ubzt09tBJevuCJ2rGbOHUfNRhbQt3rh9Dl1VsTGjKo4pei1uap-dq2j1cJO
   CLIENT_SECRET: EJpfYpI3Ym3iuFgG8yK8JwUVdkhiU0DrxUMcQ8h62dS96pZ8V3_ws8yL4r6QnBCuKQJ_PjUXDh8HE2mp
   CANCEL_URL_TYPE: 1
-  SUCCESS_URL: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
-  CANCEL_URL: http://127.0.0.1:8085/myaccount
+  SUCCESS_URL1: https://app.busysell.com/#/PaymentResult
+  SUCCESS_URL2: https://app.busysell.com/#/PayResult
+  CANCEL_URL: https://app.busysell.com/
   BUSINESS_ID: 584JZVFU6PPVU
 
 #stripe
