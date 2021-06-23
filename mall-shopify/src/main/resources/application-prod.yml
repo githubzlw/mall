@@ -38,4 +38,5 @@ shopify:
   client_id: 262687416873d5568be71fa76d3f57c5
   client_secret: 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
   scope: write_orders,read_customers,write_products,read_fulfillments,write_fulfillments,read_assigned_fulfillment_orders,write_assigned_fulfillment_orders,read_merchant_managed_fulfillment_orders,write_merchant_managed_fulfillment_orders,read_third_party_fulfillment_orders,write_third_party_fulfillment_orders,read_locales,read_inventory
-  redirect_uri: https://app.importexpress.com/linkStore
+  redirect_uri: https://app.busysell.com/linkStore
+  fulfillment_service_callback: https://app.busysell.com/shopify/fulfillmentCallback

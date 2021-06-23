@@ -295,14 +295,14 @@ public class XmsSourcingController {
     }
 
 
-    @ApiOperation("SourcingList批量取消")
+    @ApiOperation("SourcingList批量删除")
     @RequestMapping(value = "/deleteBatchSourcing", method = RequestMethod.POST)
     public CommonResult deleteBatchSourcing(@RequestParam("sourcingIdList") List<Long> sourcingIdList) {
         Assert.isTrue(CollectionUtil.isNotEmpty(sourcingIdList), "sourcingIdList null");
         try {
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().in(XmsSourcingList::getId, sourcingIdList).set(XmsSourcingList::getStatus, 4);
+            updateWrapper.lambda().in(XmsSourcingList::getId, sourcingIdList).set(XmsSourcingList::getStatus, -1);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(update);
         } catch (Exception e) {
