@@ -67,8 +67,9 @@ rabbitmq:
 
 # 第三方登录
 tpurl:
-  tpLogin: http://127.0.0.1:8085
   googleid: BzGb3mP2qVGk9Qi_DLazVIqe
+  facebookClientId: 502611367678191
+  facebookClientSecret: 6502c8168439b13c73aa1bd8a8eaab5e
 
 aliyun:
   oss:

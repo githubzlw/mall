@@ -63,6 +63,32 @@
         </foreach>
         AND `status` = 1
     </update>
+    <select id="getDetailByOrderNo" resultMap="orderDetailResultMap">
+        SELECT o.*,
+            oi.id item_id,
+            oi.product_id item_product_id,
+            oi.product_sn item_product_sn,
+            oi.product_pic item_product_pic,
+            oi.product_name item_product_name,
+            oi.product_brand item_product_brand,
+            oi.product_price item_product_price,
+            oi.product_quantity item_product_quantity,
+            oi.product_attr item_product_attr,
+            oh.id history_id,
+            oh.operate_man history_operate_man,
+            oh.create_time history_create_time,
+            oh.order_status history_order_status,
+            oh.note history_note
+        FROM
+            oms_order o
+            LEFT JOIN oms_order_item oi ON o.id = oi.order_id
+            LEFT JOIN oms_order_operate_history oh ON o.id = oh.order_id
+        WHERE
+            o.order_sn = #{orderNo}
+        ORDER BY oi.id ASC,oh.create_time DESC
+    </select>
+
+
     <select id="getDetail" resultMap="orderDetailResultMap">
         SELECT o.*,
             oi.id item_id,
@@ -88,7 +114,6 @@
         ORDER BY oi.id ASC,oh.create_time DESC
     </select>
 
-
     <select id="getListByParam" resultMap="com.macro.mall.mapper.OmsOrderMapper.BaseResultMap" resultType="com.macro.mall.dto.SyncOrderParam">
         SELECT *
         FROM
@@ -96,5 +121,9 @@
         where member_id = #{memberId}
     </select>
 
+
+    <update id="updateOrderStatus">
+        update oms_order set status = #{status},modify_time = now() where order_sn = #{orderNo}
+    </update>
 
 </mapper>

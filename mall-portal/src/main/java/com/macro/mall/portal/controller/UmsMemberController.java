@@ -7,6 +7,7 @@ import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
@@ -22,12 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,8 +47,6 @@ public class UmsMemberController {
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
-    @Value("${tpurl.tpLogin}")
-    public String tpLogin;
     @Autowired
     private UmsMemberService memberService;
 
@@ -174,6 +171,11 @@ public class UmsMemberController {
         ImmutablePair<String, String> pair = null;
         try {
             pair = memberService.googleAuth(idtokenstr);
+
+            if(pair == null){
+                return CommonResult.failed("mail get failed");
+            }
+
             memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
 
             String token = memberService.login(pair.getRight(), pair.getRight());
@@ -194,19 +196,47 @@ public class UmsMemberController {
         }
     }
 
+    @GetMapping("/getFacebookURL")
+    @ApiOperation("get FacebookURL")
+    public CommonResult getFacebookUrl() {
+
+        try{
+            return CommonResult.success(URLEncoder.encode(memberService.getFacebookUrl(),"utf-8"));
+
+        }catch (Exception e){
+            return CommonResult.failed(e.getMessage());
+        }
+
+    }
+
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String idtokenstr) {
+    public CommonResult facebookAuth(@RequestParam String code) {
 
         LOGGER.info("facebook login begin");
         try {
-            String email = UrlUtil.getInstance().facebookAuth(idtokenstr, tpLogin);
-            memberService.register(email, "", "", "", 2);
+            FacebookPojo bean = memberService.facebookAuth(code);
+            if(bean == null){
+                return CommonResult.failed("mail get failed");
+            }
+            memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+            String token = memberService.login(bean.getEmail(), bean.getEmail());
+            if (token == null) {
+                return CommonResult.validateFailed("用户名或密码错误");
+            }
+            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
+
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("token", token);
+            tokenMap.put("tokenHead", tokenHead);
+            tokenMap.put("mail", bean.getEmail());
+            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+            return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
+            return CommonResult.failed("facebookLogin failed");
         }
-        return CommonResult.success(null, "成功");
     }
 
 

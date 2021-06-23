@@ -47,7 +47,7 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         }
 
         // status
-        if (null != sourcingParam.getStatus() && sourcingParam.getStatus() > -1) {
+        if (null != sourcingParam.getStatus() && sourcingParam.getStatus() > -2) {
             lambdaQuery.eq(XmsSourcingList::getStatus, sourcingParam.getStatus());
         }
         lambdaQuery.gt(XmsSourcingList::getStatus, -2);

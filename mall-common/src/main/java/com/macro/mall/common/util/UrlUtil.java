@@ -2,8 +2,6 @@ package com.macro.mall.common.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
-import com.macro.mall.common.api.CommonResult;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,34 +44,6 @@ public class UrlUtil {
             .connectTimeout(300, TimeUnit.SECONDS)
             .readTimeout(300, TimeUnit.SECONDS)
             .build();
-
-    /**
-     * call facebookAuth
-     * @return
-     * @throws IOException
-     */
-    public String facebookAuth(String code,String url) throws IOException {
-
-        //sample:http://192.168.1.71:18013/facebookAuth?site=IMPORTX&code=1111
-
-        JSONObject jsonObject =
-                this.callUrlByGet(url + "/facebookAuth?code=" +code );
-        CommonResult commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
-        LOGGER.info("call result:[{}]",commonResult);
-        if(commonResult.getCode() !=CommonResult.SUCCESS){
-            throw new IllegalStateException("facebookAuth() return value is error. commonResult="+commonResult);
-        }
-
-//        FacebookPojo facebookPojo = new FacebookPojo();
-        JSONObject data = jsonObject.getJSONObject("data");
-//        facebookPojo.setId(data.getString("id"));
-//        facebookPojo.setEmail(data.getString("email"));
-//        facebookPojo.setName(data.getString("name"));
-
-
-        return data.getString("email");
-
-    }
 
 
     /**

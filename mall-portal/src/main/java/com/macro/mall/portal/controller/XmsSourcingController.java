@@ -21,6 +21,7 @@ import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
 import com.macro.mall.portal.util.OrderPrefixEnum;
@@ -271,7 +272,7 @@ public class XmsSourcingController {
     }
 
 
-    @ApiOperation("SourcingList删除")
+    @ApiOperation("SourcingList取消")
     @RequestMapping(value = "/deleteSourcing", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
     public CommonResult deleteSourcing(Long sourcingId) {
@@ -283,7 +284,7 @@ public class XmsSourcingController {
             }
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, 4);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(update);
         } catch (Exception e) {
@@ -416,7 +417,7 @@ public class XmsSourcingController {
             pmsSkuStockList.clear();
             orderNumMap.clear();
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("payBySourcingProduct,sourcingPayParam[{}],error:", sourcingPayParam, e);
