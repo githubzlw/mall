@@ -202,7 +202,7 @@ public class UmsMemberController {
     public CommonResult getFacebookUrl() {
 
         try{
-            return CommonResult.success(URLEncoder.encode(memberService.getFacebookUrl(),"utf-8"));
+            return CommonResult.success(memberService.getFacebookUrl());
 
         }catch (Exception e){
             return CommonResult.failed(e.getMessage());
