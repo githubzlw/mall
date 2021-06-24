@@ -50,8 +50,8 @@ import java.util.*;
 public class UmsMemberServiceImpl implements UmsMemberService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberServiceImpl.class);
 
-    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/#/facebookLogin&scope=email,public_profile&fields=name,email";
-    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/#/facebookLogin&client_id=%s&client_secret=%s&code=%s";
+    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/#/facebookLogin?&scope=email,public_profile&fields=name,email";
+    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/#/facebookLogin?&client_id=%s&client_secret=%s&code=%s";
     private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=%s";
     private final static String SITE_URL = "https://app.busysell.com";
     @Autowired
