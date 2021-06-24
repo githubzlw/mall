@@ -3,7 +3,6 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.enums.MailTemplateType;
-import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
@@ -11,7 +10,6 @@ import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
-import com.macro.mall.tools.bean.MailTemplateBean;
 import com.macro.mall.tools.bean.WelcomeMailTemplateBean;
 import com.macro.mall.tools.service.EmailService;
 import io.swagger.annotations.Api;
@@ -21,12 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -176,19 +175,20 @@ public class UmsMemberController {
                 return CommonResult.failed("mail get failed");
             }
 
-            memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
-
+            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
+            if (userInfo == null){
+                memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
+            }
             String token = memberService.login(pair.getRight(), pair.getRight());
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
-            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
 
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
-            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
@@ -221,18 +221,20 @@ public class UmsMemberController {
             if(bean == null){
                 return CommonResult.failed("mail get failed");
             }
-            memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
+            if(userInfo == null){
+                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+            }
             String token = memberService.login(bean.getEmail(), bean.getEmail());
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
-            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
 
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", bean.getEmail());
-            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
