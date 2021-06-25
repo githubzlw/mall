@@ -6,7 +6,6 @@ import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
-import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
@@ -196,36 +195,65 @@ public class UmsMemberController {
         }
     }
 
-    @RequestMapping(value = "/getFacebookURL", method = RequestMethod.GET)
-    @ApiOperation("get FacebookURL")
-    @ResponseBody
-    public CommonResult getFacebookUrl() {
+//    @RequestMapping(value = "/getFacebookURL", method = RequestMethod.GET)
+//    @ApiOperation("get FacebookURL")
+//    @ResponseBody
+//    public CommonResult getFacebookUrl() {
+//
+//        try{
+//            return CommonResult.success(memberService.getFacebookUrl());
+//
+//        }catch (Exception e){
+//            return CommonResult.failed(e.getMessage());
+//        }
+//
+//    }
 
-        try{
-            return CommonResult.success(memberService.getFacebookUrl());
-
-        }catch (Exception e){
-            return CommonResult.failed(e.getMessage());
-        }
-
-    }
+//    @ApiOperation("facebook登录")
+//    @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
+//    @ResponseBody
+//    public CommonResult facebookAuth(@RequestParam String code) {
+//
+//        LOGGER.info("facebook login begin");
+//        try {
+//            FacebookPojo bean = memberService.facebookAuth(code);
+//            if(bean == null){
+//                return CommonResult.failed("mail get failed");
+//            }
+//            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
+//            if(userInfo == null){
+//                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+//            }
+//            String token = memberService.login(bean.getEmail(), bean.getEmail());
+//            if (token == null) {
+//                return CommonResult.validateFailed("用户名或密码错误");
+//            }
+//
+//            Map<String, String> tokenMap = new HashMap<>();
+//            tokenMap.put("token", token);
+//            tokenMap.put("tokenHead", tokenHead);
+//            tokenMap.put("mail", bean.getEmail());
+//            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
+//            return CommonResult.success(tokenMap);
+//        } catch (Exception e) {
+//            LOGGER.error("facebookLogin", e);
+//            return CommonResult.failed("facebookLogin failed");
+//        }
+//    }
 
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String code) {
+    public CommonResult facebookAuth(@RequestParam String mail) {
 
         LOGGER.info("facebook login begin");
         try {
-            FacebookPojo bean = memberService.facebookAuth(code);
-            if(bean == null){
-                return CommonResult.failed("mail get failed");
-            }
-            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
+
+            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(mail);
             if(userInfo == null){
-                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+                memberService.register(mail, mail, "", "", 2);
             }
-            String token = memberService.login(bean.getEmail(), bean.getEmail());
+            String token = memberService.login(mail, mail);
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
@@ -233,7 +261,7 @@ public class UmsMemberController {
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
-            tokenMap.put("mail", bean.getEmail());
+            tokenMap.put("mail", mail);
             tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
