@@ -247,7 +247,16 @@ public class PmsProductController {
             chromeUpload.setPic(jsonObject.getString("pic_url"));
 
             if (jsonObject.containsKey("item_imgs")) {
-                chromeUpload.setImages(jsonObject.getString("item_imgs"));
+                JSONArray item_imgs = jsonObject.getJSONArray("item_imgs");
+                StringBuffer sb = new StringBuffer();
+                for (int i = 0; i < item_imgs.size(); i++) {
+                    if(i == item_imgs.size() - 1){
+                        sb.append(item_imgs.getJSONObject(i).getString("url"));
+                    } else{
+                        sb.append(item_imgs.getJSONObject(i).getString("url") + ",");
+                    }
+                }
+                chromeUpload.setImages(sb.toString());
             }
             if (jsonObject.containsKey("typeJson")) {
                 StringBuffer sb = new StringBuffer();
@@ -345,7 +354,16 @@ public class PmsProductController {
             chromeUpload.setPic(jsonObject.getString("pic_url"));
 
             if (jsonObject.containsKey("item_imgs")) {
-                chromeUpload.setImages(jsonObject.getString("item_imgs"));
+                JSONArray item_imgs = jsonObject.getJSONArray("item_imgs");
+                StringBuffer sb = new StringBuffer();
+                for (int i = 0; i < item_imgs.size(); i++) {
+                    if(i == item_imgs.size() - 1){
+                        sb.append(item_imgs.getJSONObject(i).getString("url"));
+                    } else{
+                        sb.append(item_imgs.getJSONObject(i).getString("url") + ",");
+                    }
+                }
+                chromeUpload.setImages(sb.toString());
             }
             if (jsonObject.containsKey("typeJson")) {
                 StringBuffer sb = new StringBuffer();
@@ -440,12 +458,17 @@ public class PmsProductController {
 
 
     private JSONObject checkAndLoadData(String pid, int siteFlag) {
-        if (siteFlag == 1) {
-            return this.ali1688Service.getAlibabaDetail(Long.parseLong(pid), true);
-        } else if (siteFlag == 2 || siteFlag == 3) {
-            return this.expressService.getItemInfo(pid, true);
+        try {
+            if (siteFlag == 1) {
+                return this.ali1688Service.getAlibabaDetail(Long.parseLong(pid), true);
+            } else if (siteFlag == 2 || siteFlag == 3) {
+                return this.expressService.getItemInfo(pid, true);
+            }
+            return new JSONObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new JSONObject();
         }
-        return new JSONObject();
     }
 
 }
