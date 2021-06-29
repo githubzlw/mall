@@ -56,7 +56,7 @@ public class XmsFreightCalculateController {
             FreightResult freightResult = new FreightResult();
             BeanUtil.copyProperties(freightParam, freightResult);
             freightResult.setTotalWeight(freightResult.getTotalWeight() * 1000);
-            return freightUtils.commonCalculate(freightResult);
+            return this.freightUtils.commonCalculate(freightResult);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,10 +81,10 @@ public class XmsFreightCalculateController {
             BeanUtil.copyProperties(fbaFreightParam, freightUnit);
 
             if (freightUnit.getModeOfTransport() <= 2) {
-                Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = fbaFreightUtils.getFbaFreightUnitMap();
+                Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = this.fbaFreightUtils.getFbaFreightUnitMap();
                 // 判断是否存在此国家
                 if (fbaFreightUnitMap.containsKey(fbaFreightParam.getCountryId())) {
-                    List<XmsFbaFreightUnit> fbaList = fbaFreightUtils.getProductShippingCost(freightUnit);
+                    List<XmsFbaFreightUnit> fbaList = this.fbaFreightUtils.getProductShippingCost(freightUnit);
                     List<FbaFreightUnitResult> rsList = new ArrayList<>();
                     if (CollectionUtil.isNotEmpty(fbaList)) {
                         // 简化bean对象
@@ -102,7 +102,7 @@ public class XmsFreightCalculateController {
             } else if (freightUnit.getModeOfTransport() == 3) {
 
                 // 获取CIF列表和过滤数据
-                List<XmsCifFreightUnit> cifFreightUnitList = freightUtils.getCifFreightUnitList();
+                List<XmsCifFreightUnit> cifFreightUnitList = this.freightUtils.getCifFreightUnitList();
 
                 XmsCifFreightUnit cifFreightUnit = cifFreightUnitList.stream().filter(e -> e.getCountryId().equals(freightUnit.getCountryId()) && e.getPortName().equalsIgnoreCase(freightUnit.getPortName())).findFirst().orElse(null);
 
@@ -192,8 +192,8 @@ public class XmsFreightCalculateController {
             importXStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
             // importXPremium cost 集运价格-EUB
-            double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
-            double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
+            double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
+            double centralizedFreight = this.freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
             if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
                 // 直接用集运价格
@@ -213,13 +213,18 @@ public class XmsFreightCalculateController {
             freightUnit.setVolume(estimatedCostParam.getVolume());
             freightUnit.setWeight(estimatedCostParam.getWeight());
 
-            List<XmsFbaFreightUnit> fbaFreightUnitList = fbaFreightUtils.getProductShippingCost(freightUnit);
+            List<XmsFbaFreightUnit> fbaFreightUnitList = this.fbaFreightUtils.getProductShippingCost(freightUnit);
             if (CollectionUtil.isNotEmpty(fbaFreightUnitList)) {
                 XmsFbaFreightUnit tempUtil = fbaFreightUnitList.get(0);
                 fbaFreightUnitList.get(0).setTotalPrice(BigDecimalUtil.truncateDouble(tempUtil.getTotalPrice() / tempUtil.getRmbRate(), 2));
                 estimatedCostResult.setFreightUnit(fbaFreightUnitList.get(0));
                 fbaFreightUnitList.clear();
             }
+
+            // 计算尾程运费
+            XmsTailFreightResult tailFreightResult = fbaFreightUtils.getTailFreightResult(estimatedCostParam.getWeight() * 1000);
+            estimatedCostResult.setTailFreight(tailFreightResult);
+
             return CommonResult.success(estimatedCostResult);
         } catch (Exception e) {
             e.printStackTrace();
