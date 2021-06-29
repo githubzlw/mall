@@ -10,7 +10,7 @@
         from xms_customer_sku_stock c, xms_customer_product a, pms_product b
         where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
         <if test="title != null">
-            and b.title like concat('%',#{title,jdbcType=VARCHAR},'%')
+            and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')
         </if>
         group by c.product_id,c.sku_code) rs
         order by rs.create_time desc

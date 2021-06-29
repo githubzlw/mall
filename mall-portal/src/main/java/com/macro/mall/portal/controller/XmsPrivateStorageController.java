@@ -56,7 +56,7 @@ public class XmsPrivateStorageController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
-            if (StrUtil.isNotEmpty(productStockParam.getTitle())) {
+            if (StrUtil.isEmpty(productStockParam.getTitle())) {
                 productStockParam.setTitle(null);
             }
 
