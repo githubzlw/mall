@@ -281,12 +281,13 @@ public class SourcingUtils {
 
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
 
+        JSONObject jsonObject = new JSONObject();
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");
@@ -300,7 +301,7 @@ public class SourcingUtils {
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                 String title = jsonObject.getJSONObject("item").getString("title");
                 String price = jsonObject.getJSONObject("item").getString("price");
@@ -314,7 +315,7 @@ public class SourcingUtils {
             CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
             if (null != jsonResult && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");

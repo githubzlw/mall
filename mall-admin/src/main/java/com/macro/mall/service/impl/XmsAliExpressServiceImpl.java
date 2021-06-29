@@ -333,8 +333,8 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
         }
     }
 
-
-    private JSONObject getItemInfo(String pid, boolean isCache) {
+    @Override
+    public JSONObject getItemInfo(String pid, boolean isCache) {
         Objects.requireNonNull(pid);
         if (isCache) {
             JSONObject itemFromRedis = this.cacheService.getItemInfo(pid);
