@@ -425,4 +425,37 @@ public class XmsSourcingController {
         }
     }
 
+
+    @ApiOperation("再次Sourcing")
+    @RequestMapping(value = "/sourcingAgain", method = RequestMethod.POST)
+    @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
+    public CommonResult sourcingAgain(Long sourcingId) {
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 检查数据是否存在
+            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingId);
+            if (null == xmsSourcingList) {
+                return CommonResult.validateFailed("No data available");
+            }
+            if (!xmsSourcingList.getUsername().equalsIgnoreCase(currentMember.getUsername()) && !xmsSourcingList.getMemberId().equals(currentMember.getId())) {
+                return CommonResult.validateFailed("No data available");
+            }
+            if (4 == xmsSourcingList.getStatus() || 5 == xmsSourcingList.getStatus() || -1 == xmsSourcingList.getStatus()) {
+                UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId)
+                        .set(XmsSourcingList::getStatus, 0)
+                        .set(XmsSourcingList::getCreateTime, new Date())
+                        .set(XmsSourcingList::getUpdateTime, new Date());
+                boolean update = this.xmsSourcingListService.update(null, updateWrapper);
+                return CommonResult.success(update);
+            } else {
+                return CommonResult.failed("this sourcing state is not cancel or faild");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingAgain,sourcingId[{}],error:", sourcingId, e);
+            return CommonResult.failed("sourcingAgain error");
+        }
+    }
+
 }
