@@ -15,6 +15,7 @@ import com.macro.mall.mapper.*;
 import com.macro.mall.model.PmsProductAttributeValue;
 import com.macro.mall.model.PmsProductCategory;
 import com.macro.mall.model.PmsProductCategoryExample;
+import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.service.PmsProductAttributeCategoryService;
 import com.macro.mall.service.PmsProductAttributeService;
 import com.macro.mall.service.PmsProductService;
@@ -194,6 +195,100 @@ public class ProductUtils {
         }
 
     }
+
+    //api 数据插入产品表
+    public int apiDataInsertPms(XmsChromeUpload chromeUpload,List<PmsSkuStock> skuStockList){
+        //查询产品分类
+        PmsProductCategoryExample example = new PmsProductCategoryExample();
+        example.createCriteria().andNameEqualTo(getSiteTwo(chromeUpload.getSiteType().toString()));
+        List<PmsProductCategory> productCategoryList = productCategoryMapper.selectByExample(example);
+        //添加商品属性分类
+        int maxProductAttributeCategoryId = productAttributeCategoryService.create(getSite(chromeUpload.getSiteType().toString())+"-"+UUID.randomUUID());
+        // 添加商品属性信息
+        // 添加商品属性值信息
+        List<PmsProductAttributeValue> productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
+
+        //清洗规格颜色
+        String cType = chromeUpload.getType();
+        if(StrUtil.isNotEmpty(cType)){
+
+            if(cType.indexOf(";")>0){
+                String[] cTypeArry =  cType.split(";");
+                for(int i=0 ;i<cTypeArry.length;i++){
+                    PmsProductAttributeValue pmsProductAttributeValue = new PmsProductAttributeValue();
+                    PmsProductAttributeParam productAttributeParam = new PmsProductAttributeParam();
+                    productAttributeParam.setProductAttributeCategoryId(Long.valueOf(maxProductAttributeCategoryId));
+                    if(StringUtil.isNotEmpty(cTypeArry[i].split(":")[0])){
+                        productAttributeParam.setName(cTypeArry[i].split(":")[0]);
+                    }
+                    if(StringUtil.isNotEmpty(cTypeArry[i].split(":")[1])){
+                        productAttributeParam.setInputList(cTypeArry[i].split(":")[1]);
+                    }
+                    productAttributeParam.setHandAddStatus(1);
+                    productAttributeParam.setType(0);
+                    int maxId = productAttributeService.create(productAttributeParam);
+                    pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
+                    pmsProductAttributeValue.setValue(cTypeArry[i].split(":")[1]);
+                    productAttributeValueList.add(pmsProductAttributeValue);
+                }
+            }else{
+                PmsProductAttributeValue pmsProductAttributeValue = new PmsProductAttributeValue();
+                PmsProductAttributeParam productAttributeParam = new PmsProductAttributeParam();
+                productAttributeParam.setProductAttributeCategoryId(Long.valueOf(maxProductAttributeCategoryId));
+                if(StringUtil.isNotEmpty(cType.split(":")[0])){
+                    productAttributeParam.setName(cType.split(":")[0]);
+                }
+                if(StringUtil.isNotEmpty(cType.split(":")[1])){
+                    productAttributeParam.setInputList(cType.split(":")[1]);
+                }
+
+                productAttributeParam.setHandAddStatus(1);
+                productAttributeParam.setType(0);
+                int maxId = productAttributeService.create(productAttributeParam);
+                pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
+                pmsProductAttributeValue.setValue(cType.split(":")[1]);
+                productAttributeValueList.add(pmsProductAttributeValue);
+            }
+        }
+
+        //添加产品表
+        PmsProductParam productParam = new PmsProductParam();
+        //分类id
+        productParam.setProductCategoryId(productCategoryList.get(0).getId());
+        //属性分类id
+        productParam.setProductAttributeCategoryId(Long.valueOf(maxProductAttributeCategoryId));
+        //产品名
+        productParam.setName(chromeUpload.getTitle());
+        //主图
+        productParam.setPic(chromeUpload.getPic());
+        //橱窗图
+        productParam.setAlbumPics(chromeUpload.getImages());
+        //描述
+        productParam.setDescription(chromeUpload.getProductDetail());
+        //详情
+        productParam.setDetailHtml(chromeUpload.getProductDescription());
+        //交期
+        productParam.setLeadTime(chromeUpload.getLeadTime());
+        productParam.setProductSn("");
+        //价格(新加字段)
+        productParam.setPriceXj(chromeUpload.getPrice());
+        //url(新加字段)
+        productParam.setUrl(chromeUpload.getUrl());
+        //moq
+        productParam.setMoq(chromeUpload.getMoq());
+        //shippingfee
+        productParam.setShippingFee(chromeUpload.getShippingFee());
+        //shippingby
+        productParam.setShippingBy(chromeUpload.getShippingBy());
+
+        productParam.setProductAttributeValueList(productAttributeValueList);
+        productParam.setSkuStockList(skuStockList);
+        int productMaxId = pmsProductService.create(productParam);
+
+        // 产品id
+        return  productMaxId;
+    }
+
 
 
     public void cleaningSingleData(XmsChromeUpload chromeUpload,int productMaxId) {
