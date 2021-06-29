@@ -35,4 +35,6 @@ public class EstimatedCostResult {
 
     private EstimatedCost importXStandard;
     private EstimatedCost importXPremium;
+
+    private XmsTailFreightResult tailFreight;
 }
