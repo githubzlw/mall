@@ -129,6 +129,7 @@ public class ProductUtils {
                         productAttributeParam.setHandAddStatus(1);
                         productAttributeParam.setType(0);
                         int maxId = productAttributeService.create(productAttributeParam);
+                        productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
                         pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
                         pmsProductAttributeValue.setValue(cTypeArry[i].split(":")[1]);
                         productAttributeValueList.add(pmsProductAttributeValue);
@@ -205,7 +206,6 @@ public class ProductUtils {
         //添加商品属性分类
         int maxProductAttributeCategoryId = productAttributeCategoryService.create(getSite(chromeUpload.getSiteType().toString())+"-"+UUID.randomUUID());
         // 添加商品属性信息
-        // 添加商品属性值信息
         List<PmsProductAttributeValue> productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
 
         //清洗规格颜色
@@ -227,6 +227,8 @@ public class ProductUtils {
                     productAttributeParam.setHandAddStatus(1);
                     productAttributeParam.setType(0);
                     int maxId = productAttributeService.create(productAttributeParam);
+                    // 添加商品属性值信息
+                    productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
                     pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
                     pmsProductAttributeValue.setValue(cTypeArry[i].split(":")[1]);
                     productAttributeValueList.add(pmsProductAttributeValue);
