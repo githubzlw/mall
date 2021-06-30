@@ -1,7 +1,10 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dao.PmsProductAttributeDao;
+import com.macro.mall.dao.PmsProductAttributeValueDao;
 import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.ProductAttrInfo;
 import com.macro.mall.mapper.PmsProductAttributeCategoryMapper;
@@ -9,11 +12,17 @@ import com.macro.mall.mapper.PmsProductAttributeMapper;
 import com.macro.mall.model.PmsProductAttribute;
 import com.macro.mall.model.PmsProductAttributeCategory;
 import com.macro.mall.model.PmsProductAttributeExample;
+import com.macro.mall.model.PmsProductAttributeValue;
 import com.macro.mall.service.PmsProductAttributeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,12 +31,15 @@ import java.util.List;
  */
 @Service
 public class PmsProductAttributeServiceImpl implements PmsProductAttributeService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PmsProductAttributeServiceImpl.class);
     @Autowired
     private PmsProductAttributeMapper productAttributeMapper;
     @Autowired
     private PmsProductAttributeCategoryMapper productAttributeCategoryMapper;
     @Autowired
     private PmsProductAttributeDao productAttributeDao;
+    @Autowired
+    private PmsProductAttributeValueDao productAttributeValueDao;
 
     @Override
     public List<PmsProductAttribute> getList(Long cid, Integer type, Integer pageSize, Integer pageNum) {
@@ -54,6 +66,112 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
 //        return count;
         int maxId = pmsProductAttribute.getId().intValue();
         return maxId;
+    }
+
+    @Override
+    public int createType(String cType,Long productId,Long attributeCategoryId){
+
+        int maxId = 0;
+        if(StrUtil.isNotEmpty(cType)) {
+            if (cType.indexOf(";") > 0) {
+                String[] cTypeArry = cType.split(";");
+                for (int i = 0; i < cTypeArry.length; i++) {
+
+                    PmsProductAttributeParam productAttributeParam = new PmsProductAttributeParam();
+                    productAttributeParam.setProductAttributeCategoryId(attributeCategoryId);
+                    if (StringUtil.isNotEmpty(cTypeArry[i].split(":")[0])) {
+                        productAttributeParam.setName(cTypeArry[i].split(":")[0]);
+                    }
+                    if (StringUtil.isNotEmpty(cTypeArry[i].split(":")[1])) {
+                        productAttributeParam.setInputList(cTypeArry[i].split(":")[1]);
+                    }
+                    productAttributeParam.setHandAddStatus(1);
+                    productAttributeParam.setType(0);
+                    PmsProductAttribute pmsProductAttribute = new PmsProductAttribute();
+                    BeanUtils.copyProperties(productAttributeParam, pmsProductAttribute);
+                    productAttributeMapper.insertSelective(pmsProductAttribute);
+                    maxId = pmsProductAttribute.getId().intValue();
+
+                    //新增商品属性以后需要更新商品属性分类数量
+                    PmsProductAttributeCategory pmsProductAttributeCategory = productAttributeCategoryMapper.selectByPrimaryKey(pmsProductAttribute.getProductAttributeCategoryId());
+                    if(pmsProductAttribute.getType()==0){
+                        pmsProductAttributeCategory.setAttributeCount(pmsProductAttributeCategory.getAttributeCount()+1);
+                    }else if(pmsProductAttribute.getType()==1){
+                        pmsProductAttributeCategory.setParamCount(pmsProductAttributeCategory.getParamCount()+1);
+                    }
+                    productAttributeCategoryMapper.updateByPrimaryKey(pmsProductAttributeCategory);
+
+                    // 添加商品属性值信息
+                    List<PmsProductAttributeValue> productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
+                    PmsProductAttributeValue pmsProductAttributeValue = new PmsProductAttributeValue();
+                    pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
+                    pmsProductAttributeValue.setValue(cTypeArry[i].split(":")[1]);
+                    productAttributeValueList.add(pmsProductAttributeValue);
+                    //添加商品参数,添加自定义商品规格
+                    relateAndInsertList(productAttributeValueDao, productAttributeValueList, productId);
+                }
+            } else {
+
+                PmsProductAttributeParam productAttributeParam = new PmsProductAttributeParam();
+                productAttributeParam.setProductAttributeCategoryId(attributeCategoryId);
+                if (StringUtil.isNotEmpty(cType.split(":")[0])) {
+                    productAttributeParam.setName(cType.split(":")[0]);
+                }
+                if (StringUtil.isNotEmpty(cType.split(":")[1])) {
+                    productAttributeParam.setInputList(cType.split(":")[1]);
+                }
+
+                productAttributeParam.setHandAddStatus(1);
+                productAttributeParam.setType(0);
+                PmsProductAttribute pmsProductAttribute = new PmsProductAttribute();
+                BeanUtils.copyProperties(productAttributeParam, pmsProductAttribute);
+                productAttributeMapper.insertSelective(pmsProductAttribute);
+                maxId = pmsProductAttribute.getId().intValue();
+                //新增商品属性以后需要更新商品属性分类数量
+                PmsProductAttributeCategory pmsProductAttributeCategory = productAttributeCategoryMapper.selectByPrimaryKey(pmsProductAttribute.getProductAttributeCategoryId());
+                if(pmsProductAttribute.getType()==0){
+                    pmsProductAttributeCategory.setAttributeCount(pmsProductAttributeCategory.getAttributeCount()+1);
+                }else if(pmsProductAttribute.getType()==1){
+                    pmsProductAttributeCategory.setParamCount(pmsProductAttributeCategory.getParamCount()+1);
+                }
+                productAttributeCategoryMapper.updateByPrimaryKey(pmsProductAttributeCategory);
+                // 添加商品属性值信息
+                List<PmsProductAttributeValue> productAttributeValueList = new ArrayList<PmsProductAttributeValue>();
+                PmsProductAttributeValue pmsProductAttributeValue = new PmsProductAttributeValue();
+                pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
+                pmsProductAttributeValue.setValue(cType.split(":")[1]);
+                productAttributeValueList.add(pmsProductAttributeValue);
+                //添加商品参数,添加自定义商品规格
+                relateAndInsertList(productAttributeValueDao, productAttributeValueList, productId);
+            }
+        }
+
+        return maxId;
+
+    }
+
+    /**
+     * 建立和插入关系表操作
+     *
+     * @param dao       可以操作的dao
+     * @param dataList  要插入的数据
+     * @param productId 建立关系的id
+     */
+    private void relateAndInsertList(Object dao, List dataList, Long productId) {
+        try {
+            if (CollectionUtils.isEmpty(dataList)) return;
+            for (Object item : dataList) {
+                Method setId = item.getClass().getMethod("setId", Long.class);
+                setId.invoke(item, (Long) null);
+                Method setProductId = item.getClass().getMethod("setProductId", Long.class);
+                setProductId.invoke(item, productId);
+            }
+            Method insertList = dao.getClass().getMethod("insertList", List.class);
+            insertList.invoke(dao, dataList);
+        } catch (Exception e) {
+            LOGGER.warn("创建产品出错:{}", e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override

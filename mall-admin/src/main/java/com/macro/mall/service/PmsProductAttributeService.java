@@ -36,6 +36,11 @@ public interface PmsProductAttributeService {
     PmsProductAttribute getItem(Long id);
 
     /**
+     * 增加规格
+     */
+    int createType(String type,Long productId,Long attributeCategoryId);
+
+    /**
      * 批量删除商品属性
      */
     @Transactional
