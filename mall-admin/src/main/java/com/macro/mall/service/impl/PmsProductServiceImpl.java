@@ -195,6 +195,7 @@ public class PmsProductServiceImpl implements PmsProductService {
 
             updateWrapper.lambda().set(XmsSourcingList::getTitle, product.getName())
                     .set(XmsSourcingList::getCost, rgPrice)
+                    .set(XmsSourcingList::getStatus, 1)
                     .eq(XmsSourcingList::getProductId, product.getId());
             xmsSourcingListMapper.update(null, updateWrapper);
         }
