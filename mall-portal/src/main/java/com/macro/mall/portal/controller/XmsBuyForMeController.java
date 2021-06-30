@@ -181,6 +181,9 @@ public class XmsBuyForMeController {
             this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
+            /*if(siteSourcing.getSiteFlag() > 0 && siteSourcing.getSiteFlag() <= 3 && jsonObject.size() == 0){
+                return CommonResult.failed("get data failed");
+            }*/
             // 添加到购物车
             siteSourcing.setUserId(currentMember.getId());
             siteSourcing.setUserName(currentMember.getUsername());
