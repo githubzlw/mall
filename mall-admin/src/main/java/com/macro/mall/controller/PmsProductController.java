@@ -232,7 +232,7 @@ public class PmsProductController {
         XmsChromeUpload chromeUpload = new XmsChromeUpload();
         if (sourcingParam.getSiteFlag() == 2 || sourcingParam.getSiteFlag() == 3) {
             //先保存到product的数据库
-            JSONObject jsonObject = this.checkAndLoadData(sourcingParam.getPid(), sourcingParam.getSiteFlag());
+            JSONObject jsonObject = this.checkAndLoadDataCircle(sourcingParam.getPid(), sourcingParam.getSiteFlag());
             if (jsonObject.containsKey("item")) {
                 jsonObject = jsonObject.getJSONObject("item");
             }
@@ -350,7 +350,7 @@ public class PmsProductController {
             return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList);
         } else if (sourcingParam.getSiteFlag() == 1) {
             //先保存到product的数据库
-            JSONObject jsonObject = this.checkAndLoadData(sourcingParam.getPid(), sourcingParam.getSiteFlag());
+            JSONObject jsonObject = this.checkAndLoadDataCircle(sourcingParam.getPid(), sourcingParam.getSiteFlag());
             if (jsonObject.containsKey("item")) {
                 jsonObject = jsonObject.getJSONObject("item");
             }
@@ -467,6 +467,14 @@ public class PmsProductController {
 
     }
 
+
+    private JSONObject checkAndLoadDataCircle(String pid, int siteFlag){
+        JSONObject jsonObject = this.checkAndLoadData(pid, siteFlag);
+        if(null == jsonObject || jsonObject.size() == 0){
+            jsonObject = this.checkAndLoadData(pid, siteFlag);
+        }
+        return jsonObject;
+    }
 
     private JSONObject checkAndLoadData(String pid, int siteFlag) {
         try {
