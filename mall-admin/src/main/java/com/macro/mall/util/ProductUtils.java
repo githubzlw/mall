@@ -247,7 +247,7 @@ public class ProductUtils {
                 productAttributeParam.setHandAddStatus(1);
                 productAttributeParam.setType(0);
                 int maxId = productAttributeService.create(productAttributeParam);
-                pmsProductAttributeValue.setProductAttributeId(Long.valueOf(maxId));
+                pmsProductAttributeValue.setProductAttributeId((long) maxId);
                 pmsProductAttributeValue.setValue(cType.split(":")[1]);
                 productAttributeValueList.add(pmsProductAttributeValue);
             }
@@ -258,7 +258,7 @@ public class ProductUtils {
         //分类id
         productParam.setProductCategoryId(productCategoryList.get(0).getId());
         //属性分类id
-        productParam.setProductAttributeCategoryId(Long.valueOf(maxProductAttributeCategoryId));
+        productParam.setProductAttributeCategoryId((long) maxProductAttributeCategoryId);
         //产品名
         productParam.setName(chromeUpload.getTitle());
         //主图

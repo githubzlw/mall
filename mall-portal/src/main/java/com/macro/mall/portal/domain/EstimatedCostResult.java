@@ -33,8 +33,8 @@ public class EstimatedCostResult {
 
     private XmsFbaFreightUnit freightUnit;
 
-    private EstimatedCost importXStandard;
-    private EstimatedCost importXPremium;
+    private EstimatedCost busySellStandard;
+    private EstimatedCost busySellPremium;
 
     private XmsTailFreightResult tailFreight;
 }

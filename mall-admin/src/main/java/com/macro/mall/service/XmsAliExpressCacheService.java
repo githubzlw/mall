@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class XmsAliExpressCacheService {
     private static final String REDIS_KEYWORD_PRE = "aliexpress:keyword:";
     private static final String REDIS_PID_PRE = "aliexpress:pid:";
-    private static final int REDIS_EXPIRE_DAYS = 7;
-    private static final int REDIS_EXPIRE_DAYS_TWO = 14;
+    private static final int REDIS_EXPIRE_DAYS = 1;
+    private static final int REDIS_EXPIRE_DAYS_TWO = 1;
     private final StringRedisTemplate redisTemplate;
 
     public XmsAliExpressCacheService(StringRedisTemplate redisTemplate) {

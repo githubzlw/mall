@@ -75,4 +75,7 @@ public class SiteSourcing {
     @ApiModelProperty(value = "amazon的fba地址")
     private String fbaWarehouse;
 
+    @ApiModelProperty(value = "生成我司ID")
+    private Long productId;
+
 }

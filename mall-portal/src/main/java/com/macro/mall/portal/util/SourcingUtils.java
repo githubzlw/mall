@@ -281,12 +281,13 @@ public class SourcingUtils {
 
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
 
+        JSONObject jsonObject = new JSONObject();
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");
@@ -298,9 +299,9 @@ public class SourcingUtils {
         } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                 String title = jsonObject.getJSONObject("item").getString("title");
                 String price = jsonObject.getJSONObject("item").getString("price");
@@ -312,9 +313,9 @@ public class SourcingUtils {
         } else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult  && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");
@@ -375,6 +376,9 @@ public class SourcingUtils {
         try {
 
             JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi()  + "/aliExpress/details/" + pid);
+            if(null == jsonObject || jsonObject.size() == 0){
+                jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi()  + "/aliExpress/details/" + pid);
+            }
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -401,6 +405,9 @@ public class SourcingUtils {
         try {
 
             JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/alibaba/details?pid=" + pid);
+            if(null == jsonObject || jsonObject.size() == 0){
+                jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/alibaba/details?pid=" + pid);
+            }
             if (null != jsonObject && jsonObject.containsKey("item")) {
                 JSONObject dataJson = jsonObject.getJSONObject("item");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));

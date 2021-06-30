@@ -180,16 +180,16 @@ public class XmsFreightCalculateController {
             // 原商品的0.75
             estimatedCostResult.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
-            EstimatedCost importXStandard = new EstimatedCost();
-            EstimatedCost importXPremium = new EstimatedCost();
+            EstimatedCost busySellStandard = new EstimatedCost();
+            EstimatedCost busySellPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
-            importXPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+            busySellStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+            busySellPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
 
             // importXStandard cost 照抄
-            importXStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+            busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
             // importXPremium cost 集运价格-EUB
             double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
@@ -197,14 +197,14 @@ public class XmsFreightCalculateController {
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
             if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
                 // 直接用集运价格
-                importXPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
+                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
             } else {
-                importXPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
+                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
             }
 
 
-            estimatedCostResult.setImportXStandard(importXStandard);
-            estimatedCostResult.setImportXPremium(importXPremium);
+            estimatedCostResult.setBusySellStandard(busySellStandard);
+            estimatedCostResult.setBusySellPremium(busySellPremium);
 
             // 获取到家的运费
             XmsFbaFreightUnit freightUnit = new XmsFbaFreightUnit();
