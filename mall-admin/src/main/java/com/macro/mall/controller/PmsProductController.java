@@ -342,7 +342,9 @@ public class PmsProductController {
                             }
                         }
                     }
-                    tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
+                    if(tempSkuJson.containsKey("price")){
+                        tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
+                    }
                     skuStockList.add(tempSkuStock);
                 }
             }
@@ -451,7 +453,9 @@ public class PmsProductController {
                             }
                         }
                     }
-                    tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
+                    if(tempSkuJson.containsKey("price")){
+                        tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
+                    }
                     skuStockList.add(tempSkuStock);
                 }
             }
