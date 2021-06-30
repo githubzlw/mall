@@ -1,6 +1,7 @@
 package com.macro.mall.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -25,10 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 商品管理Controller
@@ -250,40 +248,19 @@ public class PmsProductController {
                 JSONArray item_imgs = jsonObject.getJSONArray("item_imgs");
                 StringBuffer sb = new StringBuffer();
                 for (int i = 0; i < item_imgs.size(); i++) {
-                    if(i == item_imgs.size() - 1){
+                    if (i == item_imgs.size() - 1) {
                         sb.append(item_imgs.getJSONObject(i).getString("url"));
-                    } else{
+                    } else {
                         sb.append(item_imgs.getJSONObject(i).getString("url") + ",");
                     }
                 }
                 chromeUpload.setImages(sb.toString());
             }
-            if (jsonObject.containsKey("typeJson")) {
-                StringBuffer sb = new StringBuffer();
-                JSONObject typeJson = jsonObject.getJSONObject("typeJson");
-                typeJson.forEach((key, value) -> {
-                    sb.append(key + ":");
-                    JSONArray jsonArray = typeJson.getJSONArray(key);
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (i == jsonArray.size() - 1) {
-                            sb.append(jsonArray.getJSONObject(i).getString("val") + ",");
-                        } else {
-                            sb.append(jsonArray.getJSONObject(i).getString("val"));
-                        }
-                    }
-                    sb.append(";");
-                });
-                if (sb.toString().endsWith(";")) {
-                    chromeUpload.setType(sb.toString().substring(0, sb.toString().length() - 1));
-                } else {
-                    chromeUpload.setType(sb.toString());
-                }
-            }
-            chromeUpload.setProductDetail(jsonObject.getString("desc"));
+            chromeUpload.setProductDescription(jsonObject.getString("desc"));
             if (jsonObject.containsKey("props_list")) {
-                chromeUpload.setProductDescription(jsonObject.getString("props_list"));
+                chromeUpload.setProductDetail(jsonObject.getString("props_list"));
             } else if (jsonObject.containsKey("props")) {
-                chromeUpload.setProductDescription(jsonObject.getString("props"));
+                chromeUpload.setProductDetail(jsonObject.getString("props"));
             }
 
                 /*chromeUpload.setLeadTime();
@@ -291,17 +268,22 @@ public class PmsProductController {
                 chromeUpload.setShippingFee();
                 chromeUpload.setShippingBy();*/
 
+            Map<String, Set<String>> typeMap = new HashMap<>();
             if (jsonObject.containsKey("skus")) {
                 JSONArray jsonArray = jsonObject.getJSONObject("skus").getJSONArray("sku");
                 JSONArray prop_imgsArray = jsonObject.getJSONObject("prop_imgs").getJSONArray("prop_img");
+
+                Set<String> checkSet = new HashSet<>();
                 for (int i = 0; i < jsonArray.size(); i++) {
                     JSONObject tempSkuJson = jsonArray.getJSONObject(i);
                     PmsSkuStock tempSkuStock = new PmsSkuStock();
 
                     if (tempSkuJson.containsKey("properties_name")) {
+                        // 在sku里面取值type
                         // sku
                         String[] properties_names = tempSkuJson.getString("properties_name").split(";");
                         if (null != properties_names) {
+
                             List<Map<String, String>> spDataList = new ArrayList<>();
                             for (String childPro : properties_names) {
                                 String[] split = childPro.split(":");
@@ -309,15 +291,42 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
+                                    if(!typeMap.containsKey(split[2])){
+                                        typeMap.put(split[2], new HashSet<>());
+                                    }
+                                    typeMap.get(split[2]).add(split[3].trim());
                                 } else if (split.length >= 2) {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
+
+                                    if(!typeMap.containsKey(split[0])){
+                                        typeMap.put(split[0], new HashSet<>());
+                                    }
+                                    typeMap.get(split[0]).add(split[1].trim());
                                 }
                                 if (childMap.size() > 0) {
                                     spDataList.add(childMap);
                                 }
                             }
+                            if(typeMap.size() > 0){
+                                StringBuffer sb = new StringBuffer();
+                                typeMap.forEach((k,v)->{
+                                    sb.append(k + ":");
+                                    if(CollectionUtil.isNotEmpty(v)){
+                                        v.forEach(cl-> sb.append("," + cl));
+                                    }
+                                    sb.append(";");
+                                });
+                                chromeUpload.setType(sb.toString().replace(":,",":"));
+                            }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
+                            if(StrUtil.isNotEmpty(tempSkuStock.getSpData())){
+                                if(checkSet.contains(tempSkuStock.getSpData().toLowerCase())){
+                                    continue;
+                                } else{
+                                    checkSet.add(tempSkuStock.getSpData().toLowerCase());
+                                }
+                            }
                         }
                     }
                     //
@@ -365,32 +374,12 @@ public class PmsProductController {
                 }
                 chromeUpload.setImages(sb.toString());
             }
-            if (jsonObject.containsKey("typeJson")) {
-                StringBuffer sb = new StringBuffer();
-                JSONObject typeJson = jsonObject.getJSONObject("typeJson");
-                typeJson.forEach((key, value) -> {
-                    sb.append(key + ":");
-                    JSONArray jsonArray = typeJson.getJSONArray(key);
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (i == jsonArray.size() - 1) {
-                            sb.append(jsonArray.getJSONObject(i).getString("val") + ",");
-                        } else {
-                            sb.append(jsonArray.getJSONObject(i).getString("val"));
-                        }
-                    }
-                    sb.append(";");
-                });
-                if (sb.toString().endsWith(";")) {
-                    chromeUpload.setType(sb.toString().substring(0, sb.toString().length() - 1));
-                } else {
-                    chromeUpload.setType(sb.toString());
-                }
-            }
-            chromeUpload.setProductDetail(jsonObject.getString("desc"));
+
+            chromeUpload.setProductDescription(jsonObject.getString("desc"));
             if (jsonObject.containsKey("props_list")) {
-                chromeUpload.setProductDescription(jsonObject.getString("props_list"));
+                chromeUpload.setProductDetail(jsonObject.getString("props_list"));
             } else if (jsonObject.containsKey("props")) {
-                chromeUpload.setProductDescription(jsonObject.getString("props"));
+                chromeUpload.setProductDetail(jsonObject.getString("props"));
             }
 
                 /*chromeUpload.setLeadTime();
@@ -399,6 +388,8 @@ public class PmsProductController {
                 chromeUpload.setShippingBy();*/
 
             if (jsonObject.containsKey("skus")) {
+                Map<String, Set<String>> typeMap = new HashMap<>();
+
                 JSONArray jsonArray = jsonObject.getJSONObject("skus").getJSONArray("sku");
                 JSONArray prop_imgsArray = jsonObject.getJSONObject("prop_imgs").getJSONArray("prop_img");
                 for (int i = 0; i < jsonArray.size(); i++) {
@@ -416,13 +407,33 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
+                                    if(!typeMap.containsKey(split[2])){
+                                        typeMap.put(split[2], new HashSet<>());
+                                    }
+                                    typeMap.get(split[2]).add(split[3].trim());
                                 } else if (split.length >= 2) {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
+
+                                    if(!typeMap.containsKey(split[0])){
+                                        typeMap.put(split[0], new HashSet<>());
+                                    }
+                                    typeMap.get(split[0]).add(split[1].trim());
                                 }
                                 if (childMap.size() > 0) {
                                     spDataList.add(childMap);
                                 }
+                            }
+                            if(typeMap.size() > 0){
+                                StringBuffer sb = new StringBuffer();
+                                typeMap.forEach((k,v)->{
+                                    sb.append(k + ":");
+                                    if(CollectionUtil.isNotEmpty(v)){
+                                        v.forEach(cl-> sb.append("," + cl));
+                                    }
+                                    sb.append(";");
+                                });
+                                chromeUpload.setType(sb.toString().replace(":,",":"));
                             }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
                         }
