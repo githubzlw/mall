@@ -97,7 +97,7 @@ public class XmsFbaFreightUnit implements Serializable {
     private double totalPrice;// 总运费
 
     public double calculateTotalPrice(double sourceVolume, double currencyRate) {
-        return this.mul(documentFee + handlingFee + clearanceFee + amsFree + isfFree + customsCharge +
+        return this.divide(documentFee + handlingFee + clearanceFee + amsFree + isfFree + customsCharge +
                 (localTruckingFee + seaFreight + endInTowing + storageCharges) * sourceVolume, currencyRate);
     }
 
@@ -115,10 +115,8 @@ public class XmsFbaFreightUnit implements Serializable {
         }
     }
 
-    private Double mul(Double value1, Double value2) {
-        BigDecimal b1 = BigDecimal.valueOf(value1);
-        BigDecimal b2 = BigDecimal.valueOf(value2);
-        BigDecimal result = b1.multiply(b2).setScale(2, BigDecimal.ROUND_HALF_UP);
+    private Double divide(Double value1, Double value2) {
+        BigDecimal result = BigDecimal.valueOf(value1 / value2).setScale(2, BigDecimal.ROUND_HALF_UP);
         return result.doubleValue();
     }
 
