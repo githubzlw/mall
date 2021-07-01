@@ -199,7 +199,7 @@ public class XmsBuyForMeController {
 
     @ApiOperation(value = "缓存img信息", notes = "BuyForMe逻辑")
     @PostMapping("/saveImg")
-    public CommonResult getInfoByUrl(String title, String img) {
+    public CommonResult saveImg(String title, String img) {
         Assert.isTrue(StrUtil.isNotBlank(title), "title null");
         Assert.isTrue(StrUtil.isNotBlank(img), "img null");
         try {

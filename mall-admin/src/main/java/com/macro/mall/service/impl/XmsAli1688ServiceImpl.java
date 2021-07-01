@@ -1,5 +1,6 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -581,9 +582,16 @@ public class XmsAli1688ServiceImpl implements XmsAli1688Service {
         if (isCache) {
             JSONObject itemFromRedis = this.xmsAli1688CacheService.getItemInfo(String.valueOf(pid));
             if (null != itemFromRedis) {
-                checkPidInfo(String.valueOf(pid), itemFromRedis);
-                return itemFromRedis;
+                String reason = itemFromRedis.getString("reason");
+                if (StrUtil.isNotEmpty(reason) && reason.contains("error")) {
+                    // 清除缓存
+                    this.xmsAli1688CacheService.deleteItemInfo(String.valueOf(pid));
+                } else {
+                    checkPidInfo(String.valueOf(pid), itemFromRedis);
+                    return itemFromRedis;
+                }
             }
+
         }
 
         String url = URL_ITEM_GET_ALIBABA;

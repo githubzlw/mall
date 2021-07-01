@@ -90,6 +90,12 @@ public class XmsAliExpressCacheService {
                 JSONObject.toJSONString(jsonObject), expireTime, TimeUnit.HOURS);
     }
 
+    public void setItemInfoTimeSeconds(String pid, JSONObject jsonObject, int expireTime) {
+        Objects.requireNonNull(jsonObject);
+        this.redisTemplate.opsForValue().set(REDIS_PID_PRE + pid,
+                JSONObject.toJSONString(jsonObject), expireTime, TimeUnit.SECONDS);
+    }
+
     public JSONObject getItemInfo(String pid) {
         Objects.requireNonNull(pid);
 
@@ -99,6 +105,11 @@ public class XmsAliExpressCacheService {
         } else {
             return null;
         }
+    }
+
+    public void deleteItemInfo(String pid){
+        Objects.requireNonNull(pid);
+        this.redisTemplate.delete(REDIS_PID_PRE + pid);
     }
 
 }

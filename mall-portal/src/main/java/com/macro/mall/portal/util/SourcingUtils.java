@@ -468,6 +468,7 @@ public class SourcingUtils {
                     case 1:
                         pid = dealAliBaBaUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
+                        break;
                     default:
                         pid = getOtherUrlPid(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
