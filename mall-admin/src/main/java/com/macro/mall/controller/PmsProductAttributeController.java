@@ -96,6 +96,18 @@ public class PmsProductAttributeController {
     }
 
 
+    @ApiOperation("删除商品规格信息")
+    @RequestMapping(value = "/delType", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult delType(@RequestParam("productId")  Long productId,@RequestParam("attributeCategoryId")  Long attributeCategoryId) {
+        int count = productAttributeService.delType(productId,attributeCategoryId);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+
     @ApiOperation("根据商品分类的id获取商品属性及属性分类")
     @RequestMapping(value = "/attrInfo/{productCategoryId}", method = RequestMethod.GET)
     @ResponseBody

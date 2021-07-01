@@ -9,10 +9,8 @@ import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.ProductAttrInfo;
 import com.macro.mall.mapper.PmsProductAttributeCategoryMapper;
 import com.macro.mall.mapper.PmsProductAttributeMapper;
-import com.macro.mall.model.PmsProductAttribute;
-import com.macro.mall.model.PmsProductAttributeCategory;
-import com.macro.mall.model.PmsProductAttributeExample;
-import com.macro.mall.model.PmsProductAttributeValue;
+import com.macro.mall.mapper.PmsProductAttributeValueMapper;
+import com.macro.mall.model.*;
 import com.macro.mall.service.PmsProductAttributeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +38,9 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
     private PmsProductAttributeDao productAttributeDao;
     @Autowired
     private PmsProductAttributeValueDao productAttributeValueDao;
+
+    @Autowired
+    private PmsProductAttributeValueMapper productAttributeValueMapper;
 
     @Override
     public List<PmsProductAttribute> getList(Long cid, Integer type, Integer pageSize, Integer pageNum) {
@@ -148,6 +149,24 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
 
         return maxId;
 
+    }
+
+    @Override
+    public int delType(Long productId,Long attributeCategoryId) {
+
+        PmsProductAttributeExample example = new PmsProductAttributeExample();
+        example.createCriteria().andProductAttributeCategoryIdEqualTo(attributeCategoryId);
+        productAttributeMapper.deleteByExample(example);
+
+        PmsProductAttributeValueExample valueExample = new PmsProductAttributeValueExample();
+        valueExample.createCriteria().andProductIdEqualTo(productId);
+        int count = productAttributeValueMapper.deleteByExample(valueExample);
+
+        PmsProductAttributeCategory pmsProductAttributeCategory = productAttributeCategoryMapper.selectByPrimaryKey(attributeCategoryId);
+        pmsProductAttributeCategory.setParamCount(0);
+        pmsProductAttributeCategory.setAttributeCount(0);
+        productAttributeCategoryMapper.updateByPrimaryKey(pmsProductAttributeCategory);
+        return count;
     }
 
     /**
