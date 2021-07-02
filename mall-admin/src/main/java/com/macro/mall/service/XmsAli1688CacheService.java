@@ -268,4 +268,9 @@ public class XmsAli1688CacheService {
         }
     }
 
+    public void deleteItemInfo(String pid) {
+        Objects.requireNonNull(pid);
+        this.redisTemplate.delete(REDIS_TAOBAO_PID_PRE + pid);
+    }
+
 }

@@ -474,7 +474,7 @@ public class PmsProductController {
 
     private JSONObject checkAndLoadDataCircle(String pid, int siteFlag){
         JSONObject jsonObject = this.checkAndLoadData(pid, siteFlag);
-        if(null == jsonObject || jsonObject.size() == 0){
+        if((siteFlag == 2 || siteFlag == 3) && ( null == jsonObject || jsonObject.size() == 0)){
             jsonObject = this.checkAndLoadData(pid, siteFlag);
         }
         return jsonObject;

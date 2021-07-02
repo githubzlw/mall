@@ -1,5 +1,6 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.rholder.retry.*;
@@ -339,8 +340,15 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
         if (isCache) {
             JSONObject itemFromRedis = this.cacheService.getItemInfo(pid);
             if (null != itemFromRedis) {
-                checkPidInfo(pid, itemFromRedis);
-                return itemFromRedis;
+                String  reason = itemFromRedis.getString("reason");
+                //  && StrUtil.isNotEmpty(
+                if(StrUtil.isNotEmpty(reason) && reason.contains("error")){
+                    // 清除缓存
+                    this.cacheService.deleteItemInfo(pid);
+                } else {
+                    checkPidInfo(pid, itemFromRedis);
+                    return itemFromRedis;
+                }
             }
         }
 
