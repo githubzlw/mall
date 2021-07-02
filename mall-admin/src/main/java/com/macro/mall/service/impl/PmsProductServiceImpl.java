@@ -190,12 +190,16 @@ public class PmsProductServiceImpl implements PmsProductService {
                         priceMap.put("maxPrice", e.getPrice().doubleValue());
                     }
                 });
-                rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2) + "-" + BigDecimalUtil.truncateDoubleToString(priceMap.get("maxPrice"), 2);
+                if (priceMap.get("minPrice") == priceMap.get("maxPrice")) {
+                    rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2);
+                } else {
+                    rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2) + "-" + BigDecimalUtil.truncateDoubleToString(priceMap.get("maxPrice"), 2);
+                }
             }
 
             updateWrapper.lambda().set(XmsSourcingList::getTitle, product.getName())
                     .set(XmsSourcingList::getCost, rgPrice)
-                    .set(XmsSourcingList::getPrice, BigDecimalUtil.truncateDoubleToString(product.getPrice().doubleValue(), 2))
+                    .set(XmsSourcingList::getPrice, BigDecimalUtil.truncateDoubleToString(Double.parseDouble(product.getPriceXj()), 2))
                     .set(XmsSourcingList::getStatus, 1)
                     .eq(XmsSourcingList::getProductId, product.getId());
             xmsSourcingListMapper.update(null, updateWrapper);

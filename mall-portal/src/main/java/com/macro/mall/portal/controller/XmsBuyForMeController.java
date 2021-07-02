@@ -141,7 +141,7 @@ public class XmsBuyForMeController {
     public CommonResult queryBfmCartList() {
         String userId = String.valueOf(umsMemberService.getCurrentMember().getId());
         try {
-            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId));
+            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId, 0 , null));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("queryBfmCartList,userId:[{}],error:", userId, e);

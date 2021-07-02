@@ -131,7 +131,7 @@ public class XmsSourcingController {
 
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
-            lambdaQuery.ge(XmsSourcingList::getStatus, -1);
+            lambdaQuery.gt(XmsSourcingList::getStatus, -1);
             if (StrUtil.isNotEmpty(url)) {
                 lambdaQuery.and(query -> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
             }

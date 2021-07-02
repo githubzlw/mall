@@ -47,6 +47,7 @@ secure:
       - /freight/**
       - /exchangeRate/fx
       - /paypal/**
+      - /addProductByUrl/**
 
 # 自定义redis key
 redis:
