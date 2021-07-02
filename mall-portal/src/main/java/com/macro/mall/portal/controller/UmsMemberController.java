@@ -310,7 +310,7 @@ public class UmsMemberController {
             }
             // 生产随机码，放入redis
             String uuid = UUID.randomUUID().toString();
-            redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 5);
+            redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 60 * 48);
             // 发送邮件
 
             String linkUrl = microServiceConfig.getMallPassActivate()+ "?userName=" + userName + "&uuid=" + uuid;
