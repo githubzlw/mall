@@ -98,7 +98,7 @@ public class XmsFbaFreightUnit implements Serializable {
 
     public double calculateTotalPrice(double sourceVolume, double currencyRate) {
         return this.divide(documentFee + handlingFee + clearanceFee + amsFree + isfFree + customsCharge +
-                (localTruckingFee + seaFreight + endInTowing + storageCharges) * sourceVolume, currencyRate);
+                (localTruckingFee + seaFreight + endInTowing + storageCharges) * sourceVolume, 1D);
     }
 
     public String getModeOfTransportDesc() {
