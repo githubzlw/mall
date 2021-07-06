@@ -59,13 +59,15 @@ public class XmsYouLiveProductController {
     @ApiOperation("获取客户产品列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                             @RequestParam(value = "title", defaultValue = "") String title) {
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
         try {
 
             productParam.setPageNum(pageNum);
             productParam.setPageSize(pageSize);
+            productParam.setTitle(title);
             productParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
