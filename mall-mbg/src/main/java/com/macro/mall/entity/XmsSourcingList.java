@@ -2,7 +2,6 @@ package com.macro.mall.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -116,6 +115,9 @@ public class XmsSourcingList implements Serializable {
 
     @ApiModelProperty(value = "amazon的fba地址")
     private String fbaWarehouse;
+
+    @ApiModelProperty(value = "运费")
+    private String shippingFee;
 
 
 }

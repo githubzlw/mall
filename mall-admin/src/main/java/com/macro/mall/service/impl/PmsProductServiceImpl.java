@@ -201,6 +201,8 @@ public class PmsProductServiceImpl implements PmsProductService {
                     .set(XmsSourcingList::getCost, rgPrice)
                     .set(XmsSourcingList::getPrice, BigDecimalUtil.truncateDoubleToString(Double.parseDouble(product.getPriceXj()), 2))
                     .set(XmsSourcingList::getStatus, 1)
+                    .set(XmsSourcingList::getImages, product.getPic())
+                    .set(XmsSourcingList::getShippingFee, product.getShippingFee())
                     .eq(XmsSourcingList::getProductId, product.getId());
             xmsSourcingListMapper.update(null, updateWrapper);
         }

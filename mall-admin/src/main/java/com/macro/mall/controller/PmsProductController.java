@@ -229,6 +229,16 @@ public class PmsProductController {
 
     private Integer saveToProduct(SiteSourcingParam sourcingParam) {
 
+        Map<String, String> requestMap = new HashMap<>();
+        requestMap.put("oneTimeOrderOnly", String.valueOf(sourcingParam.getOneTimeOrderOnly()));
+        requestMap.put("chooseType", String.valueOf(sourcingParam.getChooseType()));
+        requestMap.put("typeOfShipping", String.valueOf(sourcingParam.getTypeOfShipping()));
+        requestMap.put("countryName", sourcingParam.getCountryName());
+        requestMap.put("stateName", sourcingParam.getStateName());
+        requestMap.put("customType", sourcingParam.getCustomType());
+        requestMap.put("cifPort", sourcingParam.getCifPort());
+        requestMap.put("fbaWarehouse", sourcingParam.getFbaWarehouse());
+
         XmsChromeUpload chromeUpload = new XmsChromeUpload();
         if (sourcingParam.getSiteFlag() == 2 || sourcingParam.getSiteFlag() == 3) {
             //先保存到product的数据库
@@ -349,7 +359,7 @@ public class PmsProductController {
                 }
             }
             //保存
-            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList);
+            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList, JSONObject.toJSONString(requestMap));
         } else if (sourcingParam.getSiteFlag() == 1) {
             //先保存到product的数据库
             JSONObject jsonObject = this.checkAndLoadDataCircle(sourcingParam.getPid(), sourcingParam.getSiteFlag());
@@ -460,13 +470,13 @@ public class PmsProductController {
                 }
             }
             //保存
-            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList);
+            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList, JSONObject.toJSONString(requestMap));
         } else {
             BeanUtil.copyProperties(sourcingParam, chromeUpload);
             chromeUpload.setTitle(sourcingParam.getName());
             chromeUpload.setPic(sourcingParam.getImg());
             chromeUpload.setSiteType(sourcingParam.getSiteFlag());
-            return this.productUtils.apiDataInsertPms(chromeUpload, null);
+            return this.productUtils.apiDataInsertPms(chromeUpload, null, JSONObject.toJSONString(requestMap));
         }
 
     }
