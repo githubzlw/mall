@@ -20,5 +20,5 @@ public class XmsCustomerProductParam implements Serializable {
 
     private Integer pageSize;
 
-
+    private String title;
 }

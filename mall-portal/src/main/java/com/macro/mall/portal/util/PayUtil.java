@@ -492,6 +492,7 @@ public class PayUtil {
         }
         if (orderResult.getPayAmount() > 0) {
             PayPalParam payPalParam = this.getPayPalParam(request, currentMember.getId(), orderResult.getOrderNo(), orderResult.getPayAmount());
+            payPalParam.setSuccessUrlType("2");
             return this.getPayPalRedirectUtlByPayInfo(payPalParam);
         } else {
             return CommonResult.success(orderResult, "Balance paid successfully");
