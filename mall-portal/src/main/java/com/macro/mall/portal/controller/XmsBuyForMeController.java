@@ -253,6 +253,14 @@ public class XmsBuyForMeController {
         requestMap.put("url", siteSourcing.getUrl());
         requestMap.put("name", siteSourcing.getName());
         requestMap.put("img", siteSourcing.getImg());
+        requestMap.put("oneTimeOrderOnly", String.valueOf(siteSourcing.getOneTimeOrderOnly()));
+        requestMap.put("chooseType", String.valueOf(siteSourcing.getChooseType()));
+        requestMap.put("typeOfShipping", String.valueOf(siteSourcing.getTypeOfShipping()));
+        requestMap.put("countryName", siteSourcing.getCountryName());
+        requestMap.put("stateName", siteSourcing.getStateName());
+        requestMap.put("customType", siteSourcing.getCustomType());
+        requestMap.put("cifPort", siteSourcing.getCifPort());
+        requestMap.put("fbaWarehouse", siteSourcing.getFbaWarehouse());
 
         String resUrl = microServiceConfig.getProductUrl() + "/saveOneBoundProduct";
         JSONObject jsonObject = instance.postURL(resUrl, requestMap);

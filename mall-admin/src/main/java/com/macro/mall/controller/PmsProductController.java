@@ -229,6 +229,16 @@ public class PmsProductController {
 
     private Integer saveToProduct(SiteSourcingParam sourcingParam) {
 
+        Map<String, String> requestMap = new HashMap<>();
+        requestMap.put("oneTimeOrderOnly", String.valueOf(sourcingParam.getOneTimeOrderOnly()));
+        requestMap.put("chooseType", String.valueOf(sourcingParam.getChooseType()));
+        requestMap.put("typeOfShipping", String.valueOf(sourcingParam.getTypeOfShipping()));
+        requestMap.put("countryName", sourcingParam.getCountryName());
+        requestMap.put("stateName", sourcingParam.getStateName());
+        requestMap.put("customType", sourcingParam.getCustomType());
+        requestMap.put("cifPort", sourcingParam.getCifPort());
+        requestMap.put("fbaWarehouse", sourcingParam.getFbaWarehouse());
+
         XmsChromeUpload chromeUpload = new XmsChromeUpload();
         if (sourcingParam.getSiteFlag() == 2 || sourcingParam.getSiteFlag() == 3) {
             //先保存到product的数据库
@@ -291,7 +301,7 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
-                                    if(!typeMap.containsKey(split[2])){
+                                    if (!typeMap.containsKey(split[2])) {
                                         typeMap.put(split[2], new HashSet<>());
                                     }
                                     typeMap.get(split[2]).add(split[3].trim());
@@ -299,7 +309,7 @@ public class PmsProductController {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
 
-                                    if(!typeMap.containsKey(split[0])){
+                                    if (!typeMap.containsKey(split[0])) {
                                         typeMap.put(split[0], new HashSet<>());
                                     }
                                     typeMap.get(split[0]).add(split[1].trim());
@@ -308,22 +318,22 @@ public class PmsProductController {
                                     spDataList.add(childMap);
                                 }
                             }
-                            if(typeMap.size() > 0){
+                            if (typeMap.size() > 0) {
                                 StringBuffer sb = new StringBuffer();
-                                typeMap.forEach((k,v)->{
+                                typeMap.forEach((k, v) -> {
                                     sb.append(k + ":");
-                                    if(CollectionUtil.isNotEmpty(v)){
-                                        v.forEach(cl-> sb.append("," + cl));
+                                    if (CollectionUtil.isNotEmpty(v)) {
+                                        v.forEach(cl -> sb.append("," + cl));
                                     }
                                     sb.append(";");
                                 });
-                                chromeUpload.setType(sb.toString().replace(":,",":"));
+                                chromeUpload.setType(sb.toString().replace(":,", ":"));
                             }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
-                            if(StrUtil.isNotEmpty(tempSkuStock.getSpData())){
-                                if(checkSet.contains(tempSkuStock.getSpData().toLowerCase())){
+                            if (StrUtil.isNotEmpty(tempSkuStock.getSpData())) {
+                                if (checkSet.contains(tempSkuStock.getSpData().toLowerCase())) {
                                     continue;
-                                } else{
+                                } else {
                                     checkSet.add(tempSkuStock.getSpData().toLowerCase());
                                 }
                             }
@@ -342,14 +352,14 @@ public class PmsProductController {
                             }
                         }
                     }
-                    if(tempSkuJson.containsKey("price")){
+                    if (tempSkuJson.containsKey("price")) {
                         tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
                     }
                     skuStockList.add(tempSkuStock);
                 }
             }
             //保存
-            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList);
+            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList, JSONObject.toJSONString(requestMap));
         } else if (sourcingParam.getSiteFlag() == 1) {
             //先保存到product的数据库
             JSONObject jsonObject = this.checkAndLoadDataCircle(sourcingParam.getPid(), sourcingParam.getSiteFlag());
@@ -368,9 +378,9 @@ public class PmsProductController {
                 JSONArray item_imgs = jsonObject.getJSONArray("item_imgs");
                 StringBuffer sb = new StringBuffer();
                 for (int i = 0; i < item_imgs.size(); i++) {
-                    if(i == item_imgs.size() - 1){
+                    if (i == item_imgs.size() - 1) {
                         sb.append(item_imgs.getJSONObject(i).getString("url"));
-                    } else{
+                    } else {
                         sb.append(item_imgs.getJSONObject(i).getString("url") + ",");
                     }
                 }
@@ -409,7 +419,7 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
-                                    if(!typeMap.containsKey(split[2])){
+                                    if (!typeMap.containsKey(split[2])) {
                                         typeMap.put(split[2], new HashSet<>());
                                     }
                                     typeMap.get(split[2]).add(split[3].trim());
@@ -417,7 +427,7 @@ public class PmsProductController {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
 
-                                    if(!typeMap.containsKey(split[0])){
+                                    if (!typeMap.containsKey(split[0])) {
                                         typeMap.put(split[0], new HashSet<>());
                                     }
                                     typeMap.get(split[0]).add(split[1].trim());
@@ -426,16 +436,16 @@ public class PmsProductController {
                                     spDataList.add(childMap);
                                 }
                             }
-                            if(typeMap.size() > 0){
+                            if (typeMap.size() > 0) {
                                 StringBuffer sb = new StringBuffer();
-                                typeMap.forEach((k,v)->{
+                                typeMap.forEach((k, v) -> {
                                     sb.append(k + ":");
-                                    if(CollectionUtil.isNotEmpty(v)){
-                                        v.forEach(cl-> sb.append("," + cl));
+                                    if (CollectionUtil.isNotEmpty(v)) {
+                                        v.forEach(cl -> sb.append("," + cl));
                                     }
                                     sb.append(";");
                                 });
-                                chromeUpload.setType(sb.toString().replace(":,",":"));
+                                chromeUpload.setType(sb.toString().replace(":,", ":"));
                             }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
                         }
@@ -453,20 +463,20 @@ public class PmsProductController {
                             }
                         }
                     }
-                    if(tempSkuJson.containsKey("price")){
+                    if (tempSkuJson.containsKey("price")) {
                         tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
                     }
                     skuStockList.add(tempSkuStock);
                 }
             }
             //保存
-            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList);
+            return this.productUtils.apiDataInsertPms(chromeUpload, skuStockList, JSONObject.toJSONString(requestMap));
         } else {
             BeanUtil.copyProperties(sourcingParam, chromeUpload);
             chromeUpload.setTitle(sourcingParam.getName());
             chromeUpload.setPic(sourcingParam.getImg());
             chromeUpload.setSiteType(sourcingParam.getSiteFlag());
-            return this.productUtils.apiDataInsertPms(chromeUpload, null);
+            return this.productUtils.apiDataInsertPms(chromeUpload, null, JSONObject.toJSONString(requestMap));
         }
 
     }

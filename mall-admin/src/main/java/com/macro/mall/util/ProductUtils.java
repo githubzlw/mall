@@ -198,7 +198,7 @@ public class ProductUtils {
     }
 
     //api 数据插入产品表
-    public int apiDataInsertPms(XmsChromeUpload chromeUpload,List<PmsSkuStock> skuStockList){
+    public int apiDataInsertPms(XmsChromeUpload chromeUpload,List<PmsSkuStock> skuStockList, String note){
         //查询产品分类
         PmsProductCategoryExample example = new PmsProductCategoryExample();
         example.createCriteria().andNameEqualTo(getSiteTwo(chromeUpload.getSiteType().toString()));
@@ -255,6 +255,7 @@ public class ProductUtils {
 
         //添加产品表
         PmsProductParam productParam = new PmsProductParam();
+        productParam.setNote(note);
         //分类id
         productParam.setProductCategoryId(productCategoryList.get(0).getId());
         //属性分类id
