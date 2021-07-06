@@ -1,6 +1,7 @@
 package com.macro.mall.service;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 
 /**
@@ -16,4 +17,6 @@ public interface XmsAliExpressService {
 
 
     CommonResult getDetails(String pid);
+
+    JSONObject getItemInfo(String pid, boolean isCache);
 }

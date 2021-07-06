@@ -143,8 +143,8 @@ public class TrafficFreightUtils {
         // 初始化数据,港口等数据
         initCountryAndFreightList();
         // 获取普通运费
-        if (trafficFreightMap.containsKey(freightResult.getCountryId())) {
-            unitList = BeanCopyUtil.deepListCopy(trafficFreightMap.get(freightResult.getCountryId()));
+        if (this.trafficFreightMap.containsKey(freightResult.getCountryId())) {
+            unitList = BeanCopyUtil.deepListCopy(this.trafficFreightMap.get(freightResult.getCountryId()));
         }
 
         // 获取正常重量的免邮价格
@@ -795,12 +795,13 @@ public class TrafficFreightUtils {
      */
     public void initCountryAndFreightList() {
 
-        initCountriesList();
         initListOfFbaCountries();
         initFreightUnitList();
         initFreightFbaList();
         initFreightPortList();
         initCifFreightUnitList();
+
+        initCountriesList();
 
     }
 
@@ -825,6 +826,8 @@ public class TrafficFreightUtils {
                 QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
                 this.countriesList = this.listOfCountriesMapper.selectList(queryWrapper);
                 if (CollectionUtil.isNotEmpty(this.countriesList)) {
+                    this.initFreightUnitList();
+                    this.countriesList = this.countriesList.stream().filter(e -> this.trafficFreightMap.containsKey(e.getId())).collect(Collectors.toList());
                     // 排序
                     this.countriesList.sort(Comparator.comparing(XmsListOfCountries::getEnglishNameOfCountry));
                 }

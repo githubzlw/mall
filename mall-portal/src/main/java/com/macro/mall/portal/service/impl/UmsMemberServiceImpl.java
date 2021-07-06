@@ -1,7 +1,6 @@
 package com.macro.mall.portal.service.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -13,8 +12,6 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.model.UmsMemberLevel;
 import com.macro.mall.model.UmsMemberLevelExample;
-import com.macro.mall.portal.domain.ConfigValuesBean;
-import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberCacheService;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -36,11 +33,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 /**
  * 会员管理Service实现类
@@ -50,10 +49,10 @@ import java.util.*;
 public class UmsMemberServiceImpl implements UmsMemberService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberServiceImpl.class);
 
-    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/sso/facebookLogin&scope=email,public_profile&fields=name,email";
-    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/sso/facebookLogin&client_id=%s&client_secret=%s&code=%s";
-    private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=%s";
-    private final static String SITE_URL = "https://app.busysell.com";
+//    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/sso/facebookLogin?&scope=email,public_profile&fields=name,email";
+//    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/sso/facebookLogin?&client_id=%s&client_secret=%s&code=%s";
+//    private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=%s";
+//    private final static String SITE_URL = "https://app.busysell.com";
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -248,8 +247,6 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
 
-//        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
-
         try {
 
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
@@ -271,42 +268,42 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         }
     }
 
-    /**
-     * get facebook login url
-     * @return
-     */
-    @Override
-    public String getFacebookUrl() {
+//    /**
+//     * get facebook login url
+//     * @return
+//     */
+//    @Override
+//    public String getFacebookUrl() {
+//
+//        return String.format(FACEBOOK_LOGIN_URL
+//                , FACE_BOOK_CLIENTID, SITE_URL);
+//    }
 
-        return String.format(FACEBOOK_LOGIN_URL
-                , FACE_BOOK_CLIENTID, SITE_URL);
-    }
 
-
-    /**
-     * call facebookAuth
-     * @return
-     * @throws IOException
-     */
-    public FacebookPojo facebookAuth(String code) {
-
-        if(StringUtils.isEmpty(code)){
-            throw new IllegalArgumentException("code is empty");
-        }
-
-        String accessTokenUrl = String.format(FACEBOOK_ME_URL
-                ,SITE_URL, FACE_BOOK_CLIENTID, FACE_BOOK_CLIENT_SECRET, code);
-        LOGGER.info("accessTokenURL:[{}]", accessTokenUrl);
-        LOGGER.info("faceCode", code);
-        RestTemplate restTemplate = new RestTemplate();
-        HashMap<String, String> result = restTemplate.getForObject(accessTokenUrl, HashMap.class);
-        assert result != null;
-        String accessToken = result.get("access_token");
-        LOGGER.info("get access token:[{}] success", accessToken);
-
-        return restTemplate.getForObject(String.format(FACEBOOK_TOKEN_URL, accessToken), FacebookPojo.class);
-
-    }
+//    /**
+//     * call facebookAuth
+//     * @return
+//     * @throws IOException
+//     */
+//    public FacebookPojo facebookAuth(String code) {
+//
+//        if(StringUtils.isEmpty(code)){
+//            throw new IllegalArgumentException("code is empty");
+//        }
+//
+//        String accessTokenUrl = String.format(FACEBOOK_ME_URL
+//                ,SITE_URL, FACE_BOOK_CLIENTID, FACE_BOOK_CLIENT_SECRET, code);
+//        LOGGER.info("accessTokenURL:[{}]", accessTokenUrl);
+//        LOGGER.info("faceCode", code);
+//        RestTemplate restTemplate = new RestTemplate();
+//        HashMap<String, String> result = restTemplate.getForObject(accessTokenUrl, HashMap.class);
+//        assert result != null;
+//        String accessToken = result.get("access_token");
+//        LOGGER.info("get access token:[{}] success", accessToken);
+//
+//        return restTemplate.getForObject(String.format(FACEBOOK_TOKEN_URL, accessToken), FacebookPojo.class);
+//
+//    }
     @Override
     public int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag) {
         UmsMember tempMember = new UmsMember();

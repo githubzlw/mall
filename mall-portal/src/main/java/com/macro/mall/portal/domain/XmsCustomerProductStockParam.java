@@ -1,12 +1,19 @@
 package com.macro.mall.portal.domain;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.io.Serializable;
-
+/**
+ * @author: JiangXW
+ * @version: v1.0
+ * @description: com.macro.mall.portal.domain
+ * @date:2021-06-24
+ */
 @Data
-public class XmsCustomerSkuStockParam implements Serializable {
+@ApiModel("客户产品的查询结果")
+public class XmsCustomerProductStockParam {
+
 
     @ApiModelProperty(value = "会员ID")
     private Long memberId;
@@ -20,7 +27,6 @@ public class XmsCustomerSkuStockParam implements Serializable {
 
     private Integer pageSize;
 
-    @ApiModelProperty(value = "产品标题")
     private String title;
 
 }

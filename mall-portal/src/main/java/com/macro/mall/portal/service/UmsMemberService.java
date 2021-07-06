@@ -96,12 +96,12 @@ public interface UmsMemberService {
      */
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
 
-    FacebookPojo facebookAuth(String code);
-    /**
-     * get facebook login url
-     * @return
-     */
-    String getFacebookUrl();
+//    FacebookPojo facebookAuth(String code);
+//    /**
+//     * get facebook login url
+//     * @return
+//     */
+//    String getFacebookUrl();
 
     int updateGuidedFlag(Long id);
 

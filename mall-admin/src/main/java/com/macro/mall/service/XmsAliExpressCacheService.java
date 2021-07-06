@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class XmsAliExpressCacheService {
     private static final String REDIS_KEYWORD_PRE = "aliexpress:keyword:";
     private static final String REDIS_PID_PRE = "aliexpress:pid:";
-    private static final int REDIS_EXPIRE_DAYS = 7;
-    private static final int REDIS_EXPIRE_DAYS_TWO = 14;
+    private static final int REDIS_EXPIRE_DAYS = 1;
+    private static final int REDIS_EXPIRE_DAYS_TWO = 1;
     private final StringRedisTemplate redisTemplate;
 
     public XmsAliExpressCacheService(StringRedisTemplate redisTemplate) {
@@ -90,6 +90,12 @@ public class XmsAliExpressCacheService {
                 JSONObject.toJSONString(jsonObject), expireTime, TimeUnit.HOURS);
     }
 
+    public void setItemInfoTimeSeconds(String pid, JSONObject jsonObject, int expireTime) {
+        Objects.requireNonNull(jsonObject);
+        this.redisTemplate.opsForValue().set(REDIS_PID_PRE + pid,
+                JSONObject.toJSONString(jsonObject), expireTime, TimeUnit.SECONDS);
+    }
+
     public JSONObject getItemInfo(String pid) {
         Objects.requireNonNull(pid);
 
@@ -99,6 +105,11 @@ public class XmsAliExpressCacheService {
         } else {
             return null;
         }
+    }
+
+    public void deleteItemInfo(String pid){
+        Objects.requireNonNull(pid);
+        this.redisTemplate.delete(REDIS_PID_PRE + pid);
     }
 
 }

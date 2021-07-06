@@ -38,8 +38,8 @@ public class XmsSourcingListServiceImpl extends ServiceImpl<XmsSourcingListMappe
         Page<XmsSourcingList> page = new Page<>(sourcingParam.getPageNum(), sourcingParam.getPageSize());
         LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
         lambdaQuery.eq(XmsSourcingList::getUsername, sourcingParam.getUsername());
-        lambdaQuery.gt(XmsSourcingList::getStatus, -2);
-        if (null != sourcingParam.getStatus() && sourcingParam.getStatus() > -2) {
+        lambdaQuery.gt(XmsSourcingList::getStatus, -1);
+        if (null != sourcingParam.getStatus() && sourcingParam.getStatus() > -1) {
             lambdaQuery.eq(XmsSourcingList::getStatus, sourcingParam.getStatus());
         }
         if (StrUtil.isNotEmpty(sourcingParam.getUrl())) {
