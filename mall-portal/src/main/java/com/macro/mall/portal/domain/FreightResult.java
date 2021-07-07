@@ -29,7 +29,7 @@ public class FreightResult {
     @ApiModelProperty("普通运费结果集合")
     private List<XmsTrafficFreightUnit> unitList;
 
-    @ApiModelProperty("b2c标识")
+    @ApiModelProperty("免邮标识 1免邮 0非免邮")
     private int b2cFlag;
 
     @ApiModelProperty("商品总数量")
