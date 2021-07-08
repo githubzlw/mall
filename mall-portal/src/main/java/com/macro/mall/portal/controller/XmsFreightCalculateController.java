@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -66,9 +67,9 @@ public class XmsFreightCalculateController {
 
     }
 
-    @ApiOperation(value = "FBA运费计算")
-    @RequestMapping(value = "/fbaCalculate", method = RequestMethod.POST)
-    public CommonResult fbaCalculate(FbaFreightParam fbaFreightParam) {
+    @ApiOperation(value = "FBA海运运费计算")
+    @RequestMapping(value = "/fbaSeaCalculate", method = RequestMethod.POST)
+    public CommonResult fbaSeaCalculate(FbaFreightParam fbaFreightParam) {
 
         Assert.notNull(fbaFreightParam, "fbaFreightParam null");
         Assert.isTrue(null != fbaFreightParam.getCountryId() && fbaFreightParam.getCountryId() > 0, "countryId null");
@@ -127,8 +128,73 @@ public class XmsFreightCalculateController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("fbaCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
-            return CommonResult.failed("fbaCalculate error");
+            log.error("fbaSeaCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
+            return CommonResult.failed("fbaSeaCalculate error");
+        }
+    }
+
+    @ApiOperation(value = "FBA空运运费计算")
+    @RequestMapping(value = "/fbaAirCalculate", method = RequestMethod.POST)
+    public CommonResult fbaAirCalculate(FbaFreightParam fbaFreightParam) {
+
+        Assert.notNull(fbaFreightParam, "fbaFreightParam null");
+        Assert.isTrue(null != fbaFreightParam.getCountryId() && fbaFreightParam.getCountryId() > 0, "countryId null");
+        Assert.isTrue(null != fbaFreightParam.getWeight() && fbaFreightParam.getWeight() > 0, "weight null");
+        Assert.isTrue(null != fbaFreightParam.getVolume() && fbaFreightParam.getVolume() > 0, "volume null");
+        try {
+
+            XmsFbaFreightUnit freightUnit = new XmsFbaFreightUnit();
+            BeanUtil.copyProperties(fbaFreightParam, freightUnit);
+            Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = this.fbaFreightUtils.getFbaFreightUnitMap();
+            // 判断是否存在此国家
+            if (fbaFreightUnitMap.containsKey(fbaFreightParam.getCountryId())) {
+
+                List<XmsFbaFreightUnit> list = fbaFreightUnitMap.get(fbaFreightParam.getCountryId());
+                List<XmsFbaFreightUnit> collect = list.stream().filter(e -> 3 == e.getModeOfTransport()).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    double tempWeight = 0;
+                    switch (fbaFreightParam.getCountryId()) {
+                        case 36:// USA
+                            // 计费重量=max（实际重量，体积（立方米）*167）
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 167);
+                            break;
+                        case 6:// CANADA
+                            //
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), 0);
+                            break;
+                        case 35:// UK
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
+                            break;
+                        case 13:// GERMANY
+                        case 20:// ITALY
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 600);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    XmsFbaFreightUnit xmsFbaFreightUnit = collect.get(0);
+                    if (fbaFreightParam.getCountryId() == 36) {
+                        final String beginCode = fbaFreightParam.getZipCode().substring(0, 1);
+                        collect = collect.stream().filter(e -> e.getTypeOfMode() == 1 && e.getZipCode().contains("," + beginCode + ",")).collect(Collectors.toList());
+                        if (CollectionUtil.isNotEmpty(collect)) {
+                            xmsFbaFreightUnit = collect.get(0);
+                        }
+                    }
+                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble(xmsFbaFreightUnit.getWeightPrice() * tempWeight, 2));
+                    xmsFbaFreightUnit.setWeight(fbaFreightParam.getWeight());
+                    xmsFbaFreightUnit.setVolume(fbaFreightParam.getVolume());
+                    return CommonResult.success(xmsFbaFreightUnit);
+                } else {
+                    return CommonResult.failed("No Match for This ModeOfTransport");
+                }
+            }
+            return CommonResult.failed("No Match for This CountryId");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("fbaAirCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
+            return CommonResult.failed("fbaAirCalculate error");
         }
     }
 
