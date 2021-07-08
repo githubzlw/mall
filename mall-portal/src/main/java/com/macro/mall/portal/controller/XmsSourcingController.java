@@ -458,8 +458,9 @@ public class XmsSourcingController {
         }
     }
 
-    @ApiOperation(value = "更新的参数", notes = "更新Sourcing数据")
-    @PostMapping("/updateSourcingInfo")
+
+    @ApiOperation("更新Sourcing数据")
+    @RequestMapping(value = "/updateSourcingInfo", method = RequestMethod.POST)
     public CommonResult updateSourcingInfo(SiteSourcingParam siteSourcingParam) {
 
         Assert.notNull(siteSourcingParam, "siteSourcingParam null");
@@ -471,6 +472,7 @@ public class XmsSourcingController {
             //1:Drop Shipping
             if(siteSourcingParam.getChooseType()==1){
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
                         .set(XmsSourcingList::getRemark, siteSourcingParam.getData());
                 update = this.xmsSourcingListService.update(null, updateWrapper);
@@ -478,6 +480,7 @@ public class XmsSourcingController {
             //2:Wholesale and Bulk Shipping
             if(siteSourcingParam.getChooseType()==2){
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
                         .set(XmsSourcingList::getRemark, siteSourcingParam.getData())
                         .set(XmsSourcingList::getTypeOfShipping, siteSourcingParam.getTypeOfShipping())
@@ -489,6 +492,7 @@ public class XmsSourcingController {
             //4:Product Customization
             if(siteSourcingParam.getChooseType()==4){
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getCustomType, siteSourcingParam.getCustomType())
                         .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
                         .set(XmsSourcingList::getRemark, siteSourcingParam.getData());

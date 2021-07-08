@@ -6,10 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.*;
 import com.macro.mall.portal.domain.*;
-import com.macro.mall.portal.util.BeanCopyUtil;
-import com.macro.mall.portal.util.BigDecimalUtil;
-import com.macro.mall.portal.util.FbaFreightUtils;
-import com.macro.mall.portal.util.TrafficFreightUtils;
+import com.macro.mall.portal.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +31,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class XmsFreightCalculateController {
 
-
+    @Autowired
+    private ExchangeRateUtils exchangeRateUtils;
     private final TrafficFreightUtils freightUtils;
     private final FbaFreightUtils fbaFreightUtils;
 
@@ -160,15 +158,22 @@ public class XmsFreightCalculateController {
                             break;
                         case 6:// CANADA
                             //
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), 0);
+//                            tempWeight = Math.max(fbaFreightParam.getWeight(), 0);
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
                             break;
                         case 35:// UK
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
+//                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
                             break;
                         case 13:// GERMANY
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
+                            break;
                         case 20:// ITALY
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 600);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
                             break;
                         default:
                             break;
@@ -182,7 +187,7 @@ public class XmsFreightCalculateController {
                             xmsFbaFreightUnit = collect.get(0);
                         }
                     }
-                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble(xmsFbaFreightUnit.getWeightPrice() * tempWeight, 2));
+                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble((xmsFbaFreightUnit.getWeightPrice() * tempWeight)/ this.exchangeRateUtils.getUsdToCnyRate(), 2));
                     xmsFbaFreightUnit.setWeight(fbaFreightParam.getWeight());
                     xmsFbaFreightUnit.setVolume(fbaFreightParam.getVolume());
                     return CommonResult.success(xmsFbaFreightUnit);
