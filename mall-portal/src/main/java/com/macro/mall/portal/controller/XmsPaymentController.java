@@ -54,7 +54,7 @@ public class XmsPaymentController {
         try {
 
             PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == payFrom).findFirst().orElse(null);
-            if (null != payFromEnum) {
+            if (null == payFromEnum) {
                 return CommonResult.failed("PayFrom error");
             }
 
@@ -85,7 +85,7 @@ public class XmsPaymentController {
         String orderNo = null;
         try {
             PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == payFrom).findFirst().orElse(null);
-            if (null != payFromEnum) {
+            if (null == payFromEnum) {
                 return CommonResult.failed("PayFrom error");
             }
 
