@@ -160,20 +160,20 @@ public class XmsFreightCalculateController {
                             //
 //                            tempWeight = Math.max(fbaFreightParam.getWeight(), 0);
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
                             break;
                         case 35:// UK
 //                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100/ 6000);
                             break;
                         case 13:// GERMANY
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
                             break;
                         case 20:// ITALY
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 / 6000);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
                             break;
                         default:
                             break;
