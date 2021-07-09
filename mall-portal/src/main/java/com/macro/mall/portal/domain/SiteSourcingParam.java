@@ -13,6 +13,9 @@ import lombok.Data;
 @Data
 @ApiModel(value = "网站buyForMe", description = "buyForMe的Bean")
 public class SiteSourcingParam {
+
+    @ApiModelProperty("商品id")
+    private String id;
     @ApiModelProperty("BFM的商品URL")
     private String url;
     @ApiModelProperty("BFM的图片链接")

@@ -211,11 +211,11 @@ public class FbaFreightUtils {
             if (totalWeight > 6804000) {
                 filter = this.tailFreightList.stream().filter(e -> e.getKgMin() == 6804000).findFirst().orElse(null);
             } else {
-                filter = this.tailFreightList.stream().filter(e -> e.getKgMin() > 90720 && e.getKgMax() > 90720).filter(e -> e.getKgMin() < tempWeight && tempWeight <= e.getKgMax()).findFirst().orElse(null);
+                filter = this.tailFreightList.stream().filter(e -> e.getKgMin() >= 90720 && e.getKgMax() >= 90720).filter(e -> e.getKgMin() < tempWeight && tempWeight <= e.getKgMax()).findFirst().orElse(null);
             }
             BeanUtil.copyProperties(filter, freightResult);
             assert filter != null;
-            double totalPrice = filter.getFirstPrice() + totalWeight * filter.getPrice();
+            double totalPrice = filter.getFirstPrice() + totalWeight/1000 * filter.getPrice();
             freightResult.setTotalPrice(BigDecimalUtil.truncateDouble(Math.max(totalPrice, filter.getLowestPrice()), 2));
         }
         return freightResult;

@@ -458,4 +458,53 @@ public class XmsSourcingController {
         }
     }
 
+
+    @ApiOperation("更新Sourcing数据")
+    @RequestMapping(value = "/updateSourcingInfo", method = RequestMethod.POST)
+    public CommonResult updateSourcingInfo(SiteSourcingParam siteSourcingParam) {
+
+        Assert.notNull(siteSourcingParam, "siteSourcingParam null");
+
+        try {
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            boolean update = false;
+            //1:Drop Shipping
+            if(siteSourcingParam.getChooseType()==1){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            //2:Wholesale and Bulk Shipping
+            if(siteSourcingParam.getChooseType()==2){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData())
+                        .set(XmsSourcingList::getTypeOfShipping, siteSourcingParam.getTypeOfShipping())
+                        .set(XmsSourcingList::getCountryName, siteSourcingParam.getCountryName())
+                        .set(XmsSourcingList::getStateName, siteSourcingParam.getStateName())
+                        .set(XmsSourcingList::getFbaWarehouse, siteSourcingParam.getFbaWarehouse());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            //4:Product Customization
+            if(siteSourcingParam.getChooseType()==4){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getCustomType, siteSourcingParam.getCustomType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            return CommonResult.success(update);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("updateSourcingInfo,siteBuyForMeParam[{}],error:", siteSourcingParam, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }
