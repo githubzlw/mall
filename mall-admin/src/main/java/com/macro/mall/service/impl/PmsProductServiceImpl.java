@@ -190,7 +190,7 @@ public class PmsProductServiceImpl implements PmsProductService {
                         priceMap.put("maxPrice", e.getPrice().doubleValue());
                     }
                 });
-                if (priceMap.get("minPrice") == priceMap.get("maxPrice")) {
+                if (priceMap.get("minPrice").equals(priceMap.get("maxPrice"))) {
                     rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2);
                 } else {
                     rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2) + "-" + BigDecimalUtil.truncateDoubleToString(priceMap.get("maxPrice"), 2);
