@@ -174,7 +174,7 @@ public class UmsMemberController {
                 return CommonResult.failed("mail get failed");
             }
 
-            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
+            UmsMember userInfo = memberService.getByUsername(pair.getRight());
             if (userInfo == null){
                 memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
             }
@@ -187,7 +187,7 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
-            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
+            tokenMap.put("nickName", userInfo.getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
@@ -249,7 +249,7 @@ public class UmsMemberController {
         LOGGER.info("facebook login begin");
         try {
 
-            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(mail);
+            UmsMember userInfo = memberService.getByUsername(mail);
             if(userInfo == null){
                 memberService.register(mail, mail, "", "", 2);
             }
@@ -262,7 +262,7 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", mail);
-            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
+            tokenMap.put("nickName", userInfo.getNickname());
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
