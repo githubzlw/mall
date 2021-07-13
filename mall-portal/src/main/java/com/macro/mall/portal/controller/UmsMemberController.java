@@ -187,7 +187,12 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
-            tokenMap.put("nickName", userInfo.getNickname());
+            if (userInfo == null){
+                tokenMap.put("nickName", "");
+            }else{
+                tokenMap.put("nickName", userInfo.getNickname());
+            }
+
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
@@ -262,7 +267,11 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", mail);
-            tokenMap.put("nickName", userInfo.getNickname());
+            if (userInfo == null){
+                tokenMap.put("nickName", "");
+            }else{
+                tokenMap.put("nickName", userInfo.getNickname());
+            }
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
