@@ -13,6 +13,7 @@ import com.macro.mall.tools.bean.WelcomeMailTemplateBean;
 import com.macro.mall.tools.service.EmailService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,6 +169,9 @@ public class UmsMemberController {
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
         try {
+            if(StringUtils.isNotEmpty(idtokenstr)){
+                idtokenstr =idtokenstr.replaceAll("Bearer ","");
+            }
             pair = memberService.googleAuth(idtokenstr);
 
             if(pair == null){
