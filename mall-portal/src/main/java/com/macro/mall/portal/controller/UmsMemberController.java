@@ -165,7 +165,7 @@ public class UmsMemberController {
     @ApiOperation("google登录")
     @RequestMapping(value = "/googleLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult googleAuth(@RequestParam String idtokenstr, @RequestParam String uuid) {
+    public CommonResult googleAuth(@RequestParam("idtokenstr") String idtokenstr, @RequestParam("uuid") String uuid) {
 
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
@@ -227,7 +227,7 @@ public class UmsMemberController {
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String facebookId,@RequestParam String fToken,@RequestParam String uuid) {
+    public CommonResult facebookAuth(@RequestParam("fToken") String fToken,@RequestParam("facebookId") String facebookId,@RequestParam("uuid") String uuid) {
 
         LOGGER.info("facebook login begin");
         try {
