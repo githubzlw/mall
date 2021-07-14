@@ -12,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,11 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * sourcing搜索Controller
+ * sourcing搜索日志Controller
  * Created by zlw on 2021/4/23.
  */
 @Controller
-@Api(tags = "UmsSourcingSearchController", description = "sourcing搜索")
+@Api(tags = "UmsSourcingSearchController", description = "sourcing搜索日志")
 @RequestMapping("/sourcingSearchLog")
 public class UmsSourcingSearchLogController {
 
@@ -36,6 +37,8 @@ public class UmsSourcingSearchLogController {
     @RequestMapping(value = "/insertSearchLog", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult insertSearchLog(HttpServletRequest request, SourcingSearchParam sourcingSearchParam) {
+
+        Assert.isTrue(null != sourcingSearchParam.getSourcingSearch(), "sourcingSearchParam null");
 
         String ip = RequestUtil.getRequestIp(request);
         sourcingSearchParam.setIp(ip);
@@ -56,5 +59,23 @@ public class UmsSourcingSearchLogController {
 
         return CommonResult.success(umsSourcingSearchLogList);
     }
+
+
+    @ApiOperation("增加下载次数")
+    @RequestMapping(value = "/addTotal", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult addTotal() {
+        umsSourcingSearchLogService.addTotal();
+        return CommonResult.success(null, "修改成功");
+    }
+
+    @ApiOperation("获取下载次数")
+    @RequestMapping(value = "/getTotal", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult getTotal() {
+        Long total = umsSourcingSearchLogService.getTotal();
+        return CommonResult.success(total);
+    }
+
 
 }

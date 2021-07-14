@@ -48,6 +48,7 @@ secure:
       - /exchangeRate/fx
       - /paypal/**
       - /addProductByUrl/**
+      - /sourcingSearchLog/**
 
 # 自定义redis key
 redis:

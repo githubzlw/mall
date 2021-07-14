@@ -22,4 +22,8 @@ public interface UmsSourcingSearchLogService extends IService<UmsSourcingSearchL
 
     void insertSourcingSearchLog(SourcingSearchParam sourcingSearchParam);
 
+    void addTotal();
+
+    Long getTotal();
+
 }
