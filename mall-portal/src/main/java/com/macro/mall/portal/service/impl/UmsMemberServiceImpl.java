@@ -71,10 +71,10 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     private Long AUTH_CODE_EXPIRE_SECONDS;
     @Value("${tpurl.googleid}")
     public String GOOGLE_CLIENT_ID;
-    @Value("${tpurl.facebookClientId}")
-    public String FACE_BOOK_CLIENTID;
-    @Value("${tpurl.facebookClientSecret}")
-    public String FACE_BOOK_CLIENT_SECRET;
+//    @Value("${tpurl.facebookClientId}")
+//    public String FACE_BOOK_CLIENTID;
+//    @Value("${tpurl.facebookClientSecret}")
+//    public String FACE_BOOK_CLIENT_SECRET;
 
 
 
