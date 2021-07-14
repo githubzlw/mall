@@ -6,6 +6,7 @@ import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
@@ -164,7 +165,7 @@ public class UmsMemberController {
     @ApiOperation("google登录")
     @RequestMapping(value = "/googleLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult googleAuth(@RequestParam String idtokenstr) {
+    public CommonResult googleAuth(@RequestParam String idtokenstr, @RequestParam String uuid) {
 
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
@@ -181,10 +182,15 @@ public class UmsMemberController {
             UmsMember userInfo = memberService.getByUsername(pair.getRight());
             if (userInfo == null){
                 memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
+                userInfo = memberService.getByUsername(pair.getRight());
             }
             String token = memberService.login(pair.getRight(), pair.getRight());
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
+            }
+            // 整合sourcing数据
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(userInfo, uuid);
             }
 
             Map<String, String> tokenMap = new HashMap<>();
@@ -218,59 +224,34 @@ public class UmsMemberController {
 //
 //    }
 
-//    @ApiOperation("facebook登录")
-//    @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
-//    @ResponseBody
-//    public CommonResult facebookAuth(@RequestParam String code) {
-//
-//        LOGGER.info("facebook login begin");
-//        try {
-//            FacebookPojo bean = memberService.facebookAuth(code);
-//            if(bean == null){
-//                return CommonResult.failed("mail get failed");
-//            }
-//            MemberDetails userInfo = (MemberDetails) memberService.loadUserByUsername(bean.getEmail());
-//            if(userInfo == null){
-//                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
-//            }
-//            String token = memberService.login(bean.getEmail(), bean.getEmail());
-//            if (token == null) {
-//                return CommonResult.validateFailed("用户名或密码错误");
-//            }
-//
-//            Map<String, String> tokenMap = new HashMap<>();
-//            tokenMap.put("token", token);
-//            tokenMap.put("tokenHead", tokenHead);
-//            tokenMap.put("mail", bean.getEmail());
-//            tokenMap.put("nickName", userInfo.getUmsMember().getNickname());
-//            return CommonResult.success(tokenMap);
-//        } catch (Exception e) {
-//            LOGGER.error("facebookLogin", e);
-//            return CommonResult.failed("facebookLogin failed");
-//        }
-//    }
-
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String mail) {
+    public CommonResult facebookAuth(@RequestParam String facebookId,@RequestParam String fToken,@RequestParam String uuid) {
 
         LOGGER.info("facebook login begin");
         try {
-
-            UmsMember userInfo = memberService.getByUsername(mail);
-            if(userInfo == null){
-                memberService.register(mail, mail, "", "", 2);
+            FacebookPojo bean = memberService.facebookAuth(facebookId,fToken);
+            if(bean == null){
+                return CommonResult.failed("mail get failed");
             }
-            String token = memberService.login(mail, mail);
+            UmsMember userInfo = memberService.getByUsername(bean.getEmail());
+            if(userInfo == null){
+                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+                userInfo = memberService.getByUsername(bean.getEmail());
+            }
+            String token = memberService.login(bean.getEmail(), bean.getEmail());
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
-
+            // 整合sourcing数据
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(userInfo, uuid);
+            }
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
-            tokenMap.put("mail", mail);
+            tokenMap.put("mail", bean.getEmail());
             if (userInfo == null){
                 tokenMap.put("nickName", "");
             }else{
@@ -282,6 +263,7 @@ public class UmsMemberController {
             return CommonResult.failed("facebookLogin failed");
         }
     }
+
 
 
     @ApiOperation("修改客户信息")

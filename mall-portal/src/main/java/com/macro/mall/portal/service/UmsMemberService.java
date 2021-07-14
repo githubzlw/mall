@@ -96,7 +96,7 @@ public interface UmsMemberService {
      */
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
 
-//    FacebookPojo facebookAuth(String code);
+    FacebookPojo facebookAuth(String facebookId,String fToken);
 //    /**
 //     * get facebook login url
 //     * @return
