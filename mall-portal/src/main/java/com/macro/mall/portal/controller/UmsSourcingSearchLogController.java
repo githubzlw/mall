@@ -13,10 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -36,6 +33,7 @@ public class UmsSourcingSearchLogController {
     @ApiOperation("插入搜索日志")
     @RequestMapping(value = "/insertSearchLog", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin("*")
     public CommonResult insertSearchLog(HttpServletRequest request, SourcingSearchParam sourcingSearchParam) {
 
         Assert.isTrue(null != sourcingSearchParam.getSourcingSearch(), "sourcingSearchParam null");
@@ -50,6 +48,7 @@ public class UmsSourcingSearchLogController {
     @ApiOperation("读取搜索日志")
     @RequestMapping(value = "/getSearchLogList", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin("*")
     public CommonResult getSearchLogList(SourcingSearchParam sourcingSearchParam,
                                          @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                          @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize) {
@@ -64,6 +63,7 @@ public class UmsSourcingSearchLogController {
     @ApiOperation("增加下载次数")
     @RequestMapping(value = "/addTotal", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin("*")
     public CommonResult addTotal() {
         umsSourcingSearchLogService.addTotal();
         return CommonResult.success(null, "修改成功");
@@ -72,6 +72,7 @@ public class UmsSourcingSearchLogController {
     @ApiOperation("获取下载次数")
     @RequestMapping(value = "/getTotal", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin("*")
     public CommonResult getTotal() {
         Long total = umsSourcingSearchLogService.getTotal();
         return CommonResult.success(total);
