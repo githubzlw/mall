@@ -81,6 +81,9 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "引导标识 0未引导 1 已引导")
     private Integer guidedFlag;
 
+    @ApiModelProperty(value = "国家id")
+    private Integer countryId;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -291,6 +294,14 @@ public class UmsMember implements Serializable {
         this.guidedFlag = guidedFlag;
     }
 
+    public Integer getCountryId() {
+        return countryId;
+    }
+
+    public void setCountryId(Integer countryId) {
+        this.countryId = countryId;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -323,6 +334,7 @@ public class UmsMember implements Serializable {
         sb.append(", shopifyName=").append(shopifyName);
         sb.append(", shopifyFlag=").append(shopifyFlag);
         sb.append(", guidedFlag=").append(guidedFlag);
+        sb.append(", countryId=").append(countryId);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

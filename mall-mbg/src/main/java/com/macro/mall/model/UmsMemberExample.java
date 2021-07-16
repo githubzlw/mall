@@ -1801,6 +1801,66 @@ public class UmsMemberExample {
             addCriterion("guided_flag not between", value1, value2, "guidedFlag");
             return (Criteria) this;
         }
+
+        public Criteria andCountryIdIsNull() {
+            addCriterion("country_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdIsNotNull() {
+            addCriterion("country_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdEqualTo(Integer value) {
+            addCriterion("country_id =", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdNotEqualTo(Integer value) {
+            addCriterion("country_id <>", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdGreaterThan(Integer value) {
+            addCriterion("country_id >", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("country_id >=", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdLessThan(Integer value) {
+            addCriterion("country_id <", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdLessThanOrEqualTo(Integer value) {
+            addCriterion("country_id <=", value, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdIn(List<Integer> values) {
+            addCriterion("country_id in", values, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdNotIn(List<Integer> values) {
+            addCriterion("country_id not in", values, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdBetween(Integer value1, Integer value2) {
+            addCriterion("country_id between", value1, value2, "countryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andCountryIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("country_id not between", value1, value2, "countryId");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

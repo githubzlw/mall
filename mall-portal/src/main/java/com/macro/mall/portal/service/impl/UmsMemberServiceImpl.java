@@ -99,7 +99,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
-    public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType) {
+    public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType, Integer countryId) {
 //        //验证验证码
 //        if(!verifyAuthCode(authCode,telephone)){
 //            Asserts.fail("验证码错误");
@@ -133,6 +133,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         umsMember.setOrganizationname(organizationname);
         umsMember.setMonthlyOrders(monthlyOrders);
         umsMember.setLoginType(loginType);
+        umsMember.setCountryId(countryId);
         memberMapper.insert(umsMember);
         umsMember.setPassword(null);
     }
