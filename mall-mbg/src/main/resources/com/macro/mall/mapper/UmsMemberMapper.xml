@@ -28,6 +28,7 @@
     <result column="shopify_name" jdbcType="VARCHAR" property="shopifyName" />
     <result column="shopify_flag" jdbcType="INTEGER" property="shopifyFlag" />
     <result column="guided_flag" jdbcType="INTEGER" property="guidedFlag" />
+    <result column="country_id" jdbcType="INTEGER" property="countryId" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -91,7 +92,7 @@
     id, member_level_id, username, password, nickname, phone, status, create_time, icon, 
     gender, birthday, city, job, personalized_signature, source_type, integration, growth, 
     luckey_count, history_integration, organizationname, monthly_orders, login_type, 
-    balance, shopify_name, shopify_flag, guided_flag
+    balance, shopify_name, shopify_flag, guided_flag, country_id
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.UmsMemberExample" resultMap="BaseResultMap">
     select
@@ -134,8 +135,8 @@
       source_type, integration, growth, 
       luckey_count, history_integration, organizationname, 
       monthly_orders, login_type, balance, 
-      shopify_name, shopify_flag, guided_flag
-      )
+      shopify_name, shopify_flag, guided_flag, 
+      country_id)
     values (#{memberLevelId,jdbcType=BIGINT}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{nickname,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, 
       #{createTime,jdbcType=TIMESTAMP}, #{icon,jdbcType=VARCHAR}, #{gender,jdbcType=INTEGER}, 
@@ -143,8 +144,8 @@
       #{sourceType,jdbcType=INTEGER}, #{integration,jdbcType=INTEGER}, #{growth,jdbcType=INTEGER}, 
       #{luckeyCount,jdbcType=INTEGER}, #{historyIntegration,jdbcType=INTEGER}, #{organizationname,jdbcType=VARCHAR}, 
       #{monthlyOrders,jdbcType=VARCHAR}, #{loginType,jdbcType=INTEGER}, #{balance,jdbcType=DOUBLE}, 
-      #{shopifyName,jdbcType=VARCHAR}, #{shopifyFlag,jdbcType=INTEGER}, #{guidedFlag,jdbcType=INTEGER}
-      )
+      #{shopifyName,jdbcType=VARCHAR}, #{shopifyFlag,jdbcType=INTEGER}, #{guidedFlag,jdbcType=INTEGER}, 
+      #{countryId,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.UmsMember">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -227,6 +228,9 @@
       <if test="guidedFlag != null">
         guided_flag,
       </if>
+      <if test="countryId != null">
+        country_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="memberLevelId != null">
@@ -303,6 +307,9 @@
       </if>
       <if test="guidedFlag != null">
         #{guidedFlag,jdbcType=INTEGER},
+      </if>
+      <if test="countryId != null">
+        #{countryId,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -393,6 +400,9 @@
       <if test="record.guidedFlag != null">
         guided_flag = #{record.guidedFlag,jdbcType=INTEGER},
       </if>
+      <if test="record.countryId != null">
+        country_id = #{record.countryId,jdbcType=INTEGER},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -425,7 +435,8 @@
       balance = #{record.balance,jdbcType=DOUBLE},
       shopify_name = #{record.shopifyName,jdbcType=VARCHAR},
       shopify_flag = #{record.shopifyFlag,jdbcType=INTEGER},
-      guided_flag = #{record.guidedFlag,jdbcType=INTEGER}
+      guided_flag = #{record.guidedFlag,jdbcType=INTEGER},
+      country_id = #{record.countryId,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -508,6 +519,9 @@
       <if test="guidedFlag != null">
         guided_flag = #{guidedFlag,jdbcType=INTEGER},
       </if>
+      <if test="countryId != null">
+        country_id = #{countryId,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -537,7 +551,8 @@
       balance = #{balance,jdbcType=DOUBLE},
       shopify_name = #{shopifyName,jdbcType=VARCHAR},
       shopify_flag = #{shopifyFlag,jdbcType=INTEGER},
-      guided_flag = #{guidedFlag,jdbcType=INTEGER}
+      guided_flag = #{guidedFlag,jdbcType=INTEGER},
+      country_id = #{countryId,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

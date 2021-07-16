@@ -65,8 +65,9 @@ public class UmsMemberController {
     public CommonResult register(@RequestParam String username,
                                  @RequestParam String password,
                                  @RequestParam String organizationname,
-                                 @RequestParam String monthlyOrders, String uuid) {
-        memberService.register(username, password, organizationname, monthlyOrders, 0);
+                                 @RequestParam String monthlyOrders, String uuid,
+                                 @RequestParam Integer countryId) {
+        memberService.register(username, password, organizationname, monthlyOrders, 0,countryId);
         String token = memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
@@ -181,7 +182,7 @@ public class UmsMemberController {
 
             UmsMember userInfo = memberService.getByUsername(pair.getRight());
             if (userInfo == null){
-                memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
+                memberService.register(pair.getRight(), pair.getRight(), "", "", 1,36);
                 userInfo = memberService.getByUsername(pair.getRight());
             }
             String token = memberService.login(pair.getRight(), pair.getRight());
@@ -237,7 +238,7 @@ public class UmsMemberController {
             }
             UmsMember userInfo = memberService.getByUsername(bean.getEmail());
             if(userInfo == null){
-                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2);
+                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2,36);
                 userInfo = memberService.getByUsername(bean.getEmail());
             }
             String token = memberService.login(bean.getEmail(), bean.getEmail());

@@ -27,7 +27,7 @@ public interface UmsMemberService {
      * 用户注册
      */
     @Transactional
-    void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType);
+    void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType,Integer countryId);
 
     /**
      * 生成验证码
