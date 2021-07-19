@@ -199,7 +199,7 @@ public class PmsProductServiceImpl implements PmsProductService {
 
             updateWrapper.lambda().set(XmsSourcingList::getTitle, product.getName())
                     .set(XmsSourcingList::getCost, rgPrice)
-                    .set(XmsSourcingList::getPrice, BigDecimalUtil.truncateDoubleToString(Double.parseDouble(product.getPriceXj()), 2))
+                    .set(XmsSourcingList::getPrice, product.getPriceXj())
                     .set(XmsSourcingList::getStatus, 1)
                     .set(XmsSourcingList::getImages, product.getPic())
                     .set(XmsSourcingList::getShippingFee, product.getShippingFee())
