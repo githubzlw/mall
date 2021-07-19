@@ -153,4 +153,27 @@ public class XmsYouLiveProductController {
             return CommonResult.failed("query failed");
         }
     }
+
+
+    @ApiOperation("删除客户产品")
+    @RequestMapping(value = "/deleteProduct", method = RequestMethod.POST)
+    public CommonResult deleteCustomProduct(Integer id) {
+
+        Assert.isTrue(null != id && id > 0, "id null");
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        Assert.isTrue(null != currentMember.getId() && currentMember.getId() > 0, "currentMemberId null");
+        try {
+            boolean b = this.xmsCustomerProductService.removeById(id);
+            return CommonResult.success(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("deleteCustomProduct,id[{}],error:", id, e);
+            return CommonResult.failed("delete failed");
+        }
+    }
+
+
+
+
 }
