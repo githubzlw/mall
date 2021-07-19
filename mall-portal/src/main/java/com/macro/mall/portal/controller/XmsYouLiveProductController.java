@@ -157,13 +157,18 @@ public class XmsYouLiveProductController {
 
     @ApiOperation("删除客户产品")
     @RequestMapping(value = "/deleteProduct", method = RequestMethod.POST)
-    public CommonResult deleteCustomProduct(Integer id) {
+    public CommonResult deleteCustomProduct(Integer id, Integer sameShopify) {
 
         Assert.isTrue(null != id && id > 0, "id null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         Assert.isTrue(null != currentMember.getId() && currentMember.getId() > 0, "currentMemberId null");
         try {
+            if( null != sameShopify && sameShopify == 1){
+                // 进行shopify的客户商品删除
+                XmsCustomerProduct byId = this.xmsCustomerProductService.getById(id);
+                //  byId.getShopifyProductId()
+            }
             boolean b = this.xmsCustomerProductService.removeById(id);
             return CommonResult.success(b);
         } catch (Exception e) {
