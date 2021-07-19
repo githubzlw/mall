@@ -117,8 +117,11 @@ public class XmsPaymentController {
         Payment payment;
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
-
-            PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == payFrom).findFirst().orElse(null);
+            if(null == payFrom){
+                payFrom = 0;
+            }
+            Integer finalPayFrom = payFrom;
+            PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == finalPayFrom).findFirst().orElse(null);
             if (null != payFromEnum) {
                 payFromEnum = PayFromEnum.NONE;
             }
