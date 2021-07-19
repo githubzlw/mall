@@ -512,17 +512,21 @@ public class PayUtil {
 
             UmsMember tempMember = new UmsMember();
             tempMember.setId(umsMember.getId());
+            Double balance = umsMember.getBalance();
+            if(null == balance){
+                balance = 0D;
+            }
             if (operatingType > 0) {
-                tempMember.setBalance(umsMember.getBalance() + amount);
+                tempMember.setBalance(balance + amount);
             } else {
-                tempMember.setBalance(umsMember.getBalance() - amount);
+                tempMember.setBalance(balance - amount);
             }
 
             this.memberMapper.updateByPrimaryKeySelective(tempMember);
             // 执行插入记录
             XmsRecordOfChangeInBalance changeInBalance = new XmsRecordOfChangeInBalance();
             changeInBalance.setCreateTime(new Date());
-            changeInBalance.setCurrentBalance(umsMember.getBalance());
+            changeInBalance.setCurrentBalance(balance);
             changeInBalance.setOperatingValue(amount);
             changeInBalance.setOperatingType(operatingType);
             changeInBalance.setOperatingResult(tempMember.getBalance());
