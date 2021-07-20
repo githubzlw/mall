@@ -64,7 +64,6 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
-    @ResponseBody
     public CommonResult authorization(@RequestParam("shopName") String shopName) {
 
         try {
@@ -221,7 +220,6 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/getShopifyProducts")
     @ApiOperation("获取客户shopify的商品")
-    @ResponseBody
     public CommonResult getShopifyProducts() {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -250,7 +248,6 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/addProduct")
     @ApiOperation("铺货到shopify商品")
-    @ResponseBody
     public CommonResult addToShopifyProducts(@RequestParam Long productId) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -279,7 +276,6 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/getShopifyOrders")
     @ApiOperation("获取客户shopify的订单")
-    @ResponseBody
     public CommonResult getShopifyOrders() {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -305,5 +301,20 @@ public class XmsShopifyController {
         }
     }
 
+
+    @GetMapping(value = "/getShopifyName")
+    @ApiOperation("获取客户shopify的店铺名称")
+    public CommonResult getShopifyName() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            return CommonResult.success(byId.getShopifyName());
+        } catch (Exception e) {
+            log.error("getShopifyName,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 
 }

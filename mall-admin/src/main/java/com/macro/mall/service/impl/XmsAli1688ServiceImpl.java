@@ -12,10 +12,13 @@ import com.macro.mall.common.exception.BizException;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.config.OneBoundConfig;
 import com.macro.mall.domain.Ali1688Item;
+import com.macro.mall.domain.AliExpressItem;
 import com.macro.mall.domain.ItemDetails;
+import com.macro.mall.domain.ItemResultPage;
 import com.macro.mall.service.XmsAli1688CacheService;
 import com.macro.mall.service.XmsAli1688Service;
 import com.macro.mall.util.DataDealUtil;
+import com.macro.mall.util.InvalidKeyWord;
 import com.macro.mall.util.InvalidPid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -84,6 +87,9 @@ public class XmsAli1688ServiceImpl implements XmsAli1688Service {
      * 获取店铺商品
      */
     private final static String URL_ITEM_SEARCH = "%s1688/api_call.php?key=%s&secret=%s&seller_nick=%s&start_price=0&end_price=0&q=&page=%d&cid=&api_name=item_search_shop&lang=en";
+
+    private final static String ALI_KEY_SEARCH = "%saliexpress/item_search/?key=%s&secret=%s&q=%s&page=%d&lang=en";
+
     private XmsAli1688CacheService xmsAli1688CacheService;
     private OneBoundConfig oneBoundConfig;
 
@@ -543,6 +549,141 @@ public class XmsAli1688ServiceImpl implements XmsAli1688Service {
             throw new BizException(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult getItemByKeyWord(Integer currPage, String keyword, String start_price, String end_price, String sort, boolean isCache) {
+        JSONObject jsonObject = searchResultByKeyWord(currPage, keyword, start_price, end_price, sort, isCache);
+        if (jsonObject == null || jsonObject.getJSONObject("items") == null
+                || jsonObject.getJSONObject("items").getString("item") == null) {
+            return CommonResult.failed("no data");
+        } else {
+            List<AliExpressItem> aliExpressItems = JSONArray.parseArray(jsonObject.getJSONObject("items").getString("item"), AliExpressItem.class);
+
+            Integer totalNum = jsonObject.getJSONObject("items").getInteger("total_results");
+            Integer rsPage = jsonObject.getJSONObject("items").getInteger("page");
+            Integer rsPageSize = jsonObject.getJSONObject("items").getInteger("page_size");
+            Integer totalPage = totalNum / rsPageSize;
+            if (totalNum % rsPageSize > 0) {
+                totalPage++;
+            }
+            List<AliExpressItem> rsList = new ArrayList<>();
+            if (aliExpressItems != null && aliExpressItems.size() > 0) {
+                aliExpressItems.sort(Comparator.comparing(AliExpressItem::getNum_iid));
+                // 价格格式化
+                aliExpressItems.forEach(e -> e.setPrice(DataDealUtil.changeAliPrice(e.getPrice())));
+                if (aliExpressItems.size() > 28) {
+                    rsList = aliExpressItems.stream().limit(28L).collect(Collectors.toList());
+                    aliExpressItems.clear();
+                } else if (aliExpressItems.size() > 4) {
+                    int cicleNum = aliExpressItems.size() / 4;
+                    rsList = aliExpressItems.stream().limit(cicleNum * 4L).collect(Collectors.toList());
+                    aliExpressItems.clear();
+                } else {
+                    rsList = aliExpressItems;
+                }
+            }
+            ItemResultPage resultPage = new ItemResultPage(rsList, currPage, rsPageSize, totalPage, totalNum);
+            return CommonResult.success(resultPage);
+        }
+    }
+
+
+    private JSONObject searchResultByKeyWord(Integer page, String keyword, String start_price, String end_price,
+                                             String sort, boolean isCache) {
+        /**
+         * api.onebound.cn/aliexpress/api_call.php?
+         * q=shoe&start_price=&end_price=&page=&cat=&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=&api_name=item_search&lang=zh-CN&key=tel13222738797&secret=20200316
+         */
+        Objects.requireNonNull(keyword);
+        Callable<JSONObject> callable = () -> getItemByKeyword(page, keyword, start_price, end_price,
+                sort, isCache);
+
+        Retryer<JSONObject> retryer = RetryerBuilder.<JSONObject>newBuilder()
+                .retryIfResult(Predicates.isNull())
+                .retryIfExceptionOfType(IllegalStateException.class)
+                .withWaitStrategy(WaitStrategies.fixedWait(2000, TimeUnit.MILLISECONDS))
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
+        try {
+            return retryer.call(callable);
+        } catch (RetryException | ExecutionException e) {
+            throw new BizException(e.getMessage());
+        }
+    }
+
+    private JSONObject getItemByKeyword(Integer page, String keyword, String start_price, String end_price,
+                                        String sort, boolean isCache) throws BizException, IOException {
+        Objects.requireNonNull(keyword);
+        if (isCache) {
+            JSONObject itemFromRedis = this.xmsAli1688CacheService.getItemByKeyword(page, keyword, start_price, end_price, sort);
+            if (null != itemFromRedis) {
+                String reason = itemFromRedis.getString("reason");
+                if (StrUtil.isNotEmpty(reason) && reason.contains("error")) {
+                    // 清除缓存
+                    this.xmsAli1688CacheService.deleteItemByKeyword(page, keyword, start_price, end_price, sort);
+                } else {
+                    checkKeyWord(page, keyword, itemFromRedis);
+                    return itemFromRedis;
+                }
+            }
+        }
+
+        // https://api-gw.onebound.cn/aliexpress/item_search/?key=tel13564700983&
+        //&q=shoe&start_price=&end_price=&page=&cat=&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=&&lang=en&secret=20191107
+        // 组合过滤条件
+        StringBuffer sb = new StringBuffer(ALI_KEY_SEARCH);
+        if (StringUtils.isNotBlank(start_price)) {
+            sb.append("&start_price=" + start_price);
+        }
+        if (StringUtils.isNotBlank(end_price)) {
+            sb.append("&end_price=" + end_price);
+        }
+        if (StringUtils.isNotBlank(sort)) {
+            sb.append("&sort=" + sort);
+        }
+        // ALI_KEY_SEARCH = "%saliexpress/item_search/?key=%s&secret=%s&q=%s&page=%d&lang=en";
+        String url = String.format(sb.toString(), oneBoundConfig.API_HOST, oneBoundConfig.API_KEY, oneBoundConfig.API_SECRET, keyword,  page);
+        System.err.println("url:" + url);
+        JSONObject jsonObject = UrlUtil.getInstance().callUrlByGet(url);
+        if (null != jsonObject && jsonObject.size() > 0) {
+            String strYmd = LocalDate.now().format(DateTimeFormatter.ofPattern(YYYYMMDD));
+            this.redisTemplate.opsForHash().increment(REDIS_CALL_COUNT, "keyword_" + strYmd, 1);
+            String error = jsonObject.getString("error");
+            if (StringUtils.isNotEmpty(error)) {
+                if (error.contains("你的授权已经过期")) {
+                    throw new BizException(BizErrorCodeEnum.EXPIRE_FAIL);
+                } else if (error.contains("超过")) {
+                    //TODO
+                    throw new BizException(BizErrorCodeEnum.LIMIT_EXCEED_FAIL);
+                } else if (error.contains("item-not-found")) {
+                    throw new IllegalStateException("item-not-found");
+                }
+                log.warn("json's error is not empty:[{}]，keyword:[{}]", error, keyword);
+                jsonObject = InvalidKeyWord.of(keyword, error);
+            }
+            this.xmsAli1688CacheService.saveItemByKeyword(page, keyword, start_price, end_price, sort, jsonObject);
+            checkKeyWord(page, keyword, jsonObject);
+
+            return jsonObject;
+        } else {
+            throw new BizException(BizErrorCodeEnum.BODY_IS_NULL);
+        }
+
+    }
+
+    private void checkKeyWord(Integer page, String keyword, JSONObject jsonObject) {
+        Objects.requireNonNull(keyword);
+        Objects.requireNonNull(jsonObject);
+        JSONObject items = jsonObject.getJSONObject("items");
+        if (items != null) {
+            if (StringUtils.isEmpty(items.getString("item"))) {
+                // this.cacheService.deleteKeyword(page, keyword);
+                log.warn("item is null ,keyword:[{}]", keyword);
+                throw new BizException(BizErrorCodeEnum.ITEM_IS_NULL);
+            }
+        }
+    }
+
 
     /**
      * 获取阿里巴巴商品详情

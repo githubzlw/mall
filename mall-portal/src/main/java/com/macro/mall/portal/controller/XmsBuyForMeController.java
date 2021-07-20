@@ -244,6 +244,33 @@ public class XmsBuyForMeController {
         }
     }
 
+    @ApiOperation(value = "速卖通搜索", notes = "BuyForMe逻辑")
+    @PostMapping("/aliSearch")
+    public CommonResult aliSearch(String keyword, Integer page) {
+        Assert.isTrue(StrUtil.isNotBlank(keyword), "keyword null");
+        Assert.isTrue(null != page && page > 0, "page null");
+        try {
+            Map<String, String> requestMap = new HashMap<>();
+            requestMap.put("keyword", keyword);
+            requestMap.put("page", String.valueOf(page));
+
+            JSONObject jsonObject = instance.postURL(microServiceConfig.getOneBoundApi() + "/aliSearch", requestMap);
+            if (null == jsonObject || jsonObject.size() == 0) {
+                jsonObject = instance.postURL(microServiceConfig.getOneBoundApi() + "/aliSearch", requestMap);
+            }
+            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
+                JSONObject dataJson = jsonObject.getJSONObject("data");
+                return CommonResult.success(dataJson);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("aliSearch,keyword[{}],page[{}],error:", keyword, page, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
 
     private Long saveOneBoundToProduct(SiteSourcing siteSourcing) throws IOException {

@@ -342,6 +342,10 @@ public class XmsSourcingController {
             product.setCreateTime(new Date());
             product.setUpdateTime(new Date());
             this.xmsCustomerProductService.save(product);
+            // 设置同步成功标识
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().eq(XmsSourcingList::getId, xmsSourcingList.getId()).set(XmsSourcingList::getAddProductFlag, 1);
+            this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(product);
         } catch (Exception e) {
             e.printStackTrace();
