@@ -32,6 +32,7 @@ public class OrderUtils {
 
     private static final String SOURCING_ORDER_NO = "sourcing:order";
     private static final String PAYMENT_ID = "payment:id:";
+    private static final String PAY_ORDER_NO = "pay:order:";
 
 
     @Autowired
@@ -207,7 +208,17 @@ public class OrderUtils {
             // 如果是库存，进行库存处理：每次都是插入库存，方便处理
             if (0 == generateParam.getType()) {
                 if (CollectionUtil.isNotEmpty(skuStockInsertList)) {
+                    if (payAmount == 0) {
+                        // 仅余额支付的话，设置库存状态可用
+                        skuStockInsertList.forEach(e -> e.setStatus(2));
+                    }
                     this.iXmsCustomerSkuStockService.saveBatch(skuStockInsertList);
+                    if (payAmount > 0) {
+                        // 如果是库存订单，并且有PayPal支付，则放入到redis里面，待支付成功后，更新库存状态
+                        List<String> idList = new ArrayList<>();
+                        skuStockInsertList.forEach(e -> idList.add(String.valueOf(e.getId())));
+                        this.redisUtil.lSet(PAY_ORDER_NO + generateParam.getOrderNo(), idList, 60 * 60 * 24 * 7);
+                    }
                 }
             }
             skuStockInsertList.clear();

@@ -339,6 +339,7 @@ public class XmsSourcingController {
             product.setProductId(Long.parseLong(String.valueOf(xmsSourcingList.getProductId())));
             product.setSourceLink(xmsSourcingList.getSourceLink());
             product.setStatus(0);
+            product.setSiteType(xmsSourcingList.getSiteType());
             product.setCreateTime(new Date());
             product.setUpdateTime(new Date());
             this.xmsCustomerProductService.save(product);
@@ -361,6 +362,7 @@ public class XmsSourcingController {
 
         Assert.isTrue(null != sourcingPayParam, "productPayParam null");
         Assert.isTrue(null != sourcingPayParam.getProductId() && sourcingPayParam.getProductId() > 0, "productId null");
+        Assert.isTrue(null != sourcingPayParam.getSourcingId() && sourcingPayParam.getSourcingId() > 0, "sourcingId null");
         Assert.isTrue(CollectionUtil.isNotEmpty(sourcingPayParam.getSkuCodeAndNumList()), "skuCodeAndNumList null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverName()), "receiverName null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverPhone()), "receiverPhone null");
@@ -414,6 +416,22 @@ public class XmsSourcingController {
             // 生成订单并且计算总价格
             GenerateOrderParam generateOrderParam = GenerateOrderParam.builder().orderNo(orderNo).totalFreight(totalFreight).currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
             GenerateOrderResult orderResult = this.orderUtils.generateOrder(generateOrderParam);
+
+            // 更新客户库存数据
+            QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();
+            productQueryWrapper.lambda().eq(XmsCustomerProduct::getProductId, sourcingPayParam.getProductId()).eq(XmsCustomerProduct::getSourcingId, sourcingPayParam.getSourcingId());
+            List<XmsCustomerProduct> list = this.xmsCustomerProductService.list(productQueryWrapper);
+            if(CollectionUtil.isNotEmpty(list)) {
+                if (StrUtil.isNotEmpty(list.get(0).getAddress())) {
+                    if (!list.get(0).getAddress().contains(sourcingPayParam.getReceiverCountry())) {
+                        list.get(0).setAddress(list.get(0).getAddress() + "," + sourcingPayParam.getReceiverCountry() + ",");
+                    }
+                } else {
+                    list.get(0).setAddress(sourcingPayParam.getReceiverCountry() + ",");
+                }
+                list.get(0).setUpdateTime(new Date());
+                this.xmsCustomerProductService.updateById(list.get(0));
+            }
 
             skuCodeList.clear();
             productIdList.clear();

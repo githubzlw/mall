@@ -25,4 +25,9 @@ public class XmsPrivateStorageServiceImpl implements XmsPrivateStorageService {
     public List<XmsCustomerProductQuery> queryProductByParam(XmsCustomerProductStockParam productStockParam) {
         return xmsPrivateStorageDao.queryProductByParam(productStockParam);
     }
+
+    @Override
+    public int queryProductByParamCount(XmsCustomerProductStockParam productStockParam) {
+        return xmsPrivateStorageDao.queryProductByParamCount(productStockParam);
+    }
 }
