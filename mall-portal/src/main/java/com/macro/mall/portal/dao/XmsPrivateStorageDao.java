@@ -14,4 +14,6 @@ import java.util.List;
 public interface XmsPrivateStorageDao {
 
     List<XmsCustomerProductQuery> queryProductByParam(XmsCustomerProductStockParam productStockParam);
+
+    int queryProductByParamCount(XmsCustomerProductStockParam productStockParam);
 }

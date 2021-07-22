@@ -19,6 +19,9 @@ public class SourcingPayParam extends OrderPayParam{
     @ApiModelProperty("产品的ID")
     private Long productId;
 
+    @ApiModelProperty(value = "sourcing list表ID")
+    private Integer sourcingId;
+
     @ApiModelProperty("产品的sku编码:数量")
     private List<String> skuCodeAndNumList;
 

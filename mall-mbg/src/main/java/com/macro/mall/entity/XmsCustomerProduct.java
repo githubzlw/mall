@@ -87,5 +87,14 @@ public class XmsCustomerProduct implements Serializable {
     @ApiModelProperty(value = "shopify商品的图片链接")
     private String img;
 
+    @ApiModelProperty(value = "购买库存数量")
+    private Integer stockNum;
+
+    @ApiModelProperty(value = "网站类型：1->ALIBABA;2->ALIEXPRESS;3->ESALIEXPRESS;4->AMAZON;5->WAYFAIR;6->EBAY;7->WALMART;8->ALI1688;9->IMG_ONLY;10->OTHER;11->SHOPIFY;")
+    private Integer siteType;
+
+    @ApiModelProperty(value = "地址信息")
+    private String address;
+
 
 }

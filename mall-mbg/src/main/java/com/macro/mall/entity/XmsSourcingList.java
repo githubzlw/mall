@@ -119,5 +119,8 @@ public class XmsSourcingList implements Serializable {
     @ApiModelProperty(value = "运费")
     private String shippingFee;
 
+    @ApiModelProperty(value = "是否添加到私人商品表中 0未添加 1添加")
+    private Integer addProductFlag;
+
 
 }

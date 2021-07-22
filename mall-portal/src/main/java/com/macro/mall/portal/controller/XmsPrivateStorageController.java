@@ -3,6 +3,7 @@ package com.macro.mall.portal.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.model.UmsMember;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,9 +73,11 @@ public class XmsPrivateStorageController {
             productStockParam.setMemberId(currentMember.getId());
 
             Map<String, XmsCustomerProductResult> resultMap = new HashMap<>();
-            List<XmsCustomerProductQuery> productRsList = this.xmsPrivateStorageService.queryProductByParam(productStockParam);
-            if (CollectionUtil.isNotEmpty(productRsList)) {
+            int count = this.xmsPrivateStorageService.queryProductByParamCount(productStockParam);
 
+            if (count > 0) {
+
+                List<XmsCustomerProductQuery> productRsList = this.xmsPrivateStorageService.queryProductByParam(productStockParam);
                 //组合结果
 
                 productRsList.forEach(e -> {
@@ -123,7 +127,16 @@ public class XmsPrivateStorageController {
                 tempSkuCodes.clear();
             }
 
-            return CommonResult.success(resultMap.values());
+            Page<XmsCustomerProductResult> productResultPage = new Page<>(productStockParam.getPageNum(), productStockParam.getPageSize());
+            productResultPage.setTotal(count);
+            productResultPage.setSize(resultMap.values().size());
+            int pages = count / productStockParam.getPageSize();
+            if(count % productStockParam.getPageSize() > 0){
+                pages ++;
+            }
+            productResultPage.setPages(pages);
+            productResultPage.setRecords(new ArrayList<>(resultMap.values()));
+            return CommonResult.success(productResultPage);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("list,productStockParam[{}],error:", productStockParam, e);

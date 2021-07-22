@@ -2,10 +2,15 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerProduct;
+import com.macro.mall.entity.XmsCustomerSkuStock;
+import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.OmsCartItem;
+import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.*;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +54,8 @@ public class XmsYouLiveProductController {
     @Autowired
     private IXmsCustomerProductService xmsCustomerProductService;
     @Autowired
+    private IXmsCustomerSkuStockService xmsCustomerSkuStockService;
+    @Autowired
     private OmsCartItemService cartItemService;
     @Autowired
     private IPmsSkuStockService iPmsSkuStockService;
@@ -55,6 +63,10 @@ public class XmsYouLiveProductController {
     private OrderUtils orderUtils;
     @Autowired
     private PayUtil payUtil;
+    @Autowired
+    private PmsPortalProductService portalProductService;
+    @Autowired
+    private IXmsSourcingListService xmsSourcingListService;
 
     @ApiOperation("获取客户产品列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -72,7 +84,43 @@ public class XmsYouLiveProductController {
             productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
             if(CollectionUtil.isNotEmpty(productPage.getRecords())){
-                productPage.getRecords().forEach(e-> e.setShopifyJson(null));
+                productPage.getRecords().forEach(e-> {
+                    e.setShopifyJson(null);
+                    if(StrUtil.isEmpty(e.getAddress())){
+                        e.setAddress("");
+                    }
+                });
+                // 读取产品相关的信息
+                List<Long> collect = productPage.getRecords().stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
+                List<PmsProduct> pmsProducts = this.portalProductService.queryByIds(collect);
+                if(CollectionUtil.isNotEmpty(pmsProducts)){
+                    Map<Long, PmsProduct> mapCombos = pmsProducts.stream().collect(Collectors.toMap(PmsProduct::getId, e -> e, (a, b) -> b));
+                    productPage.getRecords().forEach(e-> {
+                        if(mapCombos.containsKey(e.getProductId())){
+                            e.setTitle(mapCombos.get(e.getProductId()).getName());
+                            e.setSourceLink(mapCombos.get(e.getProductId()).getUrl());
+                            e.setImg(mapCombos.get(e.getProductId()).getPic());
+                        }
+                    });
+                }
+                // 读取库存相关的信息
+                QueryWrapper<XmsCustomerSkuStock> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, collect).eq(XmsCustomerSkuStock::getStatus, 2);
+                List<XmsCustomerSkuStock> stockList = this.xmsCustomerSkuStockService.list(queryWrapper);
+                if(CollectionUtil.isNotEmpty(stockList)){
+                    Map<Long, List<XmsCustomerSkuStock>> listMap = stockList.stream().collect(Collectors.groupingBy(XmsCustomerSkuStock::getProductId));
+                    productPage.getRecords().forEach(e-> {
+                        e.setStockNum(0);
+                        if(listMap.containsKey(e.getProductId())){
+                            int sum = listMap.get(e.getProductId()).stream().mapToInt(XmsCustomerSkuStock::getStock).sum();
+                            e.setStockNum(sum);
+                        }
+                    });
+                    listMap.clear();
+                }
+
+                collect.clear();
+
             }
             return CommonResult.success(productPage);
         } catch (Exception e) {
@@ -157,23 +205,40 @@ public class XmsYouLiveProductController {
 
     @ApiOperation("删除客户产品")
     @RequestMapping(value = "/deleteProduct", method = RequestMethod.POST)
-    public CommonResult deleteCustomProduct(Integer id, Integer sameShopify) {
+    public CommonResult deleteCustomProduct(@RequestParam("ids") List<Long> ids, @RequestParam("sameShopify") Integer sameShopify) {
 
-        Assert.isTrue(null != id && id > 0, "id null");
+        Assert.isTrue(CollectionUtil.isNotEmpty(ids), "ids null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         Assert.isTrue(null != currentMember.getId() && currentMember.getId() > 0, "currentMemberId null");
         try {
-            if( null != sameShopify && sameShopify == 1){
+
+            List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductService.listByIds(ids);
+            if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
+                List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
+                UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
+                xmsSourcingListService.update(null, updateWrapper);
+                collect.clear();
+            }
+
+            if (null != sameShopify && sameShopify == 1) {
                 // 进行shopify的客户商品删除
-                XmsCustomerProduct byId = this.xmsCustomerProductService.getById(id);
+                // XmsCustomerProduct byId = this.xmsCustomerProductService.getById(ids);
                 //  byId.getShopifyProductId()
             }
-            boolean b = this.xmsCustomerProductService.removeById(id);
+            boolean b = this.xmsCustomerProductService.removeByIds(ids);
+            if(b) {
+                // 移除库存
+                UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
+                deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, ids);
+                b = this.xmsCustomerSkuStockService.remove(deleteWrapper);
+            }
+
             return CommonResult.success(b);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("deleteCustomProduct,id[{}],error:", id, e);
+            log.error("deleteCustomProduct,ids[{}],error:", ids, e);
             return CommonResult.failed("delete failed");
         }
     }

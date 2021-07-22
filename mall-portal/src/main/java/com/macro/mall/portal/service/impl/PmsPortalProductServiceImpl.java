@@ -129,6 +129,13 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         return result;
     }
 
+    @Override
+    public List<PmsProduct> queryByIds(List<Long> ids) {
+        PmsProductExample example = new PmsProductExample();
+        example.createCriteria().andIdIn(ids);
+        return productMapper.selectByExample(example);
+    }
+
 
     /**
      * 初始对象转化为节点对象
