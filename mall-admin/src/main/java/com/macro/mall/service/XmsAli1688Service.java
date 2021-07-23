@@ -124,4 +124,16 @@ public interface XmsAli1688Service {
      * @return
      */
     JSONObject getAliexpressDetail(Long pid, boolean isCache);
+
+    /**
+     * 速卖通关键词搜索
+     * @param page
+     * @param keyword
+     * @param start_price
+     * @param end_price
+     * @param sort
+     * @param isCache
+     * @return
+     */
+    CommonResult getItemByKeyWord(Integer page, String keyword, String start_price, String end_price, String sort, boolean isCache);
 }

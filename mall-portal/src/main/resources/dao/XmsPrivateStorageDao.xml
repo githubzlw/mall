@@ -19,4 +19,16 @@
         </if>
     </select>
 
+    <select id="queryProductByParamCount" parameterType="com.macro.mall.portal.domain.XmsCustomerProductStockParam" resultType="java.lang.Integer">
+
+        select count(0) from (
+        select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time
+        from xms_customer_sku_stock c, xms_customer_product a, pms_product b
+        where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
+        <if test="title != null">
+            and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')
+        </if>
+        group by c.product_id,c.sku_code) rs
+    </select>
+
 </mapper>
