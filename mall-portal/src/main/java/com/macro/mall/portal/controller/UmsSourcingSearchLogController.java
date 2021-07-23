@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.RequestUtil;
 import com.macro.mall.entity.UmsSourcingSearchLog;
-import com.macro.mall.entity.XmsMsg;
 import com.macro.mall.portal.domain.SourcingSearchParam;
-import com.macro.mall.portal.domain.XmsMsgParam;
 import com.macro.mall.portal.service.UmsSourcingSearchLogService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +14,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * sourcing搜索日志Controller
