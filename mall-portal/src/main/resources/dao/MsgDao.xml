@@ -31,6 +31,7 @@
         </if>
 
         AND mr.id IS NULL
+        Order by m.create_time desc
         LIMIT #{offset}, #{limit};
     </select>
 
@@ -52,8 +53,9 @@
             AND m.create_time &lt;= #{endDate}
         </if>
         AND mr.isread=1
-		AND mr.isdelete=0
-		LIMIT #{offset}, #{limit};
+        AND mr.isdelete=0
+        Order by m.create_time desc
+        LIMIT #{offset}, #{limit};
     </select>
     <select id="unreadMsgListCount" resultType="Integer">
         SELECT
