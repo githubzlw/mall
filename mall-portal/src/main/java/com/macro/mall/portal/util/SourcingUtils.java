@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.enums.ChromeUploadSiteEnum;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsSourcingList;
@@ -36,6 +37,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author: JiangXW
@@ -294,7 +298,7 @@ public class SourcingUtils {
 
         JSONObject jsonObject = new JSONObject();
         // 判断ALIEXPRESS
-        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
+        if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
             if (null != jsonResult && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
@@ -462,7 +466,15 @@ public class SourcingUtils {
                 url = url.substring(0, url.indexOf("?"));
                 siteSourcing.setUrl(url);
             }
-            SiteFlagEnum siteFlagEnum = Arrays.stream(SiteFlagEnum.values()).filter(e -> siteSourcing.getUrl().contains(e.getUrl())).findFirst().orElse(null);
+            /*SiteFlagEnum siteFlagEnum = Arrays.stream(SiteFlagEnum.values()).filter(e -> siteSourcing.getUrl().contains(e.getUrl())).findFirst().orElse(null);*/
+
+            String pattern = "(https:\\/\\/)?(\\w)*\\.(%s)\\.com";
+            SiteFlagEnum siteFlagEnum = Arrays.stream(SiteFlagEnum.values()).filter(i -> {
+                String patternRs = String.format(pattern, i.getName());
+                Pattern r = Pattern.compile(patternRs);
+                Matcher m = r.matcher(siteSourcing.getUrl());
+                return m.find();
+            }).findFirst().orElse(null);
 
             String pid;
             if (null != siteFlagEnum) {
@@ -615,7 +627,11 @@ public class SourcingUtils {
             url = url.substring(0, url.indexOf("?"));
         }
         String tempKey = url.split(".html")[0];
-        return tempKey.substring(tempKey.lastIndexOf("_") + 1);
+        String substring = tempKey.substring(tempKey.lastIndexOf("_") + 1);
+        if(substring.length() > 40){
+            substring = tempKey.substring(tempKey.lastIndexOf("-") + 1);
+        }
+        return substring;
     }
 
 
