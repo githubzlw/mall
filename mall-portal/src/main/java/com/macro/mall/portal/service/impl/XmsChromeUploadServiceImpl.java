@@ -22,6 +22,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -76,7 +78,16 @@ public class XmsChromeUploadServiceImpl extends ServiceImpl<XmsChromeUploadMappe
         XmsChromeUpload xmsChromeUpload = mapstruct.toDto(xmsChromeUploadParam);
 
         //判断是否属于抓取网站范围
-        List<ChromeUploadSiteEnum> collectFilter = Arrays.stream(ChromeUploadSiteEnum.values()).filter(i -> xmsChromeUploadParam.getUrl().contains(i.getSiteDomain())).collect(Collectors.toList());
+        // List<ChromeUploadSiteEnum> collectFilter = Arrays.stream(ChromeUploadSiteEnum.values()).filter(i -> xmsChromeUploadParam.getUrl().contains(i.getSiteDomain())).collect(Collectors.toList());
+
+        String pattern = "(https:\\/\\/)?(\\w)*\\.(%s)\\.com";
+        List<ChromeUploadSiteEnum> collectFilter = Arrays.stream(ChromeUploadSiteEnum.values()).filter(i -> {
+            String patternRs = String.format(pattern, i.getSiteName());
+            Pattern r = Pattern.compile(patternRs);
+            Matcher m = r.matcher(xmsChromeUploadParam.getUrl());
+            return m.find();
+        }).collect(Collectors.toList());
+
         if(collectFilter.size() ==1 ){
             xmsChromeUpload.setSiteType(collectFilter.get(0).getSiteType());
         }else{
