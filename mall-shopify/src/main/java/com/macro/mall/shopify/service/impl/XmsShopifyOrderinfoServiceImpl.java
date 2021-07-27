@@ -33,4 +33,11 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         queryWrapper.lambda().eq(XmsShopifyOrderinfo::getShopifyName, shopifyName);
         return this.xmsShopifyOrderinfoMapper.selectList(queryWrapper);
     }
+
+    @Override
+    public List<XmsShopifyOrderinfo> queryListByOrderNo(Long orderNo) {
+        QueryWrapper<XmsShopifyOrderinfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsShopifyOrderinfo::getOrderNo, orderNo);
+        return this.xmsShopifyOrderinfoMapper.selectList(queryWrapper);
+    }
 }

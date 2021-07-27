@@ -165,11 +165,7 @@
         <td class="header container" align="center">
           <div class="content">
             <span class="brand">
-              <a href="/" th:switch="${logoUrl}">
-                <img th:case ="'1'" src="https://img.import-express.com/importcsvimg/webpic/newindex/img/logo.png" >
-                <img th:case ="'2'" style="width: 240px;padding:1% 0;" src="https://img.kidsproductwholesale.com/importcsvimg/webpic/newindex/img/kids_logo.png" >
-                <img th:case ="'4'"  src="https://img.kidsproductwholesale.com/importcsvimg/webpic/img/wh89/pet/pet_logo.png?v=1" >
-              </a>
+              <img src="http://app.busysell.com/chrome_extensions/busysell.png" >
             </span>
           </div>
         </td>
@@ -186,10 +182,8 @@
                 <td>
                   <table class="soapbox">
                     <tr>
-                      <td class="soapbox-title" th:switch="${logoUrl}">
-                        <p th:case ="'1'">ImportExpress Account Update!</p>
-                        <p th:case ="'2'">KidsProductWholesale Account Update!</p>
-                        <p th:case ="'4'">PetStoreInc Account Update!</p>
+                      <td class="soapbox-title">
+                        <p>BusySell Account Update!</p>
                       </td>
                     </tr>
                   </table>
@@ -198,23 +192,20 @@
                     <tr>
                       <td class="body-padding"></td>
                       <td class="body-padded">
-                        <div class="body-title">Hi <span th:text="${name}">{{ first_name }}</span>,</div>
+                        <div class="body-title">Hi <span>${email}</span>,</div>
                         <p class="please">Please click the link below to set your new password:</p>
                         <div class="account_email_box">
-                         <a href="/userController/upUserState?code=7F15C268EC0C32DF021712F2485E26B8&&email=zhouxueyun66@gmail.com" class="account_email" th:href="${activeLink}" th:text="${activeLink}">https://www.kidsproductwholesale.com/userController/upUserState?code=7F15C268EC0C32DF021712F2485E26B8&&email=zhouxueyun66@gmail.com </a>
-
+                         <a href="${activeLink}" class="account_email" >${activeLink}</a>
 
                         </div>
                         <table class="body-signature-block">
                           <tr>
-                            <td class="body-signature-cell" th:switch="${logoUrl}">
+                            <td class="body-signature-cell">
                               <p class="thanks_so">Thanks so much,</p>
-                              <p th:case ="'1'">ImportExpress</p>
-                              <p th:case ="'2'">KidsProductWholesale</p>
-                              <p th:case ="'4'">PetStoreInc</p>
+                              <p>BusySell</p>
                               <div class="please_note">
                                 <h3>PLEASE NOTE:</h3>
-                                <p>This email message was sent from a notification-only address that cannot accept incoming email. PLEASE DO NOT REPLY to this message. If you have any question or concern, access  your account <a href="/user/loginNew" th:href="${here}">here</a>.</p>
+                                <p>This email message was sent from a notification-only address that cannot accept incoming email. PLEASE DO NOT REPLY to this message. If you have any question or concern, access  your account <a href="https://app.importexpress.com/" th:href="${here}">here</a>.</p>
                               </div>
                             </td>
                           </tr>

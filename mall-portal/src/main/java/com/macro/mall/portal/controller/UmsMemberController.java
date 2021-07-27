@@ -2,19 +2,24 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.cache.RedisUtil;
+import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
+import com.macro.mall.tools.bean.WelcomeMailTemplateBean;
+import com.macro.mall.tools.service.EmailService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 会员登录注册管理Controller
@@ -41,13 +47,17 @@ public class UmsMemberController {
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
-    @Value("${tpurl.tpLogin}")
-    public String tpLogin;
     @Autowired
     private UmsMemberService memberService;
 
     @Autowired
     private SourcingUtils sourcingUtils;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
 
     @ApiOperation("会员注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -55,8 +65,9 @@ public class UmsMemberController {
     public CommonResult register(@RequestParam String username,
                                  @RequestParam String password,
                                  @RequestParam String organizationname,
-                                 @RequestParam String monthlyOrders, String uuid) {
-        memberService.register(username, password, organizationname, monthlyOrders, 0);
+                                 @RequestParam String monthlyOrders, String uuid,
+                                 @RequestParam Integer countryId) {
+        memberService.register(username, password, organizationname, monthlyOrders, 0,countryId);
         String token = memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
@@ -155,25 +166,44 @@ public class UmsMemberController {
     @ApiOperation("google登录")
     @RequestMapping(value = "/googleLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult googleAuth(@RequestParam String idtokenstr) {
+    public CommonResult googleAuth(@RequestParam("idtokenstr") String idtokenstr, @RequestParam("uuid") String uuid) {
 
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
         try {
+            if(StringUtils.isNotEmpty(idtokenstr)){
+                idtokenstr =idtokenstr.replaceAll("Bearer ","");
+            }
             pair = memberService.googleAuth(idtokenstr);
-            memberService.register(pair.getRight(), pair.getRight(), "", "", 1);
 
+            if(pair == null){
+                return CommonResult.failed("mail get failed");
+            }
+
+            UmsMember userInfo = memberService.getByUsername(pair.getRight());
+            if (userInfo == null){
+                memberService.register(pair.getRight(), pair.getRight(), "", "", 1,36);
+                userInfo = memberService.getByUsername(pair.getRight());
+            }
             String token = memberService.login(pair.getRight(), pair.getRight());
             if (token == null) {
                 return CommonResult.validateFailed("用户名或密码错误");
             }
-            MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(pair.getRight());
+            // 整合sourcing数据
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(userInfo, uuid);
+            }
 
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
-            tokenMap.put("nickName", userinfo.getUmsMember().getNickname());
+            if (userInfo == null){
+                tokenMap.put("nickName", "");
+            }else{
+                tokenMap.put("nickName", userInfo.getNickname());
+            }
+
             return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("googleAuth", e);
@@ -181,20 +211,60 @@ public class UmsMemberController {
         }
     }
 
+//    @RequestMapping(value = "/getFacebookURL", method = RequestMethod.GET)
+//    @ApiOperation("get FacebookURL")
+//    @ResponseBody
+//    public CommonResult getFacebookUrl() {
+//
+//        try{
+//            return CommonResult.success(memberService.getFacebookUrl());
+//
+//        }catch (Exception e){
+//            return CommonResult.failed(e.getMessage());
+//        }
+//
+//    }
+
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam String idtokenstr) {
+    public CommonResult facebookAuth(@RequestParam("fToken") String fToken,@RequestParam("facebookId") String facebookId,@RequestParam("uuid") String uuid) {
 
         LOGGER.info("facebook login begin");
         try {
-            String email = UrlUtil.getInstance().facebookAuth(idtokenstr, tpLogin);
-            memberService.register(email, "", "", "", 2);
+            FacebookPojo bean = memberService.facebookAuth(facebookId,fToken);
+            if(bean == null){
+                return CommonResult.failed("mail get failed");
+            }
+            UmsMember userInfo = memberService.getByUsername(bean.getEmail());
+            if(userInfo == null){
+                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2,36);
+                userInfo = memberService.getByUsername(bean.getEmail());
+            }
+            String token = memberService.login(bean.getEmail(), bean.getEmail());
+            if (token == null) {
+                return CommonResult.validateFailed("用户名或密码错误");
+            }
+            // 整合sourcing数据
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(userInfo, uuid);
+            }
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("token", token);
+            tokenMap.put("tokenHead", tokenHead);
+            tokenMap.put("mail", bean.getEmail());
+            if (userInfo == null){
+                tokenMap.put("nickName", "");
+            }else{
+                tokenMap.put("nickName", userInfo.getNickname());
+            }
+            return CommonResult.success(tokenMap);
         } catch (Exception e) {
             LOGGER.error("facebookLogin", e);
+            return CommonResult.failed("facebookLogin failed");
         }
-        return CommonResult.success(null, "成功");
     }
+
 
 
     @ApiOperation("修改客户信息")
@@ -206,7 +276,6 @@ public class UmsMemberController {
         int info = memberService.updateUserInfo(niceName, monthlyOrderQuantity, organizationName);
         return CommonResult.success(info, "修改客户信息成功");
     }
-
 
 
     @ApiOperation("设置引导状态")
@@ -223,4 +292,91 @@ public class UmsMemberController {
             return CommonResult.failed("setGuided failed");
         }
     }
+
+
+    @ApiOperation("找回密码")
+    @RequestMapping(value = "/retrievePassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult retrievePassword(@RequestParam("userName") String userName) {
+
+        try {
+            UmsMember member = memberService.getByUsername(userName);
+            if (null == member || member.getId() == 0) {
+                return CommonResult.failed("No such user");
+            }
+            // 生产随机码，放入redis
+            String uuid = UUID.randomUUID().toString();
+            redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 60 * 48);
+            // 发送邮件
+
+            String linkUrl = microServiceConfig.getMallPassActivate()+ "?userName=" + userName + "&uuid=" + uuid;
+            WelcomeMailTemplateBean mailTemplateBean = new WelcomeMailTemplateBean();
+            mailTemplateBean.setName(userName);
+            mailTemplateBean.setSubject("retrievePassword");
+            mailTemplateBean.setActivationCode(linkUrl);
+            mailTemplateBean.setTo(userName);
+            mailTemplateBean.setTest(false);
+            mailTemplateBean.setTemplateType(MailTemplateType.ACCOUNT_UPDATE);
+            emailService.send(mailTemplateBean);
+            return CommonResult.success(linkUrl);
+        } catch (Exception e) {
+            LOGGER.error("retrievePassword", e);
+            return CommonResult.failed("retrievePassword failed");
+        }
+    }
+
+    @ApiOperation("验证激活参数")
+    @RequestMapping(value = "/checkUUid", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult checkUUid(@RequestParam("userName") String userName, @RequestParam("uuid") String uuid) {
+
+        try {
+            Object tempName = redisUtil.hmgetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            if (null == tempName || !userName.equalsIgnoreCase(tempName.toString())) {
+                return CommonResult.success("uuid or userName invalid");
+            }
+            return CommonResult.success("uuid and userName valid");
+        } catch (Exception e) {
+            LOGGER.error("resetPassword,checkUUid[{}],error:", userName, e);
+            return CommonResult.failed("checkUUid failed");
+        }
+    }
+
+
+    @ApiOperation("重新设置密码")
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult resetPassword(@RequestParam("userName") String userName, @RequestParam("password") String password, @RequestParam("uuid") String uuid) {
+
+        try {
+            Object tempName = redisUtil.hmgetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            if (null == tempName || !userName.equalsIgnoreCase(tempName.toString())) {
+                return CommonResult.failed("uuid invalid");
+            }
+            UmsMember member = memberService.getByUsername(userName);
+            if (null == member || member.getId() == 0) {
+                return CommonResult.failed("No such user");
+            }
+            memberService.resetPassword(member.getId(), password);
+            // 激活完成后清除数据
+
+            // redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 10);
+            redisUtil.hDelete(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid);
+            return CommonResult.success("resetPassword success");
+        } catch (Exception e) {
+            LOGGER.error("resetPassword,userName[{}],error:", userName, e);
+            return CommonResult.failed("resetPassword failed");
+        }
+    }
+
+
+    @ApiOperation("验证旧密码")
+    @RequestMapping(value = "/verifyOldPassword", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult verifyOldPassword(@RequestParam String username,
+                                          @RequestParam String password) {
+        String token = memberService.verifyOldPassword(username, password);
+        return CommonResult.success(token);
+    }
+
 }

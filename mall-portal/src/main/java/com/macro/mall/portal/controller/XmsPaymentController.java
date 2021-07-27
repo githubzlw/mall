@@ -1,11 +1,13 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.common.enums.SiteEnum;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
@@ -46,11 +48,17 @@ public class XmsPaymentController {
 
     @ApiOperation(value = "正常订单调用paypal支付", notes = "支付")
     @PostMapping("/paypal")
-    public CommonResult paypal(HttpServletRequest request, @RequestParam("orderNo") String orderNo, @RequestParam("totalAmount") Double totalAmount) {
+    public CommonResult paypal(HttpServletRequest request, @RequestParam("orderNo") String orderNo, @RequestParam("totalAmount") Double totalAmount, @RequestParam(value = "payFrom", defaultValue = "0") Integer payFrom) {
         Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
         Assert.isTrue(null != totalAmount && totalAmount > 0, "totalAmount null");
 
         try {
+
+            PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == payFrom).findFirst().orElse(null);
+            if (null == payFromEnum) {
+                return CommonResult.failed("PayFrom error");
+            }
+
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
 
             // 判断订单是否完成支付
@@ -60,7 +68,7 @@ public class XmsPaymentController {
             }
 
             PayPalParam payPalParam = this.payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
-            this.payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "订单支付", 0);
+            this.payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "订单支付", 0, payFromEnum);
             CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
             return commonResult;
         } catch (Exception e) {
@@ -72,17 +80,22 @@ public class XmsPaymentController {
 
     @ApiOperation(value = "充值余额调用paypal支付", notes = "支付")
     @PostMapping("/topUpBalance")
-    public CommonResult topUpBalance(HttpServletRequest request, @RequestParam("totalAmount") Double totalAmount) {
+    public CommonResult topUpBalance(HttpServletRequest request, @RequestParam("totalAmount") Double totalAmount, @RequestParam(value = "payFrom", defaultValue = "0") Integer payFrom) {
         Assert.isTrue(null != totalAmount && totalAmount > 0, "totalAmount null");
 
         String orderNo = null;
         try {
+            PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == payFrom).findFirst().orElse(null);
+            if (null == payFromEnum) {
+                return CommonResult.failed("PayFrom error");
+            }
+
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
             orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.Balance.getName());
             // 生成订单信息
             this.orderUtils.generateBalanceOrder(orderNo, totalAmount, currentMember.getId(), currentMember.getUsername());
             PayPalParam payPalParam = payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
-            payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "余额支付", 1);
+            payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "余额支付", 1, payFromEnum);
             CommonResult commonResult = payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
             return commonResult;
         } catch (Exception e) {
@@ -95,7 +108,7 @@ public class XmsPaymentController {
 
     @ApiOperation(value = "paypal支付支付成功后回调", notes = "支付")
     @GetMapping("/paypalApiCalAndConfirm")
-    public CommonResult executePaymentApiCallAndRenderConfirmation(HttpServletRequest request, String paymentId, String PayerID, String token) throws IOException {
+    public CommonResult executePaymentApiCallAndRenderConfirmation(HttpServletRequest request, String paymentId, String PayerID, String token, Integer payFrom) throws IOException {
         HttpSession session = request.getSession(true);
 
         //paymentId = request.getParameter("paymentId");
@@ -105,6 +118,14 @@ public class XmsPaymentController {
         Payment payment;
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
+            if(null == payFrom){
+                payFrom = 0;
+            }
+            Integer finalPayFrom = payFrom;
+            PayFromEnum payFromEnum = Arrays.stream(PayFromEnum.values()).filter(e -> e.getCode() == finalPayFrom).findFirst().orElse(null);
+            if (null != payFromEnum) {
+                payFromEnum = PayFromEnum.NONE;
+            }
 
             System.err.println("do success");
             CommonResult commonResult = this.payUtil.execute(paymentId, PayerID, SiteEnum.SOURCING);
@@ -122,7 +143,7 @@ public class XmsPaymentController {
 
                     //获取付款金额
                     String amount = payerInfoMap.get("totalAmount");
-                    this.payUtil.insertPayment(currentMember, itemNumber, Double.parseDouble(amount), 1, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token, 0);
+                    this.payUtil.insertPayment(currentMember, itemNumber, Double.parseDouble(amount), 1, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token, 0, payFromEnum);
                     // 更新订单数据 更新库存状态
                     this.orderUtils.paySuccessUpdate(itemNumber, 1);
 

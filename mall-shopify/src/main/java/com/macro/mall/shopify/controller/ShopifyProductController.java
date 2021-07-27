@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/shopify")
-@Api(tags = "shopify铺货调用接口")
+@Api(tags = "shopify商品调用接口")
 public class ShopifyProductController {
 
 
@@ -35,6 +35,20 @@ public class ShopifyProductController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getCollectionByShopifyName, shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @PostMapping("/getProductsByShopifyName")
+    @ApiOperation("根据shopifyName获取商品数据")
+    public CommonResult getProductsByShopifyName(@RequestParam("shopifyName") String shopifyName, @RequestParam("memberId") Long memberId, @RequestParam("userName") String userName) {
+        Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
+        try {
+            int total = this.shopifyUtils.getProductsByShopifyName(shopifyName, memberId, userName);
+            return CommonResult.success(total);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getProductsByShopifyName, shopifyName[{}],error:", shopifyName, e);
             return CommonResult.failed(e.getMessage());
         }
     }

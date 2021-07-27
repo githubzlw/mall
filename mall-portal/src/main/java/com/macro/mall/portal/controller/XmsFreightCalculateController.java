@@ -6,10 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.*;
 import com.macro.mall.portal.domain.*;
-import com.macro.mall.portal.util.BeanCopyUtil;
-import com.macro.mall.portal.util.BigDecimalUtil;
-import com.macro.mall.portal.util.FbaFreightUtils;
-import com.macro.mall.portal.util.TrafficFreightUtils;
+import com.macro.mall.portal.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -33,7 +31,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class XmsFreightCalculateController {
 
-
+    @Autowired
+    private ExchangeRateUtils exchangeRateUtils;
     private final TrafficFreightUtils freightUtils;
     private final FbaFreightUtils fbaFreightUtils;
 
@@ -56,7 +55,7 @@ public class XmsFreightCalculateController {
             FreightResult freightResult = new FreightResult();
             BeanUtil.copyProperties(freightParam, freightResult);
             freightResult.setTotalWeight(freightResult.getTotalWeight() * 1000);
-            return freightUtils.commonCalculate(freightResult);
+            return this.freightUtils.commonCalculate(freightResult);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,9 +65,9 @@ public class XmsFreightCalculateController {
 
     }
 
-    @ApiOperation(value = "FBA运费计算")
-    @RequestMapping(value = "/fbaCalculate", method = RequestMethod.POST)
-    public CommonResult fbaCalculate(FbaFreightParam fbaFreightParam) {
+    @ApiOperation(value = "FBA海运运费计算")
+    @RequestMapping(value = "/fbaSeaCalculate", method = RequestMethod.POST)
+    public CommonResult fbaSeaCalculate(FbaFreightParam fbaFreightParam) {
 
         Assert.notNull(fbaFreightParam, "fbaFreightParam null");
         Assert.isTrue(null != fbaFreightParam.getCountryId() && fbaFreightParam.getCountryId() > 0, "countryId null");
@@ -81,10 +80,10 @@ public class XmsFreightCalculateController {
             BeanUtil.copyProperties(fbaFreightParam, freightUnit);
 
             if (freightUnit.getModeOfTransport() <= 2) {
-                Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = fbaFreightUtils.getFbaFreightUnitMap();
+                Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = this.fbaFreightUtils.getFbaFreightUnitMap();
                 // 判断是否存在此国家
                 if (fbaFreightUnitMap.containsKey(fbaFreightParam.getCountryId())) {
-                    List<XmsFbaFreightUnit> fbaList = fbaFreightUtils.getProductShippingCost(freightUnit);
+                    List<XmsFbaFreightUnit> fbaList = this.fbaFreightUtils.getProductShippingCost(freightUnit);
                     List<FbaFreightUnitResult> rsList = new ArrayList<>();
                     if (CollectionUtil.isNotEmpty(fbaList)) {
                         // 简化bean对象
@@ -102,7 +101,7 @@ public class XmsFreightCalculateController {
             } else if (freightUnit.getModeOfTransport() == 3) {
 
                 // 获取CIF列表和过滤数据
-                List<XmsCifFreightUnit> cifFreightUnitList = freightUtils.getCifFreightUnitList();
+                List<XmsCifFreightUnit> cifFreightUnitList = this.freightUtils.getCifFreightUnitList();
 
                 XmsCifFreightUnit cifFreightUnit = cifFreightUnitList.stream().filter(e -> e.getCountryId().equals(freightUnit.getCountryId()) && e.getPortName().equalsIgnoreCase(freightUnit.getPortName())).findFirst().orElse(null);
 
@@ -127,8 +126,80 @@ public class XmsFreightCalculateController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("fbaCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
-            return CommonResult.failed("fbaCalculate error");
+            log.error("fbaSeaCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
+            return CommonResult.failed("fbaSeaCalculate error");
+        }
+    }
+
+    @ApiOperation(value = "FBA空运运费计算")
+    @RequestMapping(value = "/fbaAirCalculate", method = RequestMethod.POST)
+    public CommonResult fbaAirCalculate(FbaFreightParam fbaFreightParam) {
+
+        Assert.notNull(fbaFreightParam, "fbaFreightParam null");
+        Assert.isTrue(null != fbaFreightParam.getCountryId() && fbaFreightParam.getCountryId() > 0, "countryId null");
+        Assert.isTrue(null != fbaFreightParam.getWeight() && fbaFreightParam.getWeight() > 0, "weight null");
+        Assert.isTrue(null != fbaFreightParam.getVolume() && fbaFreightParam.getVolume() > 0, "volume null");
+        try {
+
+            XmsFbaFreightUnit freightUnit = new XmsFbaFreightUnit();
+            BeanUtil.copyProperties(fbaFreightParam, freightUnit);
+            Map<Integer, List<XmsFbaFreightUnit>> fbaFreightUnitMap = this.fbaFreightUtils.getFbaFreightUnitMap();
+            // 判断是否存在此国家
+            if (fbaFreightUnitMap.containsKey(fbaFreightParam.getCountryId())) {
+
+                List<XmsFbaFreightUnit> list = fbaFreightUnitMap.get(fbaFreightParam.getCountryId());
+                List<XmsFbaFreightUnit> collect = list.stream().filter(e -> 3 == e.getModeOfTransport()).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    double tempWeight = 0;
+                    switch (fbaFreightParam.getCountryId()) {
+                        case 36:// USA
+                            // 计费重量=max（实际重量，体积（立方米）*167）
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 167);
+                            break;
+                        case 6:// CANADA
+                            //
+//                            tempWeight = Math.max(fbaFreightParam.getWeight(), 0);
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
+                            break;
+                        case 35:// UK
+//                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100/ 6000);
+                            break;
+                        case 13:// GERMANY
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
+                            break;
+                        case 20:// ITALY
+                            // 计费重量=max(实际重量，体积（立方厘米）/6000)
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    XmsFbaFreightUnit xmsFbaFreightUnit = collect.get(0);
+                    if (fbaFreightParam.getCountryId() == 36) {
+                        final String beginCode = fbaFreightParam.getZipCode().substring(0, 1);
+                        collect = collect.stream().filter(e -> e.getTypeOfMode() == 1 && e.getZipCode().contains("," + beginCode + ",")).collect(Collectors.toList());
+                        if (CollectionUtil.isNotEmpty(collect)) {
+                            xmsFbaFreightUnit = collect.get(0);
+                        }
+                    }
+                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble((xmsFbaFreightUnit.getWeightPrice() * tempWeight)/ this.exchangeRateUtils.getUsdToCnyRate(), 2));
+                    xmsFbaFreightUnit.setWeight(fbaFreightParam.getWeight());
+                    xmsFbaFreightUnit.setVolume(fbaFreightParam.getVolume());
+                    return CommonResult.success(xmsFbaFreightUnit);
+                } else {
+                    return CommonResult.failed("No Match for This ModeOfTransport");
+                }
+            }
+            return CommonResult.failed("No Match for This CountryId");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("fbaAirCalculate,fbaFreightParam:[{}],error:", fbaFreightParam, e);
+            return CommonResult.failed("fbaAirCalculate error");
         }
     }
 
@@ -144,42 +215,67 @@ public class XmsFreightCalculateController {
         try {
 
             EstimatedCostResult estimatedCostResult = new EstimatedCostResult();
-            if (null == estimatedCostParam.getOriginalProductPrice()) {
-                estimatedCostParam.setOriginalProductPrice(0D);
+            if (StrUtil.isEmpty(estimatedCostParam.getOriginalProductPrice())) {
+                estimatedCostParam.setOriginalProductPrice("0");
             }
             estimatedCostResult.setOriginalProductPrice(estimatedCostParam.getOriginalProductPrice());
 
-            if (null == estimatedCostParam.getOriginalShippingFee()) {
-                estimatedCostParam.setOriginalShippingFee(0D);
+            if (StrUtil.isEmpty(estimatedCostParam.getOriginalShippingFee())) {
+                estimatedCostParam.setOriginalShippingFee("0");
             }
             estimatedCostResult.setOriginalShippingFee(estimatedCostParam.getOriginalShippingFee());
 
             estimatedCostResult.setOriginalWeight(estimatedCostParam.getWeight());
             estimatedCostResult.setOriginalVolume(estimatedCostParam.getVolume());
 
+            // 处理原始价格
+            String prefixSymbol = "";
+            if (estimatedCostResult.getOriginalProductPrice().contains("CN¥")) {
+                prefixSymbol = "CN¥";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("€")) {
+                prefixSymbol = "€";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("A$")) {
+                prefixSymbol = "A$";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("£")) {
+                prefixSymbol = "£";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("$")) {
+                prefixSymbol = "$";
+            } else if (estimatedCostResult.getOriginalProductPrice().contains("¥")) {
+                prefixSymbol = "¥";
+            }
+
+            if (StrUtil.isNotEmpty(prefixSymbol)) {
+                estimatedCostResult.setOriginalProductPrice(estimatedCostResult.getOriginalProductPrice().replace(prefixSymbol, ""));
+            }
 
             // 原商品的0.75
-            estimatedCostResult.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.75, 2));
+            estimatedCostResult.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
-            EstimatedCost importXStandard = new EstimatedCost();
-            EstimatedCost importXPremium = new EstimatedCost();
+            EstimatedCost busySellStandard = new EstimatedCost();
+            EstimatedCost busySellPremium = new EstimatedCost();
 
             // 价格95折
-            importXStandard.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
-            importXPremium.setEstimatedPrice(BigDecimalUtil.truncateDouble(estimatedCostResult.getOriginalProductPrice() * 0.95, 2));
+            busySellStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+            busySellPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
 
             // importXStandard cost 照抄
-            importXStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+            busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
             // importXPremium cost 集运价格-EUB
-            double eubFreight = freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
-            double centralizedFreight = freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
+            double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
+            double centralizedFreight = this.freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
-            importXPremium.setCost(rsFreight);
+            if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
+                // 直接用集运价格
+                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
+            } else {
+                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
+            }
 
-            estimatedCostResult.setImportXStandard(importXStandard);
-            estimatedCostResult.setImportXPremium(importXPremium);
+
+            estimatedCostResult.setBusySellStandard(busySellStandard);
+            estimatedCostResult.setBusySellPremium(busySellPremium);
 
             // 获取到家的运费
             XmsFbaFreightUnit freightUnit = new XmsFbaFreightUnit();
@@ -188,13 +284,18 @@ public class XmsFreightCalculateController {
             freightUnit.setVolume(estimatedCostParam.getVolume());
             freightUnit.setWeight(estimatedCostParam.getWeight());
 
-            List<XmsFbaFreightUnit> fbaFreightUnitList = fbaFreightUtils.getProductShippingCost(freightUnit);
+            List<XmsFbaFreightUnit> fbaFreightUnitList = this.fbaFreightUtils.getProductShippingCost(freightUnit);
             if (CollectionUtil.isNotEmpty(fbaFreightUnitList)) {
                 XmsFbaFreightUnit tempUtil = fbaFreightUnitList.get(0);
                 fbaFreightUnitList.get(0).setTotalPrice(BigDecimalUtil.truncateDouble(tempUtil.getTotalPrice() / tempUtil.getRmbRate(), 2));
                 estimatedCostResult.setFreightUnit(fbaFreightUnitList.get(0));
                 fbaFreightUnitList.clear();
             }
+
+            // 计算尾程运费
+            XmsTailFreightResult tailFreightResult = fbaFreightUtils.getTailFreightResult(estimatedCostParam.getWeight() * 1000);
+            estimatedCostResult.setTailFreight(tailFreightResult);
+
             return CommonResult.success(estimatedCostResult);
         } catch (Exception e) {
             e.printStackTrace();

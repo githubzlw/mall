@@ -1,5 +1,6 @@
 package com.macro.mall.shopify.config;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.macro.mall.shopify.exception.ShopifyException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class ShopifyUtil {
+public class ShopifyRestTemplate {
 
 
     @Autowired
@@ -36,6 +37,7 @@ public class ShopifyUtil {
         // Do any additional configuration here
         return builder.build();
     }
+
 
     /**
      * postForEntity
@@ -98,7 +100,7 @@ public class ShopifyUtil {
         headers.setContentType(MediaType.APPLICATION_JSON);
         try {
             BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                    new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                    new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
             restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
             restTemplate.delete(uri);
             return 1;
@@ -140,7 +142,7 @@ public class ShopifyUtil {
     public String getObject(String uri) {
 
         BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
 
         restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
         HttpHeaders headers = new HttpHeaders();
@@ -160,7 +162,7 @@ public class ShopifyUtil {
     public String postObject(String uri, String json) {
 
         BasicAuthorizationInterceptor basicAuthorizationInterceptor =
-                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_API_KEY, shopifyConfig.SHOPIFY_API_KEY_SECRET);
+                new BasicAuthorizationInterceptor(shopifyConfig.SHOPIFY_CLIENT_ID, shopifyConfig.SHOPIFY_CLIENT_SECRET);
 
         restTemplate.getInterceptors().add(basicAuthorizationInterceptor);
         HttpHeaders headers = new HttpHeaders();
@@ -181,4 +183,45 @@ public class ShopifyUtil {
         Assert.notNull(shop,"shop must not be null");
         return shop.substring(0, shop.indexOf(".")-1);
     }
+
+
+    public String put(String uri, String token, Map<String,Object> param) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+
+
+        ResponseEntity<String> result = null;
+
+        try {
+            HttpEntity entity = new HttpEntity(param, headers);
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+            return response.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("put",e);
+            throw new ShopifyException("1003", "put error");
+        }
+    }
+
+
+    public String post(String uri, String token, Map<String,Object> param) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+
+
+        ResponseEntity<String> result = null;
+
+        try {
+            HttpEntity entity = new HttpEntity(param, headers);
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+            return response.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("post",e);
+            throw new ShopifyException("1003", "post error");
+        }
+    }
+
 }

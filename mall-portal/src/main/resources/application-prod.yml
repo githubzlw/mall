@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://db:3306/mall?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: reader
-    password: 123456
+    url: jdbc:mysql://34.210.160.177:3306/mall?useUnicode=true&allowMultiQueries=true&useSSL=false
+    username: importuser
+    password: jtl08qb8xfxx
     druid:
       initial-size: 5 #连接池初始化大小
       min-idle: 10 #最小空闲连接数
@@ -16,24 +16,24 @@ spring:
         login-username: druid
         login-password: druid
 
-  data:
-    mongodb:
-      host: mongo
-      port: 27017
-      database: mall-port
+  #data:
+    #mongodb:
+      #host: mongo
+      #port: 27017
+      #database: mall-port
 
   redis:
-    host: redis # Redis服务器地址
+    host: 127.0.0.1 # Redis服务器地址
     database: 0 # Redis数据库索引（默认为0）
     port: 6379 # Redis服务器连接端口
     password: '@Import_Express.Auth_123'# Redis服务器连接密码（默认为空）
     timeout: 300ms # 连接超时时间（毫秒）
 
   rabbitmq:
-    host: rabbit
+    host: 81.68.210.208
     port: 5672
-    virtual-host: /mall
-    username: mall
+    virtual-host: mall
+    username: importuser
     password: mall
 
 logging:
@@ -70,8 +70,9 @@ PAYPAL:
   CLIENT_ID: AaYrawhmyep4w1VQ_Q8r9ubzt09tBJevuCJ2rGbOHUfNRhbQt3rh9Dl1VsTGjKo4pei1uap-dq2j1cJO
   CLIENT_SECRET: EJpfYpI3Ym3iuFgG8yK8JwUVdkhiU0DrxUMcQ8h62dS96pZ8V3_ws8yL4r6QnBCuKQJ_PjUXDh8HE2mp
   CANCEL_URL_TYPE: 1
-  SUCCESS_URL: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
-  CANCEL_URL: http://127.0.0.1:8085/myaccount
+  SUCCESS_URL1: https://app.busysell.com/#/PaymentResult
+  SUCCESS_URL2: https://app.busysell.com/#/PayResult
+  CANCEL_URL: https://app.busysell.com/
   BUSINESS_ID: 584JZVFU6PPVU
 
 #stripe
@@ -79,5 +80,9 @@ STRIPE:
   MODE: false
   PK_KEY: pk_test_jJC2UiuLGAjY4Kv1jFbWRmnA00js5Qr1T9
   SK_KEY: sk_test_WxV6MvmlX39hDsGIBW5os04E00PCTGsGoS
+#找回邮件的回调URL
+mall:
+  pass_activate:
+    url: https://app.busysell.com/#/passActivate
 
 

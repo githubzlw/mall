@@ -8,8 +8,10 @@ import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.mapper.XmsCustomerProductMapper;
 import com.macro.mall.portal.domain.XmsCustomerProductParam;
 import com.macro.mall.portal.service.IXmsCustomerProductService;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -34,7 +36,10 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         Page<XmsCustomerProduct> page = new Page<>(productParam.getPageNum(), productParam.getPageSize());
         LambdaQueryWrapper<XmsCustomerProduct> lambdaQuery = Wrappers.lambdaQuery();
         lambdaQuery.eq(XmsCustomerProduct::getUsername, productParam.getUsername());
-        lambdaQuery.orderByDesc(XmsCustomerProduct::getCreateTime);
+        if (!StringUtils.isEmpty(productParam.getTitle())) {
+            lambdaQuery.like(XmsCustomerProduct::getTitle, productParam.getTitle());
+        }
+        lambdaQuery.orderByDesc(XmsCustomerProduct::getUsername);
         return this.xmsCustomerProductMapper.selectPage(page, lambdaQuery);
     }
 

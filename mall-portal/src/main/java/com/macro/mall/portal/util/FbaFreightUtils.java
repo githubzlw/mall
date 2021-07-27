@@ -1,11 +1,12 @@
 package com.macro.mall.portal.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.*;
-import org.springframework.beans.BeanUtils;
+import com.macro.mall.portal.domain.XmsTailFreightResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,9 @@ public class FbaFreightUtils {
     @Autowired
     private XmsListOfHomeDeliveryCountriesMapper listOfHomeDeliveryCountriesMapper;
 
+    @Autowired
+    private XmsTailFreightMapper xmsTailFreightMapper;
+
 
     private List<XmsListOfCountries> countriesList = new ArrayList<>();
 
@@ -47,6 +51,8 @@ public class FbaFreightUtils {
 
     private List<XmsListOfHomeDeliveryCountries> homeDeliveryCountries = new ArrayList<>();
 
+    private List<XmsTailFreight> tailFreightList = new ArrayList<>();
+
 
     /**
      * 计算各种方式的国家的运费(1 进FBA, 2 进客户门点)
@@ -57,7 +63,7 @@ public class FbaFreightUtils {
     public List<XmsFbaFreightUnit> getProductShippingCost(XmsFbaFreightUnit fbaParam) {
         checkAndInit();
 
-        double currencyRate = exchangeRateUtils.getUsdToCnyRate();
+        double currencyRate = this.exchangeRateUtils.getUsdToCnyRate();
         // 过滤 国家和ZIP
         fbaParam.setRmbRate(currencyRate);
 
@@ -181,6 +187,38 @@ public class FbaFreightUtils {
                 this.fbaFreightUnitMap.get(odlFba.getCountryId()).stream().filter(e -> odlFba.getZipCode().equalsIgnoreCase(e.getZipCode())).findFirst().ifPresent(anElse -> setFbaTotalPrice(anElse, odlFba, currencyRate));
             }
         }
+    }
+
+
+    /**
+     * 计算尾程运费逻辑实现
+     *
+     * @param totalWeight
+     * @return
+     */
+    public XmsTailFreightResult getTailFreightResult(double totalWeight) {
+        this.getTailFreightList();
+
+        XmsTailFreightResult freightResult = new XmsTailFreightResult();
+        final double tempWeight = totalWeight;
+        if (totalWeight <= 90720) {
+            // 过滤在90720之前的数据
+            XmsTailFreight filter = this.tailFreightList.stream().filter(e -> e.getKgMin() <= 90720 && e.getKgMax() <= 90720).filter(e -> e.getKgMin() < tempWeight && tempWeight <= e.getKgMax()).findFirst().orElse(null);
+            BeanUtil.copyProperties(filter, freightResult);
+            freightResult.setTotalPrice(BigDecimalUtil.truncateDouble(filter.getPrice(), 2));
+        } else {
+            XmsTailFreight filter;
+            if (totalWeight > 6804000) {
+                filter = this.tailFreightList.stream().filter(e -> e.getKgMin() == 6804000).findFirst().orElse(null);
+            } else {
+                filter = this.tailFreightList.stream().filter(e -> e.getKgMin() >= 90720 && e.getKgMax() >= 90720).filter(e -> e.getKgMin() < tempWeight && tempWeight <= e.getKgMax()).findFirst().orElse(null);
+            }
+            BeanUtil.copyProperties(filter, freightResult);
+            assert filter != null;
+            double totalPrice = filter.getFirstPrice() + totalWeight/1000 * filter.getPrice();
+            freightResult.setTotalPrice(BigDecimalUtil.truncateDouble(Math.max(totalPrice, filter.getLowestPrice()), 2));
+        }
+        return freightResult;
     }
 
 
@@ -323,26 +361,33 @@ public class FbaFreightUtils {
 
 
     public Map<Integer, List<XmsFbaFreightUnit>> getFbaFreightUnitMap() {
-        initFbaFreightUnit();
+        this.initFbaFreightUnit();
         return this.fbaFreightUnitMap;
     }
 
 
     public List<XmsListOfHomeDeliveryCountries> getHomeDeliveryCountries() {
-        initHomeDeliveryCountries();
+        this.initHomeDeliveryCountries();
         return this.homeDeliveryCountries;
     }
 
 
+    public List<XmsTailFreight> getTailFreightList() {
+        this.initTailFreightList();
+        return this.tailFreightList;
+    }
+
     private void checkAndInit() {
 
-        initCountriesList();
-        initListOfFbaCountries();
+        this.initCountriesList();
+        this.initListOfFbaCountries();
 
-        initFbaFreightUnit();
-        initCifFreightUnit();
+        this.initFbaFreightUnit();
+        this.initCifFreightUnit();
 
-        initHomeDeliveryCountries();
+        this.initHomeDeliveryCountries();
+
+        this.initTailFreightList();
     }
 
 
@@ -376,7 +421,7 @@ public class FbaFreightUtils {
             }
 
 
-            checkAndInit();
+            this.checkAndInit();
         }
 
     }
@@ -429,6 +474,16 @@ public class FbaFreightUtils {
             if (CollectionUtil.isEmpty(this.homeDeliveryCountries)) {
                 QueryWrapper<XmsListOfHomeDeliveryCountries> queryWrapper = new QueryWrapper<>();
                 this.homeDeliveryCountries = this.listOfHomeDeliveryCountriesMapper.selectList(queryWrapper);
+            }
+        }
+    }
+
+
+    private void initTailFreightList() {
+        synchronized (FbaFreightUtils.class) {
+            if (CollectionUtil.isEmpty(this.tailFreightList)) {
+                QueryWrapper<XmsTailFreight> queryWrapper = new QueryWrapper<>();
+                this.tailFreightList = this.xmsTailFreightMapper.selectList(queryWrapper);
             }
         }
     }

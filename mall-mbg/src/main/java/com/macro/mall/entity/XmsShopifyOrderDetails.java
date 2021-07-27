@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-12
+ * @since 2021-05-20
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -75,6 +75,10 @@ public class XmsShopifyOrderDetails implements Serializable {
 
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+
+    @ApiModelProperty(value = "shopify详情的ID")
+    @TableField("Line_item_id")
+    private Long lineItemId;
 
 
 }

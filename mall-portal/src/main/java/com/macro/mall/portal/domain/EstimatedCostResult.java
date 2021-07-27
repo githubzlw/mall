@@ -17,10 +17,10 @@ public class EstimatedCostResult {
     private Integer countryId;
 
     @ApiModelProperty("原始运费")
-    private Double originalShippingFee;
+    private String originalShippingFee;
 
     @ApiModelProperty("原始价格")
-    private Double originalProductPrice;
+    private String originalProductPrice;
 
     @ApiModelProperty("原始重量")
     private Double originalWeight;
@@ -29,10 +29,12 @@ public class EstimatedCostResult {
     private Double originalVolume;
 
     @ApiModelProperty("预估价格")
-    private Double estimatedPrice;
+    private String estimatedPrice;
 
     private XmsFbaFreightUnit freightUnit;
 
-    private EstimatedCost importXStandard;
-    private EstimatedCost importXPremium;
+    private EstimatedCost busySellStandard;
+    private EstimatedCost busySellPremium;
+
+    private XmsTailFreightResult tailFreight;
 }

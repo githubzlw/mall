@@ -4,7 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.SiteSourcing;
 import com.macro.mall.portal.domain.SiteSourcingParam;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -18,9 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +39,10 @@ public class XmsBuyForMeController {
     private final SourcingUtils sourcingUtils;
 
     private final UmsMemberService umsMemberService;
+
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
+    private UrlUtil instance = UrlUtil.getInstance();
 
     @Autowired
     public XmsBuyForMeController(SourcingUtils sourcingUtils, UmsMemberService umsMemberService) {
@@ -58,21 +63,24 @@ public class XmsBuyForMeController {
         BeanUtil.copyProperties(siteSourcingParam, siteSourcing);
 
         try {
-            UmsMember currentMember = umsMemberService.getCurrentMember();
+            UmsMember currentMember = this.umsMemberService.getCurrentMember();
             siteSourcing.setUserId(currentMember.getId());
             siteSourcing.setUserName(currentMember.getUsername());
             //siteBuyForMe.setUserName("1071083166@qq.com");
             // 生成PID和catid数据
-            sourcingUtils.checkSiteFlagByUrl(siteSourcing);
+            this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
-            // 添加到购物车
-            // sourcingUtils.addBfmCart(siteSourcing);
+            Long productId = this.saveOneBoundToProduct(siteSourcing);
+            if (null == productId || productId <= 0) {
+                return CommonResult.failed("before add product failed!");
+            }
+            siteSourcing.setProductId(productId);
 
             // 异步加载数据
-            sourcingUtils.checkAndLoadDataAsync(siteSourcing);
+            this.sourcingUtils.checkAndLoadDataAsync(siteSourcing);
 
             // 清空redis数据
-            sourcingUtils.deleteRedisCar(currentMember.getId());
+            this.sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -99,19 +107,25 @@ public class XmsBuyForMeController {
 
         try {
             // 生成PID和catid数据
-            sourcingUtils.checkSiteFlagByImg(siteSourcing);
+            this.sourcingUtils.checkSiteFlagByImg(siteSourcing);
 
-            UmsMember currentMember = umsMemberService.getCurrentMember();
+            UmsMember currentMember = this.umsMemberService.getCurrentMember();
             siteSourcing.setUserId(currentMember.getId());
             siteSourcing.setUserName(currentMember.getUsername());
             // 添加到购物车
-            // sourcingUtils.addBfmCart(siteSourcing); c
+            // sourcingUtils.addBfmCart(siteSourcing);
+
+            Long productId = this.saveOneBoundToProduct(siteSourcing);
+            if (null == productId || productId <= 0) {
+                return CommonResult.failed("before add product failed!");
+            }
+            siteSourcing.setProductId(productId);
 
             // 添加到sourcingList
-            sourcingUtils.saveSourcingInfo(siteSourcing);
+            this.sourcingUtils.saveSourcingInfo(siteSourcing);
 
             // 清空redis数据
-            sourcingUtils.deleteRedisCar(currentMember.getId());
+            this.sourcingUtils.deleteRedisCar(currentMember.getId());
 
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -127,7 +141,7 @@ public class XmsBuyForMeController {
     public CommonResult queryBfmCartList() {
         String userId = String.valueOf(umsMemberService.getCurrentMember().getId());
         try {
-            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId));
+            return CommonResult.success(this.sourcingUtils.getCarFromRedis(userId, 0 , null));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("queryBfmCartList,userId:[{}],error:", userId, e);
@@ -167,6 +181,9 @@ public class XmsBuyForMeController {
             this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
 
             JSONObject jsonObject = this.sourcingUtils.checkAndLoadData(siteSourcing);
+            /*if(siteSourcing.getSiteFlag() > 0 && siteSourcing.getSiteFlag() <= 3 && jsonObject.size() == 0){
+                return CommonResult.failed("get data failed");
+            }*/
             // 添加到购物车
             siteSourcing.setUserId(currentMember.getId());
             siteSourcing.setUserName(currentMember.getUsername());
@@ -182,7 +199,7 @@ public class XmsBuyForMeController {
 
     @ApiOperation(value = "缓存img信息", notes = "BuyForMe逻辑")
     @PostMapping("/saveImg")
-    public CommonResult getInfoByUrl(String title, String img) {
+    public CommonResult saveImg(String title, String img) {
         Assert.isTrue(StrUtil.isNotBlank(title), "title null");
         Assert.isTrue(StrUtil.isNotBlank(img), "img null");
         try {
@@ -224,6 +241,61 @@ public class XmsBuyForMeController {
             e.printStackTrace();
             log.error("saveImg,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
             return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "速卖通搜索", notes = "BuyForMe逻辑")
+    @PostMapping("/aliSearch")
+    public CommonResult aliSearch(String keyword, Integer page) {
+        Assert.isTrue(StrUtil.isNotBlank(keyword), "keyword null");
+        Assert.isTrue(null != page && page > 0, "page null");
+        try {
+            Map<String, String> requestMap = new HashMap<>();
+            requestMap.put("keyword", keyword);
+            requestMap.put("page", String.valueOf(page));
+
+            JSONObject jsonObject = instance.postURL(microServiceConfig.getOneBoundApi() + "/aliSearch", requestMap);
+            if (null == jsonObject || jsonObject.size() == 0) {
+                jsonObject = instance.postURL(microServiceConfig.getOneBoundApi() + "/aliSearch", requestMap);
+            }
+            if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
+                JSONObject dataJson = jsonObject.getJSONObject("data");
+                return CommonResult.success(dataJson);
+            } else {
+                return CommonResult.failed(null == jsonObject ? "get data error" : jsonObject.toJSONString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("aliSearch,keyword[{}],page[{}],error:", keyword, page, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+
+    private Long saveOneBoundToProduct(SiteSourcing siteSourcing) throws IOException {
+        Map<String, String> requestMap = new HashMap<>();
+        requestMap.put("pid", siteSourcing.getPid());
+        requestMap.put("siteFlag", String.valueOf(siteSourcing.getSiteFlag()));
+        requestMap.put("url", siteSourcing.getUrl());
+        requestMap.put("name", siteSourcing.getName());
+        requestMap.put("img", siteSourcing.getImg());
+        requestMap.put("oneTimeOrderOnly", String.valueOf(siteSourcing.getOneTimeOrderOnly()));
+        requestMap.put("chooseType", String.valueOf(siteSourcing.getChooseType()));
+        requestMap.put("typeOfShipping", String.valueOf(siteSourcing.getTypeOfShipping()));
+        requestMap.put("countryName", siteSourcing.getCountryName());
+        requestMap.put("stateName", siteSourcing.getStateName());
+        requestMap.put("customType", siteSourcing.getCustomType());
+        requestMap.put("cifPort", siteSourcing.getCifPort());
+        requestMap.put("fbaWarehouse", siteSourcing.getFbaWarehouse());
+
+        String resUrl = microServiceConfig.getProductUrl() + "/saveOneBoundProduct";
+        JSONObject jsonObject = instance.postURL(resUrl, requestMap);
+        if (jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")) {
+            return jsonObject.getLong("data");
+        } else {
+            System.err.println(jsonObject);
+            return null;
         }
     }
 

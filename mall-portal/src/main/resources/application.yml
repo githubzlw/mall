@@ -3,6 +3,10 @@ spring:
     name: mall-portal
   profiles:
     active: dev #默认为开发环境
+  servlet:
+    multipart:
+      max-file-size: 5MB # 单个文件的最大值
+      max-request-size: 50MB # 上传文件总的最大值
 
 #mybatis:
 #  mapper-locations:
@@ -44,6 +48,9 @@ secure:
       - /dataSync/**
       - /exchangeRate/fx
       - /paypal/**
+      - /addProductByUrl/**
+      - /sourcingSearchLog/**
+      - /buyForMe/aliSearch
 
 # 自定义redis key
 redis:
@@ -64,8 +71,9 @@ rabbitmq:
 
 # 第三方登录
 tpurl:
-  tpLogin: http://127.0.0.1:8085
-  googleid: BzGb3mP2qVGk9Qi_DLazVIqe
+  googleid: 742516350332-3vt0v4ce3itc467so7hi3k0e84nlkke8.apps.googleusercontent.com
+  facebookClientId: 502611367678191
+  facebookClientSecret: 6502c8168439b13c73aa1bd8a8eaab5e
 
 aliyun:
   oss:

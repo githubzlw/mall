@@ -54,6 +54,9 @@ public class XmsChromeUpload implements Serializable {
     @ApiModelProperty(value = "抓取的橱窗图")
     private String images;
 
+    @ApiModelProperty(value = "主图")
+    private String pic;
+
     @ApiModelProperty(value = "抓取的折扣")
     private String off;
 

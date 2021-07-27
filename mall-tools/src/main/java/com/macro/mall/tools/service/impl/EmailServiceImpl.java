@@ -20,7 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
 import java.util.Collections;
 
 
@@ -33,7 +35,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public EmailConfig getConfig() throws Exception {
         EmailConfig emailConfig = new EmailConfig();
-        Props props =new Props("mail.properties");
+        Props props = new Props("mail.properties");
         emailConfig.setHost(props.getStr("host"));
         emailConfig.setFromUser(props.getStr("fromUser"));
         emailConfig.setPass(props.getStr("pass"));
@@ -44,8 +46,8 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void send(EmailVo emailVo, EmailConfig emailConfig){
-        if(emailConfig.getHost() == null){
+    public void send(EmailVo emailVo, EmailConfig emailConfig) {
+        if (emailConfig.getHost() == null) {
             Asserts.fail("请先配置，再操作");
         }
         // 封装
@@ -60,9 +62,10 @@ public class EmailServiceImpl implements EmailService {
         // 发送
         try {
             // 对称解密
-            account.setPass(EncryptUtils.desDecrypt(emailConfig.getPass()));
+            //account.setPass(EncryptUtils.desDecrypt(emailConfig.getPass()));
+            account.setPass(emailConfig.getPass());
 
-            account.setFrom(emailConfig.getUser()+"<"+emailConfig.getFromUser()+">");
+            account.setFrom(emailConfig.getUser() + "<" + emailConfig.getFromUser() + ">");
             // ssl方式发送
             account.setSslEnable(true);
             // 使用STARTTLS安全连接
@@ -78,14 +81,15 @@ public class EmailServiceImpl implements EmailService {
                     //关闭session
                     .setUseGlobalSession(false)
                     .send();
-        }catch (Exception e){
-            log.error("send mail",e);
+        } catch (Exception e) {
+            log.error("send mail", e);
             Asserts.fail(e.getMessage());
         }
     }
 
     /**
      * 发送邮件
+     *
      * @param mailTemplateBean
      */
     @Override
@@ -93,25 +97,37 @@ public class EmailServiceImpl implements EmailService {
 
         TemplateEngine engine = TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH));
         MailTemplateType templateType = mailTemplateBean.getTemplateType();
+        /*File file = ResourceUtils.getFile("classpath:" + "template/email/" + templateType.getFileName());
+        Template template = engine.getTemplate(file.getCanonicalPath().replace("\\","/"));*/
         Template template = engine.getTemplate("template/email/" + templateType.getFileName());
 
         EmailConfig config = this.getConfig();
-        EmailVo emailVo =null;
+        EmailVo emailVo = null;
 
+        Dict dict = Dict.create();
+        WelcomeMailTemplateBean destBean;
         switch (templateType) {
             case WELCOME:
                 //欢迎邮件
-                WelcomeMailTemplateBean destBean=(WelcomeMailTemplateBean)mailTemplateBean;
-                Dict dict = Dict.create();
+                destBean = (WelcomeMailTemplateBean) mailTemplateBean;
+
                 dict.set("name", destBean.getName());
                 dict.set("email", destBean.getName());
                 dict.set("pass", destBean.getPass());
-                emailVo = new EmailVo(Collections.singletonList(destBean.getTo()),destBean.getSubject(),template.render(dict));
+                emailVo = new EmailVo(Collections.singletonList(destBean.getTo()), destBean.getSubject(), template.render(dict));
+                break;
+            case ACCOUNT_UPDATE:
+                //激活邮件
+                destBean = (WelcomeMailTemplateBean) mailTemplateBean;
+                dict.set("name", destBean.getName());
+                dict.set("email", destBean.getName());
+                dict.set("activeLink", destBean.getActivationCode());
+                emailVo = new EmailVo(Collections.singletonList(destBean.getTo()), destBean.getSubject(), template.render(dict));
                 break;
             default:
                 Asserts.fail("该种类型未开发");
         }
-        this.send(emailVo,config);
+        this.send(emailVo, config);
 
     }
 }

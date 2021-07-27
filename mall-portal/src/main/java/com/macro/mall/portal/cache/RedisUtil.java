@@ -101,6 +101,10 @@ public class RedisUtil {
         }
     }
 
+    public void hDelete(String key, String... items) {
+        redisTemplate.opsForHash().delete(key,items);
+    }
+
     /**
      * 删除某一前缀的缓存
      *

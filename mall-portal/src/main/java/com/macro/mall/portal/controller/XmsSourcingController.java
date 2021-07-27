@@ -4,19 +4,24 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsPmsProductEdit;
 import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.BeanCopyUtil;
 import com.macro.mall.portal.util.OrderPrefixEnum;
@@ -28,13 +33,13 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,7 +71,18 @@ public class XmsSourcingController {
     private IXmsPmsProductEditService xmsPmsProductEditService;
     @Autowired
     private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
+    private UrlUtil urlUtil = UrlUtil.getInstance();
+    @Autowired
+    private PmsPortalProductService pmsPortalProductService;
 
+    @InitBinder
+    protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setLenient(false);
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, false));
+    }
 
     @ApiOperation("sourcingList列表")
     @RequestMapping(value = "/sourcingList", method = RequestMethod.GET)
@@ -87,9 +103,9 @@ public class XmsSourcingController {
             sourcingParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
 
-            if(CollectionUtil.isNotEmpty(listPage.getRecords())){
-                listPage.getRecords().forEach(e-> {
-                    if(StrUtil.isEmpty(e.getCost())){
+            if (CollectionUtil.isNotEmpty(listPage.getRecords())) {
+                listPage.getRecords().forEach(e -> {
+                    if (StrUtil.isEmpty(e.getCost())) {
                         e.setCost("");
                     }
                 });
@@ -115,9 +131,9 @@ public class XmsSourcingController {
 
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
-            lambdaQuery.ge(XmsSourcingList::getStatus, -1);
-            if(StrUtil.isNotEmpty(url)){
-                lambdaQuery.and(query-> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
+            lambdaQuery.gt(XmsSourcingList::getStatus, -1);
+            if (StrUtil.isNotEmpty(url)) {
+                lambdaQuery.and(query -> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
             }
             List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
 
@@ -132,19 +148,19 @@ public class XmsSourcingController {
             if (CollectionUtil.isNotEmpty(list)) {
                 mapStatistics.put("all", list.size());
                 // 状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；
-                int Pending = (int) list.stream().filter(e-> 0 == e.getStatus()).count();
+                int Pending = (int) list.stream().filter(e -> 0 == e.getStatus()).count();
                 mapStatistics.put("Pending", Pending);
 
-                int inProgressing = (int) list.stream().filter(e-> 1 == e.getStatus()).count();
+                int inProgressing = (int) list.stream().filter(e -> 1 == e.getStatus()).count();
                 mapStatistics.put("inProgressing", inProgressing);
 
-                int Failed = (int) list.stream().filter(e-> 5 == e.getStatus()).count();
+                int Failed = (int) list.stream().filter(e -> 5 == e.getStatus()).count();
                 mapStatistics.put("Failed", Failed);
 
-                int Success = (int) list.stream().filter(e-> 2 == e.getStatus()).count();
+                int Success = (int) list.stream().filter(e -> 2 == e.getStatus()).count();
                 mapStatistics.put("Success", Success);
 
-                int Cancel = (int) list.stream().filter(e-> 4 == e.getStatus()).count();
+                int Cancel = (int) list.stream().filter(e -> 4 == e.getStatus()).count();
                 mapStatistics.put("Cancel", Cancel);
 
                 list.clear();
@@ -178,10 +194,11 @@ public class XmsSourcingController {
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
+            stockEditList.forEach(e-> e.setMemberId(currentMember.getId()));
 
             // 判断是否存在编辑表数据
             QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, sourcingProductParam.getProductId());
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, sourcingProductParam.getProductId());
 
             int count = this.xmsPmsProductEditService.count(productEditWrapper);
 
@@ -223,13 +240,30 @@ public class XmsSourcingController {
                 // 插入product数据
                 XmsPmsProductEdit pmsProductEdit = new XmsPmsProductEdit();
                 BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
+                pmsProductEdit.setProductId(sourcingProductParam.getProductId());
                 pmsProductEdit.setMemberId(currentMember.getId());
                 this.xmsPmsProductEditService.save(pmsProductEdit);
                 // 插入sku数据
                 this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                 stockEditList.clear();
             }
-            return CommonResult.success(1);
+            // 调用shopify铺货
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName())) {
+                return CommonResult.validateFailed("Please bind the store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("pid", String.valueOf(xmsSourcingList.getProductId()));
+            param.put("published", "0");
+            param.put("shopname", byId.getShopifyName());
+
+            JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
+
+            if (null != jsonObject) {
+                return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            }
+            return CommonResult.failed("addProduct error");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("saveSourcingProduct,sourcingProductParam[{}],error:", sourcingProductParam, e);
@@ -238,7 +272,7 @@ public class XmsSourcingController {
     }
 
 
-    @ApiOperation("SourcingList删除")
+    @ApiOperation("SourcingList取消")
     @RequestMapping(value = "/deleteSourcing", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
     public CommonResult deleteSourcing(Long sourcingId) {
@@ -250,7 +284,7 @@ public class XmsSourcingController {
             }
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, 4);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(update);
         } catch (Exception e) {
@@ -305,9 +339,14 @@ public class XmsSourcingController {
             product.setProductId(Long.parseLong(String.valueOf(xmsSourcingList.getProductId())));
             product.setSourceLink(xmsSourcingList.getSourceLink());
             product.setStatus(0);
+            product.setSiteType(xmsSourcingList.getSiteType());
             product.setCreateTime(new Date());
             product.setUpdateTime(new Date());
             this.xmsCustomerProductService.save(product);
+            // 设置同步成功标识
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().eq(XmsSourcingList::getId, xmsSourcingList.getId()).set(XmsSourcingList::getAddProductFlag, 1);
+            this.xmsSourcingListService.update(null, updateWrapper);
             return CommonResult.success(product);
         } catch (Exception e) {
             e.printStackTrace();
@@ -323,6 +362,7 @@ public class XmsSourcingController {
 
         Assert.isTrue(null != sourcingPayParam, "productPayParam null");
         Assert.isTrue(null != sourcingPayParam.getProductId() && sourcingPayParam.getProductId() > 0, "productId null");
+        Assert.isTrue(null != sourcingPayParam.getSourcingId() && sourcingPayParam.getSourcingId() > 0, "sourcingId null");
         Assert.isTrue(CollectionUtil.isNotEmpty(sourcingPayParam.getSkuCodeAndNumList()), "skuCodeAndNumList null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverName()), "receiverName null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingPayParam.getReceiverPhone()), "receiverPhone null");
@@ -377,13 +417,29 @@ public class XmsSourcingController {
             GenerateOrderParam generateOrderParam = GenerateOrderParam.builder().orderNo(orderNo).totalFreight(totalFreight).currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
             GenerateOrderResult orderResult = this.orderUtils.generateOrder(generateOrderParam);
 
+            // 更新客户库存数据
+            QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();
+            productQueryWrapper.lambda().eq(XmsCustomerProduct::getProductId, sourcingPayParam.getProductId()).eq(XmsCustomerProduct::getSourcingId, sourcingPayParam.getSourcingId());
+            List<XmsCustomerProduct> list = this.xmsCustomerProductService.list(productQueryWrapper);
+            if(CollectionUtil.isNotEmpty(list)) {
+                if (StrUtil.isNotEmpty(list.get(0).getAddress())) {
+                    if (!list.get(0).getAddress().contains(sourcingPayParam.getReceiverCountry())) {
+                        list.get(0).setAddress(list.get(0).getAddress() + "," + sourcingPayParam.getReceiverCountry() + ",");
+                    }
+                } else {
+                    list.get(0).setAddress(sourcingPayParam.getReceiverCountry() + ",");
+                }
+                list.get(0).setUpdateTime(new Date());
+                this.xmsCustomerProductService.updateById(list.get(0));
+            }
+
             skuCodeList.clear();
             productIdList.clear();
             skuStockList.clear();
             pmsSkuStockList.clear();
             orderNumMap.clear();
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("payBySourcingProduct,sourcingPayParam[{}],error:", sourcingPayParam, e);
@@ -391,4 +447,86 @@ public class XmsSourcingController {
         }
     }
 
+
+    @ApiOperation("再次Sourcing")
+    @RequestMapping(value = "/sourcingAgain", method = RequestMethod.POST)
+    @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
+    public CommonResult sourcingAgain(Long sourcingId) {
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 检查数据是否存在
+            XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingId);
+            if (null == xmsSourcingList) {
+                return CommonResult.validateFailed("No data available");
+            }
+            if (!xmsSourcingList.getUsername().equalsIgnoreCase(currentMember.getUsername()) && !xmsSourcingList.getMemberId().equals(currentMember.getId())) {
+                return CommonResult.validateFailed("No data available");
+            }
+            if (4 == xmsSourcingList.getStatus() || 5 == xmsSourcingList.getStatus() || -1 == xmsSourcingList.getStatus()) {
+                UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId)
+                        .set(XmsSourcingList::getStatus, 0)
+                        .set(XmsSourcingList::getCreateTime, new Date())
+                        .set(XmsSourcingList::getUpdateTime, new Date());
+                boolean update = this.xmsSourcingListService.update(null, updateWrapper);
+                return CommonResult.success(update);
+            } else {
+                return CommonResult.failed("this sourcing state is not cancel or faild");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingAgain,sourcingId[{}],error:", sourcingId, e);
+            return CommonResult.failed("sourcingAgain error");
+        }
+    }
+
+
+    @ApiOperation("更新Sourcing数据")
+    @RequestMapping(value = "/updateSourcingInfo", method = RequestMethod.POST)
+    public CommonResult updateSourcingInfo(SiteSourcingParam siteSourcingParam) {
+
+        Assert.notNull(siteSourcingParam, "siteSourcingParam null");
+
+        try {
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            boolean update = false;
+            //1:Drop Shipping
+            if(siteSourcingParam.getChooseType()==1){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            //2:Wholesale and Bulk Shipping
+            if(siteSourcingParam.getChooseType()==2){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData())
+                        .set(XmsSourcingList::getTypeOfShipping, siteSourcingParam.getTypeOfShipping())
+                        .set(XmsSourcingList::getCountryName, siteSourcingParam.getCountryName())
+                        .set(XmsSourcingList::getStateName, siteSourcingParam.getStateName())
+                        .set(XmsSourcingList::getFbaWarehouse, siteSourcingParam.getFbaWarehouse());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            //4:Product Customization
+            if(siteSourcingParam.getChooseType()==4){
+                updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
+                        .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
+                        .set(XmsSourcingList::getCustomType, siteSourcingParam.getCustomType())
+                        .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
+                        .set(XmsSourcingList::getRemark, siteSourcingParam.getData());
+                update = this.xmsSourcingListService.update(null, updateWrapper);
+            }
+            return CommonResult.success(update);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("updateSourcingInfo,siteBuyForMeParam[{}],error:", siteSourcingParam, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }

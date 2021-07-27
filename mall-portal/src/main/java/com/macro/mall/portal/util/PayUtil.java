@@ -17,6 +17,7 @@ import com.macro.mall.portal.config.PayConfig;
 import com.macro.mall.portal.domain.GenerateOrderResult;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.common.enums.SiteEnum;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.IXmsPaymentService;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.RelatedResources;
@@ -473,7 +474,7 @@ public class PayUtil {
      * @param request
      * @return
      */
-    public CommonResult beforePayAndPay(GenerateOrderResult orderResult, UmsMember currentMember, HttpServletRequest request) {
+    public CommonResult beforePayAndPay(GenerateOrderResult orderResult, UmsMember currentMember, HttpServletRequest request, PayFromEnum payFromEnum) {
         // 针对订单结果，发起支付流程
 
         // 1. 仅PayPal的支付 2. PayPal和余额混合支付 3. 仅余额支付
@@ -481,11 +482,11 @@ public class PayUtil {
         double payAmount = orderResult.getPayAmount();
         if (orderResult.getPayAmount() > 0) {
             remark = "paypal支付前日志";
-            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 0);
+            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 0, payFromEnum);
         }
         if (orderResult.getBalanceAmount() > 0) {
             remark = "余额支付前日志";
-            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 1);
+            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 1, payFromEnum);
             // 扣除客户余额
             this.payBalance(orderResult.getBalanceAmount(), currentMember, 0);
         }
@@ -511,17 +512,21 @@ public class PayUtil {
 
             UmsMember tempMember = new UmsMember();
             tempMember.setId(umsMember.getId());
+            Double balance = umsMember.getBalance();
+            if(null == balance){
+                balance = 0D;
+            }
             if (operatingType > 0) {
-                tempMember.setBalance(umsMember.getBalance() + amount);
+                tempMember.setBalance(balance + amount);
             } else {
-                tempMember.setBalance(umsMember.getBalance() - amount);
+                tempMember.setBalance(balance - amount);
             }
 
             this.memberMapper.updateByPrimaryKeySelective(tempMember);
             // 执行插入记录
             XmsRecordOfChangeInBalance changeInBalance = new XmsRecordOfChangeInBalance();
             changeInBalance.setCreateTime(new Date());
-            changeInBalance.setCurrentBalance(umsMember.getBalance());
+            changeInBalance.setCurrentBalance(balance);
             changeInBalance.setOperatingValue(amount);
             changeInBalance.setOperatingType(operatingType);
             changeInBalance.setOperatingResult(tempMember.getBalance());
@@ -571,7 +576,7 @@ public class PayUtil {
      * @param payType       : 0是paypal支付，1 余额支付
      */
     public void insertPayment(UmsMember currentMember, String orderNo, Double paymentAmount,
-                              Integer payStatus, String paymentId, String remark, Integer payType) {
+                              Integer payStatus, String paymentId, String remark, Integer payType, PayFromEnum payFromEnum) {
         XmsPayment xmsPayment = new XmsPayment();
         xmsPayment.setUsername(currentMember.getUsername());
         xmsPayment.setMemberId(currentMember.getId());
@@ -582,6 +587,7 @@ public class PayUtil {
         xmsPayment.setPaymentId(paymentId);
         xmsPayment.setRemark(remark);
         xmsPayment.setPayType(payType);
+        xmsPayment.setPayFrom(payFromEnum.getCode());
         xmsPaymentService.save(xmsPayment);
     }
 

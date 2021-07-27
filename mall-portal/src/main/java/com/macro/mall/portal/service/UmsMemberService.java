@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.domain.FacebookPojo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ public interface UmsMemberService {
      * 用户注册
      */
     @Transactional
-    void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType);
+    void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType,Integer countryId);
 
     /**
      * 生成验证码
@@ -38,6 +39,12 @@ public interface UmsMemberService {
      */
     @Transactional
     void updatePassword(String telephone, String password, String authCode);
+
+    /**
+     * 重置密码
+     */
+    @Transactional
+    void resetPassword(Long memberId, String password);
 
     /**
      * 修改昵称和每月订单量
@@ -82,12 +89,21 @@ public interface UmsMemberService {
      * @param shopifyFlag
      * @return
      */
-    int updateShopifyInfo(Long id, String shopifyName,Integer shopifyFlag);
+    int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag);
 
     /**
      * google登录验证
      */
     ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException;
 
+    FacebookPojo facebookAuth(String facebookId,String fToken);
+//    /**
+//     * get facebook login url
+//     * @return
+//     */
+//    String getFacebookUrl();
+
     int updateGuidedFlag(Long id);
+
+    String verifyOldPassword(String username, String password);
 }

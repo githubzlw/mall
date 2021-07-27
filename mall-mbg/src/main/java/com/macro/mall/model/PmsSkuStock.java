@@ -62,6 +62,21 @@ public class PmsSkuStock implements Serializable {
     @ApiModelProperty(value = "体积高（新加字段）")
     private Integer volumeHeight;
 
+    @ApiModelProperty(value = "需求体积")
+    private Double volume;
+
+    private String shipsFrom;
+
+    private String profit;
+
+    private String standard;
+
+    private String skuvalue1;
+
+    private String skuvalue2;
+
+    private String skuvalue3;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -224,6 +239,62 @@ public class PmsSkuStock implements Serializable {
         this.volumeHeight = volumeHeight;
     }
 
+    public Double getVolume() {
+        return volume;
+    }
+
+    public void setVolume(Double volume) {
+        this.volume = volume;
+    }
+
+    public String getShipsFrom() {
+        return shipsFrom;
+    }
+
+    public void setShipsFrom(String shipsFrom) {
+        this.shipsFrom = shipsFrom;
+    }
+
+    public String getProfit() {
+        return profit;
+    }
+
+    public void setProfit(String profit) {
+        this.profit = profit;
+    }
+
+    public String getStandard() {
+        return standard;
+    }
+
+    public void setStandard(String standard) {
+        this.standard = standard;
+    }
+
+    public String getSkuvalue1() {
+        return skuvalue1;
+    }
+
+    public void setSkuvalue1(String skuvalue1) {
+        this.skuvalue1 = skuvalue1;
+    }
+
+    public String getSkuvalue2() {
+        return skuvalue2;
+    }
+
+    public void setSkuvalue2(String skuvalue2) {
+        this.skuvalue2 = skuvalue2;
+    }
+
+    public String getSkuvalue3() {
+        return skuvalue3;
+    }
+
+    public void setSkuvalue3(String skuvalue3) {
+        this.skuvalue3 = skuvalue3;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -250,6 +321,13 @@ public class PmsSkuStock implements Serializable {
         sb.append(", volumeLenght=").append(volumeLenght);
         sb.append(", volumeWidth=").append(volumeWidth);
         sb.append(", volumeHeight=").append(volumeHeight);
+        sb.append(", volume=").append(volume);
+        sb.append(", shipsFrom=").append(shipsFrom);
+        sb.append(", profit=").append(profit);
+        sb.append(", standard=").append(standard);
+        sb.append(", skuvalue1=").append(skuvalue1);
+        sb.append(", skuvalue2=").append(skuvalue2);
+        sb.append(", skuvalue3=").append(skuvalue3);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

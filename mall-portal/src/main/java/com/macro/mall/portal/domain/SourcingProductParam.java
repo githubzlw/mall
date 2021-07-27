@@ -1,9 +1,13 @@
 package com.macro.mall.portal.domain;
 
+import com.macro.mall.entity.XmsPmsProductEdit;
+import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.model.PmsProduct;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: JiangXW

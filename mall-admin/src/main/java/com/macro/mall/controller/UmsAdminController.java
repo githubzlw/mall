@@ -7,8 +7,10 @@ import com.macro.mall.dto.UmsAdminLoginParam;
 import com.macro.mall.dto.UmsAdminParam;
 import com.macro.mall.dto.UpdateAdminPasswordParam;
 import com.macro.mall.model.UmsAdmin;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsRole;
 import com.macro.mall.service.UmsAdminService;
+import com.macro.mall.service.UmsMemberService;
 import com.macro.mall.service.UmsRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +43,9 @@ public class UmsAdminController {
     private UmsAdminService adminService;
     @Autowired
     private UmsRoleService roleService;
+
+    @Autowired
+    private UmsMemberService umsMemberService;
 
     @ApiOperation(value = "用户注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -200,5 +205,17 @@ public class UmsAdminController {
         List<UmsRole> roleList = adminService.getRoleList(adminId);
         return CommonResult.success(roleList);
     }
+
+
+    @ApiOperation("根据用户名或姓名分页获取用户列表")
+    @RequestMapping(value = "/umsMemberList", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<CommonPage<UmsMember>> umsMemberList(@RequestParam(value = "keyword", required = false) String keyword,
+                                                             @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
+                                                             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
+        List<UmsMember> umsMemberList = umsMemberService.list(keyword, pageSize, pageNum);
+        return CommonResult.success(CommonPage.restPage(umsMemberList));
+    }
+
 
 }

@@ -67,6 +67,10 @@ public class SourcingUtils {
 
     private static final long BUYFORME_PID_EXPIRE = 1000 * 60 * 60 * 24 * 7;
 
+    public static final String RETRIEVE_PASSWORD_KEY = "sourcing:retrievePassword";
+
+    public static final String USER_NAME_ADD_PRODUCT_BY_URL ="userName-addProductByUrl";
+
     private UrlUtil instance = UrlUtil.getInstance();
 
     @Autowired
@@ -97,7 +101,7 @@ public class SourcingUtils {
      */
     public void addBfmCart(SiteSourcing siteSourcing) {
         String userId = String.valueOf(siteSourcing.getUserId());
-        Map<String, Object> objectMap = this.getCarToRedis(userId);
+        Map<String, Object> objectMap = this.getCarToRedis(userId, 0, null);
         if (null == objectMap) {
             objectMap = new HashMap<>();
         }
@@ -114,13 +118,23 @@ public class SourcingUtils {
         } else {
             objectMap.put(pidKey, JSONObject.toJSONString(siteSourcing));
         }
-        this.addCarToRedis(userId, objectMap);
+        if (SourcingUtils.USER_NAME_ADD_PRODUCT_BY_URL.equalsIgnoreCase(siteSourcing.getUserName())) {
+            this.addCarToRedis(userId + "-" + siteSourcing.getSiteFlag(), objectMap);
+        } else {
+            this.addCarToRedis(userId, objectMap);
+        }
+
     }
 
 
     public void deleteBfmCart(SiteSourcing siteSourcing) {
         String pidKey = siteSourcing.getPid() + "_" + siteSourcing.getSiteFlag();
-        this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+        if (SourcingUtils.USER_NAME_ADD_PRODUCT_BY_URL.equalsIgnoreCase(siteSourcing.getUserName())) {
+            this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId() + "-" + siteSourcing.getSiteFlag(), pidKey);
+        } else {
+            this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+        }
+
     }
 
     /**
@@ -188,7 +202,7 @@ public class SourcingUtils {
      */
     private void setSiteBuyForMeCartInfo(SiteSourcing siteSourcing, String userId) {
 
-        Map<String, Object> objectMap = this.getCarToRedis(userId);
+        Map<String, Object> objectMap = this.getCarToRedis(userId, 0 , null);
         if (null == objectMap) {
             objectMap = new HashMap<>();
         }
@@ -278,46 +292,47 @@ public class SourcingUtils {
 
     public JSONObject checkAndLoadData(SiteSourcing siteSourcing) {
 
+        JSONObject jsonObject = new JSONObject();
         // 判断ALIEXPRESS
         if (SiteFlagEnum.ALIEXPRESS.getFlag() == siteSourcing.getSiteFlag() || SiteFlagEnum.ESALIEXPRESS.getFlag() == siteSourcing.getSiteFlag()) {
             CommonResult jsonResult = this.getAliExpressDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 return jsonObject;
             }
         } else if (SiteFlagEnum.ALI1688.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getTaoBaoDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getJSONObject("item").getString("pic_url");
                 String title = jsonObject.getJSONObject("item").getString("title");
                 String price = jsonObject.getJSONObject("item").getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 return jsonObject;
             }
         } else if (SiteFlagEnum.ALIBABA.getFlag() == siteSourcing.getSiteFlag()) {
             // TAOBAO
             CommonResult jsonResult = this.getAliBabaDetails(siteSourcing.getPid());
-            if (null != jsonResult && null != jsonResult.getData()) {
+            if (null != jsonResult  && jsonResult.getCode() == 200 && null != jsonResult.getData()) {
 
-                JSONObject jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
+                jsonObject = JSONObject.parseObject(jsonResult.getData().toString());
                 String pic_url = jsonObject.getString("pic_url");
                 String title = jsonObject.getString("title");
                 String price = jsonObject.getString("price");
                 siteSourcing.setImg(pic_url);
                 siteSourcing.setName(title);
-                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace("$", "").trim()) : 0);
+                siteSourcing.setPrice(StrUtil.isNotBlank(price) ? Double.parseDouble(price.replace(",","").replace("$", "").trim()) : 0);
                 // 价格除以汇率 / this.exchangeRateUtils.getUsdToCnyRate()
                 siteSourcing.setPrice(BigDecimalUtil.truncateDouble(siteSourcing.getPrice() , 2));
                 return jsonObject;
@@ -372,6 +387,9 @@ public class SourcingUtils {
         try {
 
             JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi()  + "/aliExpress/details/" + pid);
+            if(null == jsonObject || jsonObject.size() == 0){
+                jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi()  + "/aliExpress/details/" + pid);
+            }
             if (null != jsonObject && jsonObject.containsKey("code") && jsonObject.getInteger("code") == 200) {
                 JSONObject dataJson = jsonObject.getJSONObject("data");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -398,6 +416,9 @@ public class SourcingUtils {
         try {
 
             JSONObject jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/alibaba/details?pid=" + pid);
+            if(null == jsonObject || jsonObject.size() == 0){
+                jsonObject = instance.callUrlByGet(microServiceConfig.getOneBoundApi() + "/alibaba/details?pid=" + pid);
+            }
             if (null != jsonObject && jsonObject.containsKey("item")) {
                 JSONObject dataJson = jsonObject.getJSONObject("item");
                 dataJson.put("desc", this.dealDesc(dataJson.getString("desc")));
@@ -458,7 +479,10 @@ public class SourcingUtils {
                     case 1:
                         pid = dealAliBaBaUrl(siteSourcing.getUrl());
                         siteSourcing.setPid(pid);
+                        break;
                     default:
+                        pid = getOtherUrlPid(siteSourcing.getUrl());
+                        siteSourcing.setPid(pid);
                         break;
                 }
             } else {
@@ -600,13 +624,18 @@ public class SourcingUtils {
     }
 
 
-    public Map<String, Object> getCarToRedis(String sessionId) {
-        return redisUtil.hmgetObj(SOURCING_CAR + sessionId);
+    public Map<String, Object> getCarToRedis(String sessionId, int siteFlag, String userName) {
+        if(SourcingUtils.USER_NAME_ADD_PRODUCT_BY_URL.equalsIgnoreCase(userName)){
+            return redisUtil.hmgetObj(SOURCING_CAR + sessionId + "-" + siteFlag);
+        } else {
+            return redisUtil.hmgetObj(SOURCING_CAR + sessionId);
+        }
+
     }
 
 
-    public List<SiteSourcing> getCarFromRedis(String userId) {
-        Map<String, Object> objectMap = this.getCarToRedis(userId);
+    public List<SiteSourcing> getCarFromRedis(String userId, int siteFlag, String userName) {
+        Map<String, Object> objectMap = this.getCarToRedis(userId, siteFlag, userName);
         if (null == objectMap) {
             objectMap = new HashMap<>();
         }

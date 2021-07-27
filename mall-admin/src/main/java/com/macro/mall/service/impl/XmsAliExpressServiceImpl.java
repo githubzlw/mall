@@ -1,5 +1,6 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.rholder.retry.*;
@@ -102,7 +103,7 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
 
     @Override
     public CommonResult getDetails(String pid) {
-        JSONObject itemInfo = getItemInfo(pid, false);
+        JSONObject itemInfo = getItemInfo(pid, true);
         // 转换成bean
         if (null != itemInfo && itemInfo.containsKey("item")) {
             ItemDetails itemDetail = new ItemDetails();
@@ -184,7 +185,7 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
 
             // 规格标签展示
             JSONObject typeRsJson = new JSONObject();
-            if (itemJson.containsKey("props_list")) {
+            if (itemJson.containsKey("props_list") && itemJson.getString("props_list").length() > 10) {
                 JSONObject props_list = itemJson.getJSONObject("props_list");
 
                 props_list.forEach((k, v) -> {
@@ -333,14 +334,21 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
         }
     }
 
-
-    private JSONObject getItemInfo(String pid, boolean isCache) {
+    @Override
+    public JSONObject getItemInfo(String pid, boolean isCache) {
         Objects.requireNonNull(pid);
         if (isCache) {
             JSONObject itemFromRedis = this.cacheService.getItemInfo(pid);
             if (null != itemFromRedis) {
-                checkPidInfo(pid, itemFromRedis);
-                return itemFromRedis;
+                String  reason = itemFromRedis.getString("reason");
+                //  && StrUtil.isNotEmpty(
+                if(StrUtil.isNotEmpty(reason) && reason.contains("error")){
+                    // 清除缓存
+                    this.cacheService.deleteItemInfo(pid);
+                } else {
+                    checkPidInfo(pid, itemFromRedis);
+                    return itemFromRedis;
+                }
             }
         }
 

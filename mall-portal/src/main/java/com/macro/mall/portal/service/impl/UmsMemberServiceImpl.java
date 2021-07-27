@@ -12,7 +12,7 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.model.UmsMemberLevel;
 import com.macro.mall.model.UmsMemberLevelExample;
-import com.macro.mall.portal.domain.ConfigValuesBean;
+import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.UmsMemberCacheService;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -34,13 +34,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * 会员管理Service实现类
@@ -49,6 +47,14 @@ import java.util.Random;
 @Service
 public class UmsMemberServiceImpl implements UmsMemberService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberServiceImpl.class);
+
+//    private final static String FACEBOOK_LOGIN_URL = "https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s/sso/facebookLogin?&scope=email,public_profile&fields=name,email";
+//    private final static String FACEBOOK_ME_URL = "https://graph.facebook.com/oauth/access_token?redirect_uri=%s/sso/facebookLogin?&client_id=%s&client_secret=%s&code=%s";
+//    private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=%s";
+//    private final static String SITE_URL = "https://app.busysell.com";
+
+    private final static String FACEBOOK_TOKEN_URL = "https://graph.facebook.com/%s?fields=email&access_token=%s";
+
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -65,6 +71,12 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     private Long AUTH_CODE_EXPIRE_SECONDS;
     @Value("${tpurl.googleid}")
     public String GOOGLE_CLIENT_ID;
+//    @Value("${tpurl.facebookClientId}")
+//    public String FACE_BOOK_CLIENTID;
+//    @Value("${tpurl.facebookClientSecret}")
+//    public String FACE_BOOK_CLIENT_SECRET;
+
+
 
     @Override
     public UmsMember getByUsername(String username) {
@@ -87,7 +99,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
-    public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType) {
+    public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType, Integer countryId) {
 //        //验证验证码
 //        if(!verifyAuthCode(authCode,telephone)){
 //            Asserts.fail("验证码错误");
@@ -121,6 +133,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         umsMember.setOrganizationname(organizationname);
         umsMember.setMonthlyOrders(monthlyOrders);
         umsMember.setLoginType(loginType);
+        umsMember.setCountryId(countryId);
         memberMapper.insert(umsMember);
         umsMember.setPassword(null);
     }
@@ -152,6 +165,16 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         umsMember.setPassword(passwordEncoder.encode(password));
         memberMapper.updateByPrimaryKeySelective(umsMember);
         memberCacheService.delMember(umsMember.getId());
+    }
+
+    @Override
+    public void resetPassword(Long memberId, String password) {
+
+        UmsMember record = new UmsMember();
+        record.setId(memberId);
+        record.setPassword(passwordEncoder.encode(password));
+        memberMapper.updateByPrimaryKeySelective(record);
+        memberCacheService.delMember(memberId);
     }
 
     @Override
@@ -227,13 +250,15 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public ImmutablePair<String, String> googleAuth(String idTokenString) throws IOException {
 
-        ConfigValuesBean configValues =   ConfigValuesBean.builder().googleClientId(GOOGLE_CLIENT_ID).build();
-
         try {
 
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(configValues.getGoogleClientId())).build();
+                    .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
+
+            LOGGER.info("idToken", idTokenString);
+            LOGGER.info("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID);
+
             GoogleIdToken idToken = verifier.verify(idTokenString);
             GoogleIdToken.Payload payload = idToken.getPayload();
             String googleUserId = payload.getSubject();
@@ -246,6 +271,43 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         }
     }
 
+//    /**
+//     * get facebook login url
+//     * @return
+//     */
+//    @Override
+//    public String getFacebookUrl() {
+//
+//        return String.format(FACEBOOK_LOGIN_URL
+//                , FACE_BOOK_CLIENTID, SITE_URL);
+//    }
+
+
+    /**
+     * call facebookAuth
+     * @return
+     * @throws IOException
+     */
+    public FacebookPojo facebookAuth(String facebookId,String fToken) {
+
+        if(StringUtils.isEmpty(facebookId)){
+            throw new IllegalArgumentException("facebookId is empty");
+        }
+
+//        String accessTokenUrl = String.format(FACEBOOK_ME_URL
+//                ,SITE_URL, FACE_BOOK_CLIENTID, FACE_BOOK_CLIENT_SECRET, code);
+//        LOGGER.info("accessTokenURL:[{}]", accessTokenUrl);
+//        LOGGER.info("faceCode", code);
+//        RestTemplate restTemplate = new RestTemplate();
+//        HashMap<String, String> result = restTemplate.getForObject(accessTokenUrl, HashMap.class);
+//        assert result != null;
+//        String accessToken = result.get("access_token");
+//        LOGGER.info("get access token:[{}] success", accessToken);
+
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(String.format(FACEBOOK_TOKEN_URL,facebookId, fToken), FacebookPojo.class);
+
+    }
     @Override
     public int updateShopifyInfo(Long id, String shopifyName, Integer shopifyFlag) {
         UmsMember tempMember = new UmsMember();
@@ -270,6 +332,23 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         tempMember.setId(id);
         tempMember.setGuidedFlag(1);
         return this.memberMapper.updateByPrimaryKeySelective(tempMember);
+    }
+
+    @Override
+    public String verifyOldPassword(String username, String password) {
+
+        //密码需要客户端加密后传递
+        try {
+            UserDetails userDetails = loadUserByUsername(username);
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+                return "fail";
+            }
+            return "success";
+        } catch (Exception e) {
+            LOGGER.warn("登录异常:{}", e.getMessage());
+            return "fail";
+        }
+
     }
 
 }

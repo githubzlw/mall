@@ -143,8 +143,8 @@ public class TrafficFreightUtils {
         // 初始化数据,港口等数据
         initCountryAndFreightList();
         // 获取普通运费
-        if (trafficFreightMap.containsKey(freightResult.getCountryId())) {
-            unitList = BeanCopyUtil.deepListCopy(trafficFreightMap.get(freightResult.getCountryId()));
+        if (this.trafficFreightMap.containsKey(freightResult.getCountryId())) {
+            unitList = BeanCopyUtil.deepListCopy(this.trafficFreightMap.get(freightResult.getCountryId()));
         }
 
         // 获取正常重量的免邮价格
@@ -204,7 +204,7 @@ public class TrafficFreightUtils {
             //如果是jcex 或者 eub 利润率为 1
             boolean isNoAdd = isEubChild || tempIsJcex;
 
-            double totalWeightTemp = this.getProfitableFreight(freePostagePrice, totalFreight, isNoAdd, eubRate, isShipWithChina);
+            double totalWeightTemp = this.getProfitableFreight(freePostagePrice, totalFreight, isNoAdd, eubRate, isShipWithChina, freightResult);
             double getBigHeavyFreight = this.getBigHeavyFreight(freePostagePrice, unit.getCostAndFreightOfOurCompany(), eubRate);
             // 开始赋值
             unit.setDiscountedTotalPrice(getBigHeavyFreight);
@@ -645,13 +645,17 @@ public class TrafficFreightUtils {
      * @param isShipWithChina
      * @return
      */
-    private double getProfitableFreight(double freeTotalPrice, double totalFreight, boolean isJcex, double rate, boolean isShipWithChina) {
+    private double getProfitableFreight(double freeTotalPrice, double totalFreight, boolean isJcex, double rate, boolean isShipWithChina, FreightResult freightResult) {
         double profitMargin = FreightConstant.PROFITMARGIN;
         if (isShipWithChina || isJcex) {
             profitMargin = 1;
         }
         // Description : 利润, 减去免邮
-        totalFreight = totalFreight * profitMargin - freeTotalPrice * rate;
+        if(freightResult.getB2cFlag() > 0){
+            totalFreight = totalFreight * profitMargin - freeTotalPrice * rate;
+        } else{
+            totalFreight = totalFreight * profitMargin;
+        }
         if (totalFreight <= 0) {
             totalFreight = 0;
         }
@@ -795,12 +799,13 @@ public class TrafficFreightUtils {
      */
     public void initCountryAndFreightList() {
 
-        initCountriesList();
         initListOfFbaCountries();
         initFreightUnitList();
         initFreightFbaList();
         initFreightPortList();
         initCifFreightUnitList();
+
+        initCountriesList();
 
     }
 
@@ -825,6 +830,8 @@ public class TrafficFreightUtils {
                 QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
                 this.countriesList = this.listOfCountriesMapper.selectList(queryWrapper);
                 if (CollectionUtil.isNotEmpty(this.countriesList)) {
+                    this.initFreightUnitList();
+                    this.countriesList = this.countriesList.stream().filter(e -> this.trafficFreightMap.containsKey(e.getId())).collect(Collectors.toList());
                     // 排序
                     this.countriesList.sort(Comparator.comparing(XmsListOfCountries::getEnglishNameOfCountry));
                 }

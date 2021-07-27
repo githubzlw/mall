@@ -64,7 +64,6 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
-    @ResponseBody
     public CommonResult authorization(@RequestParam("shopName") String shopName) {
 
         try {
@@ -218,5 +217,104 @@ public class XmsShopifyController {
         }
     }
 
+
+    @PostMapping(value = "/getShopifyProducts")
+    @ApiOperation("获取客户shopify的商品")
+    public CommonResult getShopifyProducts() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("shopifyName", byId.getShopifyName());
+            param.put("memberId", String.valueOf(byId.getId()));
+            param.put("userName", byId.getUsername());
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getProductsByShopifyName", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            return commonResult;
+        } catch (Exception e) {
+            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/addProduct")
+    @ApiOperation("铺货到shopify商品")
+    public CommonResult addToShopifyProducts(@RequestParam Long productId) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("shopname", byId.getShopifyName());
+            param.put("pid", String.valueOf(productId));
+            param.put("published", "");
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            return commonResult;
+        } catch (Exception e) {
+            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/getShopifyOrders")
+    @ApiOperation("获取客户shopify的订单")
+    public CommonResult getShopifyOrders() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+
+            param.put("shopifyNameList", byId.getShopifyName());
+
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getOrdersByShopifyName", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            return commonResult;
+        } catch (Exception e) {
+            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(value = "/getShopifyName")
+    @ApiOperation("获取客户shopify的店铺名称")
+    public CommonResult getShopifyName() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            return CommonResult.success(byId.getShopifyName());
+        } catch (Exception e) {
+            log.error("getShopifyName,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 
 }

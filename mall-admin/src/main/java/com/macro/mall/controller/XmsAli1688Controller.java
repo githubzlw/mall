@@ -8,6 +8,7 @@ import com.macro.mall.common.exception.BizException;
 import com.macro.mall.config.OneBoundConfig;
 import com.macro.mall.domain.Ali1688Item;
 import com.macro.mall.service.XmsAli1688Service;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author jack.luo
  */
+@Api(tags = "XmsAli1688Controller", description = "oneBound调用接口")
 @RestController
 @Slf4j
 @RequestMapping("/oneBound")
@@ -69,7 +71,7 @@ public class XmsAli1688Controller {
      * @return
      */
     @GetMapping("/alibaba/details")
-    public JSONObject getAlibabaDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "false") boolean isCache) {
+    public JSONObject getAlibabaDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "true") boolean isCache) {
 
         return ali1688Service.getAlibabaDetail(pid, isCache);
     }
@@ -84,6 +86,13 @@ public class XmsAli1688Controller {
     public JSONObject getAliexpressDetail(@RequestParam("pid") Long pid, @RequestParam(value = "isCache", required = false, defaultValue = "false") boolean isCache) {
 
         return ali1688Service.getAliexpressDetail(pid, isCache);
+    }
+
+    @PostMapping("/aliSearch")
+    @ResponseBody
+    public CommonResult aliSearch(Integer page, String keyword, String start_price, String end_price, String sort,
+                                   @RequestParam(value = "isCache", required = false, defaultValue = "true") boolean isCache) {
+        return ali1688Service.getItemByKeyWord(page, keyword, start_price, end_price, sort, isCache);
     }
 
 

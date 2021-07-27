@@ -1,5 +1,6 @@
 package com.macro.mall.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -92,9 +93,11 @@ public class PmsProduct implements Serializable {
     private String detailTitle;
 
     @ApiModelProperty(value = "促销开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date promotionStartTime;
 
     @ApiModelProperty(value = "促销结束时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date promotionEndTime;
 
     @ApiModelProperty(value = "活动限购数量")
@@ -132,6 +135,13 @@ public class PmsProduct implements Serializable {
 
     @ApiModelProperty(value = "产品状态：0:pending等待状态;1:success完成状态;2:release发布状态;3:failed删除状态;4:cancled前端取消状态")
     private Integer productStatus;
+
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date createTime;
+
+    @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
+    private Integer freeStatus;
 
     @ApiModelProperty(value = "商品描述")
     private String description;
@@ -514,6 +524,22 @@ public class PmsProduct implements Serializable {
         this.productStatus = productStatus;
     }
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Integer getFreeStatus() {
+        return freeStatus;
+    }
+
+    public void setFreeStatus(Integer freeStatus) {
+        this.freeStatus = freeStatus;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -598,6 +624,8 @@ public class PmsProduct implements Serializable {
         sb.append(", shippingFee=").append(shippingFee);
         sb.append(", shippingBy=").append(shippingBy);
         sb.append(", productStatus=").append(productStatus);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", freeStatus=").append(freeStatus);
         sb.append(", description=").append(description);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);

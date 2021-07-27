@@ -1,14 +1,20 @@
 package com.macro.mall.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.dao.*;
 import com.macro.mall.dto.PmsProductParam;
 import com.macro.mall.dto.PmsProductQueryParam;
 import com.macro.mall.dto.PmsProductResult;
+import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.service.PmsProductService;
+import com.macro.mall.util.BigDecimalUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +23,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +69,9 @@ public class PmsProductServiceImpl implements PmsProductService {
     private PmsProductDao productDao;
     @Autowired
     private PmsProductVertifyRecordDao productVertifyRecordDao;
+
+    @Autowired
+    private XmsSourcingListMapper xmsSourcingListMapper;
 
     @Override
     public int create(PmsProductParam productParam) {
@@ -165,6 +173,39 @@ public class PmsProductServiceImpl implements PmsProductService {
         prefrenceAreaProductRelationMapper.deleteByExample(prefrenceAreaExample);
         relateAndInsertList(prefrenceAreaProductRelationDao, productParam.getPrefrenceAreaProductRelationList(), id);
         count = 1;
+
+        // 处理一下sourcing关联的数据状态
+        if(StrUtil.isNotEmpty(product.getName())) {
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            String rgPrice = String.valueOf(product.getPrice());
+            if (CollectionUtil.isNotEmpty(productParam.getSkuStockList())) {
+                Map<String, Double> priceMap = new HashMap<>();
+                priceMap.put("minPrice", 0D);
+                priceMap.put("maxPrice", 0D);
+                productParam.getSkuStockList().forEach(e -> {
+                    if (priceMap.get("minPrice") == 0 || priceMap.get("minPrice") > e.getPrice().doubleValue()) {
+                        priceMap.put("minPrice", e.getPrice().doubleValue());
+                    }
+                    if (priceMap.get("maxPrice") == 0 || priceMap.get("maxPrice") < e.getPrice().doubleValue()) {
+                        priceMap.put("maxPrice", e.getPrice().doubleValue());
+                    }
+                });
+                if (priceMap.get("minPrice").equals(priceMap.get("maxPrice"))) {
+                    rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2);
+                } else {
+                    rgPrice = BigDecimalUtil.truncateDoubleToString(priceMap.get("minPrice"), 2) + "-" + BigDecimalUtil.truncateDoubleToString(priceMap.get("maxPrice"), 2);
+                }
+            }
+
+            updateWrapper.lambda().set(XmsSourcingList::getTitle, product.getName())
+                    .set(XmsSourcingList::getCost, rgPrice)
+                    .set(XmsSourcingList::getPrice, product.getPriceXj())
+                    .set(XmsSourcingList::getStatus, 1)
+                    .set(XmsSourcingList::getImages, product.getPic())
+                    .set(XmsSourcingList::getShippingFee, product.getShippingFee())
+                    .eq(XmsSourcingList::getProductId, product.getId());
+            xmsSourcingListMapper.update(null, updateWrapper);
+        }
         return count;
     }
 

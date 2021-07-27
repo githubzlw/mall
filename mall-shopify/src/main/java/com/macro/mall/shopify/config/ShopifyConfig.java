@@ -12,12 +12,6 @@ public class ShopifyConfig {
     @Value("${shopify.client_secret}")
     public String SHOPIFY_CLIENT_SECRET;
 
-    @Value("${shopify.api_key}")
-    public String SHOPIFY_API_KEY;
-
-    @Value("${shopify.api_key_secret}")
-    public String SHOPIFY_API_KEY_SECRET;
-
     @Value("${shopify.api_key_shopname}")
     public String SHOPIFY_API_KEY_SHOPNAME;
 
@@ -47,6 +41,27 @@ public class ShopifyConfig {
 
     @Value("")
     public String SHOPUFY_HOST;
+
+    @Value("${shopify.uri_put_orders}")
+    public String SHOPIFY_URI_PUT_ORDERS;
+
+    @Value("${shopify.uri_post_fulfillment_orders}")
+    public String SHOPIFY_URI_POST_FULFILLMENT_ORDERS;
+
+    @Value("${shopify.uri_post_fulfillment_service}")
+    public String SHOPIFY_URI_POST_FULFILLMENT_SERVICE;
+
+    @Value("${shopify.fulfillment_service_callback}")
+    public String SHOPIFY_FULFILLMENT_SERVICE_CALLBACK;
+
+    @Value("${shopify.uri_query_orders}")
+    public String SHOPIFY_URI_QUERY_ORDERS;
+
+    @Value("${shopify.uri_query_variants}")
+    public String SHOPIFY_URI_QUERY_VARIANTS;
+
+    @Value("${shopify.uri_query_inventory_levels}")
+    public String SHOPIFY_URI_QUERY_INVENTORY_LEVELS;
 
 
 }

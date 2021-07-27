@@ -63,8 +63,7 @@ public class ShopifyAuthController {
 
     @GetMapping(value = "/authuri")
     @ApiOperation("请求授权接口")
-    public CommonResult authUri(
-            @ApiParam(name = "shop", value = "shopify店铺名称", required = true) String shop) {
+    public CommonResult authUri(String shop) {
         try {
             //请求授权
             String shopUrl = shop;

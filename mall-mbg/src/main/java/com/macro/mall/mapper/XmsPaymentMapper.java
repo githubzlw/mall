@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-06
+ * @since 2021-06-22
  */
 public interface XmsPaymentMapper extends BaseMapper<XmsPayment> {
 

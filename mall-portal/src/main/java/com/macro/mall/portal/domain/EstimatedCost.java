@@ -12,10 +12,10 @@ import lombok.Data;
 public class EstimatedCost {
 
 
-    private double estimatedPrice;
+    private String estimatedPrice;
     private int shippingByFlag;// 0ImportX Standard  1 importXPremium
 
-    private double cost;
+    private String cost;
 
     /**
      * ImportX Standard  15天
