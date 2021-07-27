@@ -1,5 +1,6 @@
 package com.macro.mall.portal.dao;
 
+import com.macro.mall.model.OmsOrder;
 import com.macro.mall.model.OmsOrderItem;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import org.apache.ibatis.annotations.Param;
@@ -30,11 +31,13 @@ public interface PortalOrderDao {
     /**
      * 批量修改订单状态
      */
-    int updateOrderStatus(@Param("ids") List<Long> ids,@Param("status") Integer status);
+    int updateOrderStatus(@Param("ids") List<Long> ids, @Param("status") Integer status);
 
     /**
      * 解除取消订单的库存锁定
      */
     int releaseSkuStockLock(@Param("itemList") List<OmsOrderItem> orderItemList);
+
+    List<OmsOrder> getOrderListByProductName(@Param("productName") String productName, @Param("status") Integer status, @Param("memberId") Long memberId);
 
 }
