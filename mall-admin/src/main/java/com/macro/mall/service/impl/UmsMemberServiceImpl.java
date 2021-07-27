@@ -1,42 +1,19 @@
 package com.macro.mall.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
-import com.macro.mall.bo.AdminUserDetails;
-import com.macro.mall.common.exception.Asserts;
-import com.macro.mall.common.util.RequestUtil;
-import com.macro.mall.dao.UmsAdminRoleRelationDao;
-import com.macro.mall.dto.UmsAdminParam;
-import com.macro.mall.dto.UpdateAdminPasswordParam;
-import com.macro.mall.mapper.UmsAdminLoginLogMapper;
-import com.macro.mall.mapper.UmsAdminMapper;
-import com.macro.mall.mapper.UmsAdminRoleRelationMapper;
+import com.macro.mall.entity.XmsListOfCountries;
 import com.macro.mall.mapper.UmsMemberMapper;
-import com.macro.mall.model.*;
-import com.macro.mall.security.util.JwtTokenUtil;
-import com.macro.mall.service.UmsAdminCacheService;
-import com.macro.mall.service.UmsAdminService;
+import com.macro.mall.mapper.XmsListOfCountriesMapper;
+import com.macro.mall.model.UmsMember;
+import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.service.UmsMemberService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,6 +27,9 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Autowired
     private UmsMemberMapper umsMemberMapper;
 
+    @Autowired
+    private XmsListOfCountriesMapper listOfCountriesMapper;
+
 
     @Override
     public List<UmsMember> list(String keyword, Integer pageSize, Integer pageNum) {
@@ -60,7 +40,23 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             criteria.andUsernameLike("%" + keyword + "%");
             example.or(example.createCriteria().andNicknameLike("%" + keyword + "%"));
         }
-        return umsMemberMapper.selectByExample(example);
+
+        example.setOrderByClause("create_time desc");
+
+        List<UmsMember> umsMemberList = umsMemberMapper.selectByExample(example);
+
+        QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
+        List<XmsListOfCountries> xmsListOfCountriesList = listOfCountriesMapper.selectList(queryWrapper);
+        for (UmsMember umsMember : umsMemberList) {
+            for (XmsListOfCountries xmsListOfCountries : xmsListOfCountriesList) {
+                if (umsMember.getCountryId() == xmsListOfCountries.getId()) {
+                    umsMember.setCountryName(xmsListOfCountries.getEnglishNameOfCountry());
+                    break;
+                }
+            }
+        }
+
+        return umsMemberList;
     }
 
 

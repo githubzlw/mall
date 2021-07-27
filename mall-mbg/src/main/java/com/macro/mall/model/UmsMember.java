@@ -84,6 +84,9 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
 
+    @ApiModelProperty(value = "国家名称")
+    private String countryName;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -300,6 +303,14 @@ public class UmsMember implements Serializable {
 
     public void setCountryId(Integer countryId) {
         this.countryId = countryId;
+    }
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
     }
 
     @Override
