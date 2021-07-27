@@ -45,6 +45,7 @@ secure:
       - /brand/**
       - /chrome/upload
       - /freight/**
+      - /dataSync/**
       - /exchangeRate/fx
       - /paypal/**
       - /addProductByUrl/**
