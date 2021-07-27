@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -343,22 +344,31 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     @Override
-    public CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize) {
-        if(status==-1){
+    public CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName) {
+        if (status == -1) {
             status = null;
         }
         UmsMember member = memberService.getCurrentMember();
-        PageHelper.startPage(pageNum,pageSize);
+        PageHelper.startPage(pageNum, pageSize);
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
                 .andMemberIdEqualTo(member.getId())
                 .andReceiverCountryIsNotNull();
-        if(status!=null){
+        if (status != null) {
             criteria.andStatusEqualTo(status);
         }
         orderExample.setOrderByClause("create_time desc");
-        List<OmsOrder> orderList = orderMapper.selectByExample(orderExample);
+        List<OmsOrder> orderList = new ArrayList<>();
+
+        if (StringUtils.isEmpty(productName)) {
+            orderList = orderMapper.selectByExample(orderExample);
+
+        } else {
+            orderList = portalOrderDao.getOrderListByProductName(productName, status, member.getId());
+        }
+
+
         CommonPage<OmsOrder> orderPage = CommonPage.restPage(orderList);
         //设置分页信息
         CommonPage<OmsOrderDetail> resultPage = new CommonPage<>();
@@ -366,7 +376,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         resultPage.setPageSize(orderPage.getPageSize());
         resultPage.setTotal(orderPage.getTotal());
         resultPage.setTotalPage(orderPage.getTotalPage());
-        if(CollUtil.isEmpty(orderList)){
+        if (CollUtil.isEmpty(orderList)) {
             return resultPage;
         }
         //设置数据信息

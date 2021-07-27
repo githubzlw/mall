@@ -88,4 +88,26 @@
             #{item.productSkuId}
         </foreach>
     </update>
+
+    <select id="getOrderListByProductName" resultMap="orderDetailMap">
+        SELECT distinct
+        o.id,
+        o.order_sn,
+        o.create_time,
+        o.total_amount,
+        o.member_id,
+        o.receiver_country,
+        o.receiver_name,
+        o.status
+        FROM
+        oms_order o
+        LEFT JOIN oms_order_item ot ON o.id = ot.order_id
+        WHERE
+        ot.product_name like concat('%',#{productName},'%')
+        AND o.member_id = #{memberId}
+        AND o.receiver_country is not null
+        <if test="status != null ">
+            AND o.status = #{status}
+        </if>
+    </select>
 </mapper>
