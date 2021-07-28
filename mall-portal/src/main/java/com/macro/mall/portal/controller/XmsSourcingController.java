@@ -174,6 +174,94 @@ public class XmsSourcingController {
     }
 
 
+    @ApiOperation("sourcingListByUuid列表")
+    @RequestMapping(value = "/sourcingListByUuid", method = RequestMethod.GET)
+    public CommonResult sourcingListByUuid(XmsSourcingInfoParam sourcingParam) {
+
+        Assert.isTrue(null != sourcingParam, "sourcingParam null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingParam.getUsername()), "username null");
+
+        try {
+
+            if (null == sourcingParam.getPageNum() || sourcingParam.getPageNum() == 0) {
+                sourcingParam.setPageNum(1);
+            }
+            if (null == sourcingParam.getPageSize() || sourcingParam.getPageSize() == 0) {
+                sourcingParam.setPageSize(10);
+            }
+            Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
+
+            if (CollectionUtil.isNotEmpty(listPage.getRecords())) {
+                listPage.getRecords().forEach(e -> {
+                    if (StrUtil.isEmpty(e.getCost())) {
+                        e.setCost("");
+                    }
+                });
+            }
+
+            return CommonResult.success(listPage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingList,sourcingParam[{}],error:", sourcingParam, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+
+    @ApiOperation("sourcingListByUuid统计")
+    @RequestMapping(value = "/sourcingListStatisticsByUuid", method = RequestMethod.GET)
+    public CommonResult sourcingListStatisticsByUuid(String url, String uuid) {
+
+        // Assert.isTrue(StrUtil.isNotBlank(url), "url null");
+        Assert.isTrue(StrUtil.isNotBlank(uuid), "uuid null");
+
+        try {
+
+            LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
+            lambdaQuery.eq(XmsSourcingList::getUsername, uuid);
+            lambdaQuery.gt(XmsSourcingList::getStatus, -1);
+            if (StrUtil.isNotEmpty(url)) {
+                lambdaQuery.and(query -> query.like(XmsSourcingList::getTitle, url).or().like(XmsSourcingList::getUrl, url));
+            }
+            List<XmsSourcingList> list = this.xmsSourcingListService.list(lambdaQuery);
+
+            Map<String, Integer> mapStatistics = new HashMap<>();
+            mapStatistics.put("all", 0);
+            mapStatistics.put("inProgressing", 0);
+            mapStatistics.put("Pending", 0);
+            mapStatistics.put("Failed", 0);
+            mapStatistics.put("Success", 0);
+            mapStatistics.put("Cancel", 0);
+
+            if (CollectionUtil.isNotEmpty(list)) {
+                mapStatistics.put("all", list.size());
+                // 状态：0->已接收；1->处理中；2->已处理 4->取消；5->无效数据； -1->删除；
+                int Pending = (int) list.stream().filter(e -> 0 == e.getStatus()).count();
+                mapStatistics.put("Pending", Pending);
+
+                int inProgressing = (int) list.stream().filter(e -> 1 == e.getStatus()).count();
+                mapStatistics.put("inProgressing", inProgressing);
+
+                int Failed = (int) list.stream().filter(e -> 5 == e.getStatus()).count();
+                mapStatistics.put("Failed", Failed);
+
+                int Success = (int) list.stream().filter(e -> 2 == e.getStatus()).count();
+                mapStatistics.put("Success", Success);
+
+                int Cancel = (int) list.stream().filter(e -> 4 == e.getStatus()).count();
+                mapStatistics.put("Cancel", Cancel);
+
+                list.clear();
+            }
+            return CommonResult.success(mapStatistics);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingListStatistics,uuid[{}],error:", uuid, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+
     @ApiOperation("SourcingList保存客户编辑的信息")
     @RequestMapping(value = "/saveSourcingProduct", method = RequestMethod.POST)
     public CommonResult saveSourcingProduct(SourcingProductParam sourcingProductParam) {

@@ -85,7 +85,44 @@ public class XmsBuyForMeController {
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("getInfoByUrl,siteBuyForMe[{}],error:", siteSourcing, e);
+            log.error("addBfmCartByUrl,siteBuyForMe[{}],error:", siteSourcing, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "根据URL加入购物车WithUuid", notes = "BuyForMe逻辑")
+    @PostMapping("/addBfmCartByUrlWithUuid")
+    public CommonResult addBfmCartByUrlWithUuid(SiteSourcingParam siteSourcingParam) {
+        Assert.notNull(siteSourcingParam, "siteBuyForMeParam null");
+        Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getUrl()), "url null");
+
+        Assert.isTrue((null != siteSourcingParam.getAverageDailyOrder() && siteSourcingParam.getAverageDailyOrder() > 0) || (null != siteSourcingParam.getOneTimeOrderOnly() && siteSourcingParam.getOneTimeOrderOnly() > 0), "averageDailyOrder or oneTimeOrderOnly null");
+        Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getUuid()), "uuid null");
+
+        SiteSourcing siteSourcing = new SiteSourcing();
+        BeanUtil.copyProperties(siteSourcingParam, siteSourcing);
+
+        try {
+            siteSourcing.setUserName(siteSourcingParam.getUuid());
+            // 生成PID和catid数据
+            this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
+
+            Long productId = this.saveOneBoundToProduct(siteSourcing);
+            if (null == productId || productId <= 0) {
+                return CommonResult.failed("before add product failed!");
+            }
+            siteSourcing.setProductId(productId);
+
+            // 异步加载数据
+            this.sourcingUtils.checkAndLoadDataAsync(siteSourcing);
+
+            // 清空redis数据
+            this.sourcingUtils.deleteRedisCar(siteSourcingParam.getUuid());
+
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("addBfmCartByUrlWithUuid,siteBuyForMe[{}],error:", siteSourcing, e);
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -130,7 +167,51 @@ public class XmsBuyForMeController {
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("getInfoByUrl,siteBuyForMeParam[{}],error:", siteSourcingParam, e);
+            log.error("addBfmCartByImg,siteBuyForMeParam[{}],error:", siteSourcingParam, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @ApiOperation(value = "根据Img加入购物车WithUuid", notes = "BuyForMe逻辑")
+    @PostMapping("/addBfmCartByImgWithUuid")
+    public CommonResult addBfmCartByImgWithUuid(SiteSourcingParam siteSourcingParam) {
+
+
+        Assert.notNull(siteSourcingParam, "siteBuyForMeParam null");
+        Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getImg()), "img null");
+        Assert.isTrue(null != siteSourcingParam.getChooseType() && siteSourcingParam.getChooseType() > 0, "chooseType null");
+
+        Assert.isTrue((null != siteSourcingParam.getAverageDailyOrder() && siteSourcingParam.getAverageDailyOrder() > 0) || (null != siteSourcingParam.getOneTimeOrderOnly() && siteSourcingParam.getOneTimeOrderOnly() > 0), "averageDailyOrder or oneTimeOrderOnly null");
+
+        Assert.isTrue(StrUtil.isNotBlank(siteSourcingParam.getUuid()), "uuid null");
+        SiteSourcing siteSourcing = new SiteSourcing();
+        BeanUtil.copyProperties(siteSourcingParam, siteSourcing);
+
+        try {
+            // 生成PID和catid数据
+            this.sourcingUtils.checkSiteFlagByImg(siteSourcing);
+
+            siteSourcing.setUserName(siteSourcingParam.getUuid());
+            // 添加到购物车
+            // sourcingUtils.addBfmCart(siteSourcing);
+
+            Long productId = this.saveOneBoundToProduct(siteSourcing);
+            if (null == productId || productId <= 0) {
+                return CommonResult.failed("before add product failed!");
+            }
+            siteSourcing.setProductId(productId);
+
+            // 添加到sourcingList
+            this.sourcingUtils.saveSourcingInfo(siteSourcing);
+
+            // 清空redis数据
+            this.sourcingUtils.deleteRedisCar(siteSourcingParam.getUuid());
+
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("addBfmCartByImgWithUuid,siteBuyForMeParam[{}],error:", siteSourcingParam, e);
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -145,6 +226,21 @@ public class XmsBuyForMeController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("queryBfmCartList,userId:[{}],error:", userId, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+
+    @ApiOperation(value = "BuyForMe的购物车ListWithUuid", notes = "BuyForMe逻辑")
+    @GetMapping("/queryBfmCartListWithUuid")
+    public CommonResult queryBfmCartListWithUuid(String uuid) {
+        Assert.isTrue(StrUtil.isNotBlank(uuid), "uuid null");
+        try {
+            return CommonResult.success(this.sourcingUtils.getCarFromRedis(uuid, 0 , null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("queryBfmCartList,uuid:[{}],error:", uuid, e);
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -187,6 +283,29 @@ public class XmsBuyForMeController {
             // 添加到购物车
             siteSourcing.setUserId(currentMember.getId());
             siteSourcing.setUserName(currentMember.getUsername());
+            this.sourcingUtils.addBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getInfoByUrl,url[{}],error:", url, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "根据万邦接口获取URL详细信息WithUuid", notes = "BuyForMe逻辑")
+    @GetMapping("/getInfoByUrlWithUuid")
+    public CommonResult getInfoByUrlWithUuid(String url, String userName) {
+        Assert.isTrue(StrUtil.isNotBlank(url), "url null");
+        Assert.isTrue(StrUtil.isNotBlank(userName), "userName null");
+        try {
+
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setUrl(url);
+            // 生成PID和catid数据
+            this.sourcingUtils.checkSiteFlagByUrl(siteSourcing);
+            this.sourcingUtils.checkAndLoadData(siteSourcing);
+            // 添加到购物车
+            siteSourcing.setUserName(userName);
             this.sourcingUtils.addBfmCart(siteSourcing);
             return CommonResult.success(siteSourcing);
         } catch (Exception e) {
@@ -239,7 +358,28 @@ public class XmsBuyForMeController {
             // return CommonResult.success(this.sourcingUtils.getCarFromRedis(String.valueOf(currentMember.getId())));
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("saveImg,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
+            log.error("deleteBfmCart,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "删除sourcing前的缓存信息WithUuid", notes = "BuyForMe逻辑")
+    @PostMapping("/deleteBfmCartWithUuid")
+    public CommonResult deleteBfmCartWithUuid(String pid, Integer siteFlag, String uuid) {
+        Assert.isTrue(StrUtil.isNotBlank(pid), "pid null");
+        Assert.isTrue(null != siteFlag && siteFlag > 0, "siteFlag null");
+        Assert.isTrue(StrUtil.isNotBlank(uuid), "uuid null");
+        try {
+
+            SiteSourcing siteSourcing = new SiteSourcing();
+            siteSourcing.setPid(pid);
+            siteSourcing.setSiteFlag(siteFlag);
+            siteSourcing.setUserName(uuid);
+            this.sourcingUtils.deleteBfmCart(siteSourcing);
+            return CommonResult.success(siteSourcing);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("deleteBfmCartWithUuid,pid[{}],siteFlag[{}],error:", pid, siteFlag, e);
             return CommonResult.failed(e.getMessage());
         }
     }

@@ -5,6 +5,7 @@ import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.portal.domain.ConfirmOrderResult;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import com.macro.mall.portal.domain.OrderParam;
+import com.macro.mall.portal.domain.SourcingOrderParam;
 import com.macro.mall.portal.service.OmsPortalOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +35,31 @@ public class OmsPortalOrderController {
     public CommonResult<ConfirmOrderResult> generateConfirmOrder(@RequestBody List<Long> cartIds) {
         ConfirmOrderResult confirmOrderResult = portalOrderService.generateConfirmOrder(cartIds);
         return CommonResult.success(confirmOrderResult);
+    }
+
+
+    @ApiOperation("保存购物车信息生成Sourcing预览信息")
+    @RequestMapping(value = "beForeSourcingOrder", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult beForeSourcingOrder(SourcingOrderParam orderParam, HttpServletRequest request) {
+        request.getSession().setAttribute("beForeSourcingOrder", orderParam);
+        return CommonResult.success(orderParam, "success");
+    }
+
+    @ApiOperation("获取购物车信息生成Sourcing预览信息")
+    @RequestMapping(value = "AfterSourcingOrder", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult AfterSourcingOrder(HttpServletRequest request) {
+        SourcingOrderParam orderParam = (SourcingOrderParam) request.getSession().getAttribute("beForeSourcingOrder");
+        return CommonResult.success(orderParam, "success");
+    }
+
+    @ApiOperation("根据购物车信息生成Sourcing订单")
+    @RequestMapping(value = "/generateSourcingOrder", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult generateSourcingOrder(SourcingOrderParam orderParam) {
+        Map<String, Object> result = portalOrderService.generateSourcingOrder(orderParam);
+        return CommonResult.success(result, "下单成功");
     }
 
     @ApiOperation("根据购物车信息生成订单")
