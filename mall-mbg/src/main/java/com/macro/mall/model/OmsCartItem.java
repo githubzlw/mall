@@ -57,6 +57,8 @@ public class OmsCartItem implements Serializable {
     @ApiModelProperty(value = "0 未勾选 1勾选")
     private Integer checkFlag;
 
+    private String shipTo;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -209,6 +211,14 @@ public class OmsCartItem implements Serializable {
 
     public void setCheckFlag(Integer checkFlag) {
         this.checkFlag = checkFlag;
+    }
+
+    public String getShipTo() {
+        return shipTo;
+    }
+
+    public void setShipTo(String shipTo) {
+        this.shipTo = shipTo;
     }
 
     @Override
