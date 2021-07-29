@@ -18,4 +18,6 @@ public interface PmsSkuStockService {
      * 批量更新商品库存信息
      */
     int update(Long pid, List<PmsSkuStock> skuStockList);
+
+    List<PmsSkuStock> getListByProductIds(List<Long> ids);
 }

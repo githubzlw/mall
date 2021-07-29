@@ -1,6 +1,7 @@
 package com.macro.mall.portal.domain;
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,4 +17,15 @@ public class SourcingOrderParam extends OrderPayParam {
 
     @ApiModelProperty("被选中的购物车商品ID")
     private List<Long> cartIds;
+
+    private Integer numTotal;
+
+    private Double weightTotal;
+    private Double volumeTotal;
+    private Double productPriceTotal;
+    private Double discountPrice;
+    private Double priceTotal;
+
+    @ApiModelProperty("购物车Json信息")
+    private String carInfo;
 }

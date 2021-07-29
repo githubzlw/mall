@@ -58,6 +58,7 @@ secure:
       - /product/updateProductCancle
       - /product/saveOneBoundProduct
       - /order/updateOrderState
+      - /xmsOrder/**
 
 aliyun:
   oss:
