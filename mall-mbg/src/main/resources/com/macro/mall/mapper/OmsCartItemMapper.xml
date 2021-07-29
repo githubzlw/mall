@@ -21,6 +21,7 @@
     <result column="product_sn" jdbcType="VARCHAR" property="productSn" />
     <result column="product_attr" jdbcType="VARCHAR" property="productAttr" />
     <result column="check_flag" jdbcType="INTEGER" property="checkFlag" />
+    <result column="ship_to" jdbcType="VARCHAR" property="shipTo"/>
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -83,7 +84,7 @@
   <sql id="Base_Column_List">
     id, product_id, product_sku_id, member_id, quantity, price, product_pic, product_name, 
     product_sub_title, product_sku_code, member_nickname, create_date, modify_date, delete_status, 
-    product_category_id, product_brand, product_sn, product_attr, check_flag
+    product_category_id, product_brand, product_sn, product_attr, check_flag, ship_to
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.OmsCartItemExample" resultMap="BaseResultMap">
     select
@@ -119,20 +120,21 @@
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into oms_cart_item (product_id, product_sku_id, member_id, 
-      quantity, price, product_pic, 
-      product_name, product_sub_title, product_sku_code, 
-      member_nickname, create_date, modify_date, 
-      delete_status, product_category_id, product_brand, 
-      product_sn, product_attr, check_flag
-      )
-    values (#{productId,jdbcType=BIGINT}, #{productSkuId,jdbcType=BIGINT}, #{memberId,jdbcType=BIGINT}, 
-      #{quantity,jdbcType=INTEGER}, #{price,jdbcType=DECIMAL}, #{productPic,jdbcType=VARCHAR}, 
-      #{productName,jdbcType=VARCHAR}, #{productSubTitle,jdbcType=VARCHAR}, #{productSkuCode,jdbcType=VARCHAR}, 
-      #{memberNickname,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP}, #{modifyDate,jdbcType=TIMESTAMP}, 
-      #{deleteStatus,jdbcType=INTEGER}, #{productCategoryId,jdbcType=BIGINT}, #{productBrand,jdbcType=VARCHAR}, 
-      #{productSn,jdbcType=VARCHAR}, #{productAttr,jdbcType=VARCHAR}, #{checkFlag,jdbcType=INTEGER}
-      )
+    insert into oms_cart_item (product_id, product_sku_id, member_id,
+    quantity, price, product_pic,
+    product_name, product_sub_title, product_sku_code,
+    member_nickname, create_date, modify_date,
+    delete_status, product_category_id, product_brand,
+    product_sn, product_attr, check_flag, ship_to
+    )
+    values (#{productId,jdbcType=BIGINT}, #{productSkuId,jdbcType=BIGINT}, #{memberId,jdbcType=BIGINT},
+    #{quantity,jdbcType=INTEGER}, #{price,jdbcType=DECIMAL}, #{productPic,jdbcType=VARCHAR},
+    #{productName,jdbcType=VARCHAR}, #{productSubTitle,jdbcType=VARCHAR}, #{productSkuCode,jdbcType=VARCHAR},
+    #{memberNickname,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP}, #{modifyDate,jdbcType=TIMESTAMP},
+    #{deleteStatus,jdbcType=INTEGER}, #{productCategoryId,jdbcType=BIGINT}, #{productBrand,jdbcType=VARCHAR},
+    #{productSn,jdbcType=VARCHAR}, #{productAttr,jdbcType=VARCHAR}, #{checkFlag,jdbcType=INTEGER},
+    #{shipTo,jdbcType=VARCHAR}
+    )
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.OmsCartItem">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -194,6 +196,9 @@
       <if test="checkFlag != null">
         check_flag,
       </if>
+      <if test="shipTo != null">
+        ship_to,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="productId != null">
@@ -249,6 +254,9 @@
       </if>
       <if test="checkFlag != null">
         #{checkFlag,jdbcType=INTEGER},
+      </if>
+      <if test="shipTo != null">
+        #{shipTo,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -318,6 +326,9 @@
       <if test="record.checkFlag != null">
         check_flag = #{record.checkFlag,jdbcType=INTEGER},
       </if>
+      <if test="record.shipTo != null">
+        ship_to = #{record.shipTo,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -333,17 +344,18 @@
       price = #{record.price,jdbcType=DECIMAL},
       product_pic = #{record.productPic,jdbcType=VARCHAR},
       product_name = #{record.productName,jdbcType=VARCHAR},
-      product_sub_title = #{record.productSubTitle,jdbcType=VARCHAR},
-      product_sku_code = #{record.productSkuCode,jdbcType=VARCHAR},
-      member_nickname = #{record.memberNickname,jdbcType=VARCHAR},
-      create_date = #{record.createDate,jdbcType=TIMESTAMP},
-      modify_date = #{record.modifyDate,jdbcType=TIMESTAMP},
-      delete_status = #{record.deleteStatus,jdbcType=INTEGER},
-      product_category_id = #{record.productCategoryId,jdbcType=BIGINT},
-      product_brand = #{record.productBrand,jdbcType=VARCHAR},
-      product_sn = #{record.productSn,jdbcType=VARCHAR},
-      product_attr = #{record.productAttr,jdbcType=VARCHAR},
-      check_flag = #{record.checkFlag,jdbcType=INTEGER}
+    product_sub_title = #{record.productSubTitle,jdbcType=VARCHAR},
+    product_sku_code = #{record.productSkuCode,jdbcType=VARCHAR},
+    member_nickname = #{record.memberNickname,jdbcType=VARCHAR},
+    create_date = #{record.createDate,jdbcType=TIMESTAMP},
+    modify_date = #{record.modifyDate,jdbcType=TIMESTAMP},
+    delete_status = #{record.deleteStatus,jdbcType=INTEGER},
+    product_category_id = #{record.productCategoryId,jdbcType=BIGINT},
+    product_brand = #{record.productBrand,jdbcType=VARCHAR},
+    product_sn = #{record.productSn,jdbcType=VARCHAR},
+    product_attr = #{record.productAttr,jdbcType=VARCHAR},
+    check_flag = #{record.checkFlag,jdbcType=INTEGER},
+    ship_to = #{record.shipTo,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -405,6 +417,9 @@
       <if test="checkFlag != null">
         check_flag = #{checkFlag,jdbcType=INTEGER},
       </if>
+      <if test="shipTo != null">
+        ship_to = #{shipTo,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -427,7 +442,8 @@
       product_brand = #{productBrand,jdbcType=VARCHAR},
       product_sn = #{productSn,jdbcType=VARCHAR},
       product_attr = #{productAttr,jdbcType=VARCHAR},
-      check_flag = #{checkFlag,jdbcType=INTEGER}
+      check_flag = #{checkFlag,jdbcType=INTEGER},
+      ship_to = #{shipTo,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>
