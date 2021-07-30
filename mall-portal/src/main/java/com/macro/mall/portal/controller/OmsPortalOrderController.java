@@ -1,11 +1,16 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.domain.ConfirmOrderResult;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import com.macro.mall.portal.domain.OrderParam;
+import com.macro.mall.portal.domain.SourcingOrderParam;
 import com.macro.mall.portal.service.OmsPortalOrderService;
+import com.macro.mall.portal.service.UmsMemberService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -27,12 +32,49 @@ public class OmsPortalOrderController {
     @Autowired
     private OmsPortalOrderService portalOrderService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private UmsMemberService umsMemberService;
+
+    private static final String SOURCING_BEFORE_ORDER = "sourcing:beForeOrder:";
+
     @ApiOperation("根据购物车信息生成确认单信息")
     @RequestMapping(value = "/generateConfirmOrder", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult<ConfirmOrderResult> generateConfirmOrder(@RequestBody List<Long> cartIds) {
         ConfirmOrderResult confirmOrderResult = portalOrderService.generateConfirmOrder(cartIds);
         return CommonResult.success(confirmOrderResult);
+    }
+
+
+    @ApiOperation("保存购物车信息生成Sourcing预览信息")
+    @RequestMapping(value = "/beForeSourcingOrder", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult beForeSourcingOrder(SourcingOrderParam orderParam) {
+
+        redisUtil.hset(SOURCING_BEFORE_ORDER, umsMemberService.getCurrentMember().getId().toString(), JSONObject.toJSONString(orderParam), 60 * 60 * 24 * 7);
+        return CommonResult.success(orderParam, "success");
+    }
+
+    @ApiOperation("获取购物车信息生成Sourcing预览信息")
+    @RequestMapping(value = "/AfterSourcingOrder", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult AfterSourcingOrder() {
+        String hget = redisUtil.hget(SOURCING_BEFORE_ORDER, umsMemberService.getCurrentMember().getId().toString());
+        if (StrUtil.isNotBlank(hget)) {
+            SourcingOrderParam orderParam = JSONObject.parseObject(hget, SourcingOrderParam.class);
+            return CommonResult.success(orderParam, "success");
+        }
+        return CommonResult.success(null);
+    }
+
+    @ApiOperation("根据购物车信息生成Sourcing订单")
+    @RequestMapping(value = "/generateSourcingOrder", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult generateSourcingOrder(SourcingOrderParam orderParam) {
+        Map<String, Object> result = portalOrderService.generateSourcingOrder(orderParam);
+        return CommonResult.success(result, "下单成功");
     }
 
     @ApiOperation("根据购物车信息生成订单")

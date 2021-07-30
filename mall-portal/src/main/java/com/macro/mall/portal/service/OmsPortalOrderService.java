@@ -4,6 +4,7 @@ import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.portal.domain.ConfirmOrderResult;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import com.macro.mall.portal.domain.OrderParam;
+import com.macro.mall.portal.domain.SourcingOrderParam;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,6 +26,9 @@ public interface OmsPortalOrderService {
      */
     @Transactional
     Map<String, Object> generateOrder(OrderParam orderParam);
+
+    @Transactional
+    Map<String, Object> generateSourcingOrder(SourcingOrderParam orderParam);
 
     /**
      * 支付成功后的回调

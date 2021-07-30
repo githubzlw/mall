@@ -36,4 +36,11 @@ public class PmsSkuStockServiceImpl implements PmsSkuStockService {
     public int update(Long pid, List<PmsSkuStock> skuStockList) {
         return skuStockDao.replaceList(skuStockList);
     }
+
+    @Override
+    public List<PmsSkuStock> getListByProductIds(List<Long> ids) {
+        PmsSkuStockExample example = new PmsSkuStockExample();
+        PmsSkuStockExample.Criteria criteria = example.createCriteria().andProductIdIn(ids);
+        return skuStockMapper.selectByExample(example);
+    }
 }

@@ -50,7 +50,8 @@ secure:
       - /paypal/**
       - /addProductByUrl/**
       - /sourcingSearchLog/**
-      - /buyForMe/aliSearch
+      - /buyForMe/**
+      - /sourcing/**
 
 # 自定义redis key
 redis:

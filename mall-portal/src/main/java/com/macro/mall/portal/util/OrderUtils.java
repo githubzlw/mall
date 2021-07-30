@@ -163,7 +163,8 @@ public class OrderUtils {
                 tempSkuStock.setProductId(pmsSkuStock.getProductId());
                 tempSkuStock.setPrice(pmsSkuStock.getPrice());
                 tempSkuStock.setSpData(pmsSkuStock.getSpData());
-                tempSkuStock.setStock(pmsSkuStock.getStock());
+                tempSkuStock.setStock(0);
+                tempSkuStock.setLockStock(pmsSkuStock.getStock());
                 tempSkuStock.setSkuCode(pmsSkuStock.getSkuCode());
                 tempSkuStock.setSkuStockId(pmsSkuStock.getId().intValue());
                 tempSkuStock.setStatus(1);

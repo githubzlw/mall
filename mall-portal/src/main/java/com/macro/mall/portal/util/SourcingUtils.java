@@ -105,6 +105,10 @@ public class SourcingUtils {
      */
     public void addBfmCart(SiteSourcing siteSourcing) {
         String userId = String.valueOf(siteSourcing.getUserId());
+        if(siteSourcing.getUserId() == 0){
+            userId = siteSourcing.getUserName();
+        }
+
         Map<String, Object> objectMap = this.getCarToRedis(userId, 0, null);
         if (null == objectMap) {
             objectMap = new HashMap<>();
@@ -136,7 +140,11 @@ public class SourcingUtils {
         if (SourcingUtils.USER_NAME_ADD_PRODUCT_BY_URL.equalsIgnoreCase(siteSourcing.getUserName())) {
             this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId() + "-" + siteSourcing.getSiteFlag(), pidKey);
         } else {
-            this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+            if(siteSourcing.getUserId() > 0){
+                this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserId(), pidKey);
+            } else{
+                this.redisUtil.hdel(SOURCING_CAR + siteSourcing.getUserName(), pidKey);
+            }
         }
 
     }
@@ -757,6 +765,12 @@ public class SourcingUtils {
     public void deleteRedisCar(long sessionId) {
         Map<String, Object> objectMap = new HashMap<>();
         redisUtil.hmsetObj(SOURCING_CAR + sessionId, objectMap, EXPIRATION_TIME_1_SECOND);
+
+    }
+
+    public void deleteRedisCar(String uuid) {
+        Map<String, Object> objectMap = new HashMap<>();
+        redisUtil.hmsetObj(SOURCING_CAR + uuid, objectMap, EXPIRATION_TIME_1_SECOND);
 
     }
 

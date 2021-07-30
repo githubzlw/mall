@@ -56,4 +56,7 @@ public class SiteSourcingParam {
     @ApiModelProperty(value = "amazon的fba地址")
     private String fbaWarehouse;
 
+    @ApiModelProperty(value = "uuid")
+    private String uuid;
+
 }
