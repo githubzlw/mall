@@ -54,7 +54,9 @@ public class XmsAliExpressServiceImpl implements XmsAliExpressService {
     private final static String URL_ITEM_SEARCH = "https://api.onebound.cn/aliexpress/api_call.php?key=%s&secret=%s&q=%s&api_name=item_search&lang=en&page=%s&cache=no";// &sort=_sale
 
 
-    private final static String URL_ITEM_DETAILS = "https://api.onebound.cn/aliexpress/api_call.php?api_name=item_get&lang=en&key=%s&secret=%s&num_iid=%s&cache=no";
+    // https://api-gw.onebound.cn/aliexpress/item_get/?key=tel13564700983&
+    //&num_iid=1005002945135475&cache=no&&lang=en&secret=20191107
+    private final static String URL_ITEM_DETAILS = "https://api-gw.onebound.cn/aliexpress/item_get/?lang=en&key=%s&secret=%s&num_iid=%s&cache=no";
 
     @Autowired
     public XmsAliExpressServiceImpl(StringRedisTemplate redisTemplate, XmsAliExpressCacheService cacheService, OneBoundConfig config) {
