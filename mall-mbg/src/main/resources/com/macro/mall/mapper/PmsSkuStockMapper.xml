@@ -19,9 +19,9 @@
     <result column="min_moq" jdbcType="INTEGER" property="minMoq" />
     <result column="max_moq" jdbcType="INTEGER" property="maxMoq" />
     <result column="weight" jdbcType="DECIMAL" property="weight" />
-    <result column="volume_lenght" jdbcType="INTEGER" property="volumeLenght" />
-    <result column="volume_width" jdbcType="INTEGER" property="volumeWidth" />
-    <result column="volume_height" jdbcType="INTEGER" property="volumeHeight" />
+    <result column="volume_lenght" jdbcType="DECIMAL" property="volumeLenght" />
+    <result column="volume_width" jdbcType="DECIMAL" property="volumeWidth" />
+    <result column="volume_height" jdbcType="DECIMAL" property="volumeHeight" />
     <result column="volume" jdbcType="DOUBLE" property="volume" />
     <result column="ships_from" jdbcType="VARCHAR" property="shipsFrom" />
     <result column="profit" jdbcType="VARCHAR" property="profit" />
@@ -141,8 +141,8 @@
       #{sale,jdbcType=INTEGER}, #{promotionPrice,jdbcType=DECIMAL}, #{lockStock,jdbcType=INTEGER}, 
       #{spData,jdbcType=VARCHAR}, #{minPrice,jdbcType=DECIMAL}, #{maxPrice,jdbcType=DECIMAL}, 
       #{moq,jdbcType=INTEGER}, #{minMoq,jdbcType=INTEGER}, #{maxMoq,jdbcType=INTEGER}, 
-      #{weight,jdbcType=DECIMAL}, #{volumeLenght,jdbcType=INTEGER}, #{volumeWidth,jdbcType=INTEGER}, 
-      #{volumeHeight,jdbcType=INTEGER}, #{volume,jdbcType=DOUBLE}, #{shipsFrom,jdbcType=VARCHAR}, 
+      #{weight,jdbcType=DECIMAL}, #{volumeLenght,jdbcType=DECIMAL}, #{volumeWidth,jdbcType=DECIMAL}, 
+      #{volumeHeight,jdbcType=DECIMAL}, #{volume,jdbcType=DOUBLE}, #{shipsFrom,jdbcType=VARCHAR}, 
       #{profit,jdbcType=VARCHAR}, #{standard,jdbcType=VARCHAR}, #{skuvalue1,jdbcType=VARCHAR}, 
       #{skuvalue2,jdbcType=VARCHAR}, #{skuvalue3,jdbcType=VARCHAR})
   </insert>
@@ -281,13 +281,13 @@
         #{weight,jdbcType=DECIMAL},
       </if>
       <if test="volumeLenght != null">
-        #{volumeLenght,jdbcType=INTEGER},
+        #{volumeLenght,jdbcType=DECIMAL},
       </if>
       <if test="volumeWidth != null">
-        #{volumeWidth,jdbcType=INTEGER},
+        #{volumeWidth,jdbcType=DECIMAL},
       </if>
       <if test="volumeHeight != null">
-        #{volumeHeight,jdbcType=INTEGER},
+        #{volumeHeight,jdbcType=DECIMAL},
       </if>
       <if test="volume != null">
         #{volume,jdbcType=DOUBLE},
@@ -373,13 +373,13 @@
         weight = #{record.weight,jdbcType=DECIMAL},
       </if>
       <if test="record.volumeLenght != null">
-        volume_lenght = #{record.volumeLenght,jdbcType=INTEGER},
+        volume_lenght = #{record.volumeLenght,jdbcType=DECIMAL},
       </if>
       <if test="record.volumeWidth != null">
-        volume_width = #{record.volumeWidth,jdbcType=INTEGER},
+        volume_width = #{record.volumeWidth,jdbcType=DECIMAL},
       </if>
       <if test="record.volumeHeight != null">
-        volume_height = #{record.volumeHeight,jdbcType=INTEGER},
+        volume_height = #{record.volumeHeight,jdbcType=DECIMAL},
       </if>
       <if test="record.volume != null">
         volume = #{record.volume,jdbcType=DOUBLE},
@@ -426,9 +426,9 @@
       min_moq = #{record.minMoq,jdbcType=INTEGER},
       max_moq = #{record.maxMoq,jdbcType=INTEGER},
       weight = #{record.weight,jdbcType=DECIMAL},
-      volume_lenght = #{record.volumeLenght,jdbcType=INTEGER},
-      volume_width = #{record.volumeWidth,jdbcType=INTEGER},
-      volume_height = #{record.volumeHeight,jdbcType=INTEGER},
+      volume_lenght = #{record.volumeLenght,jdbcType=DECIMAL},
+      volume_width = #{record.volumeWidth,jdbcType=DECIMAL},
+      volume_height = #{record.volumeHeight,jdbcType=DECIMAL},
       volume = #{record.volume,jdbcType=DOUBLE},
       ships_from = #{record.shipsFrom,jdbcType=VARCHAR},
       profit = #{record.profit,jdbcType=VARCHAR},
@@ -492,13 +492,13 @@
         weight = #{weight,jdbcType=DECIMAL},
       </if>
       <if test="volumeLenght != null">
-        volume_lenght = #{volumeLenght,jdbcType=INTEGER},
+        volume_lenght = #{volumeLenght,jdbcType=DECIMAL},
       </if>
       <if test="volumeWidth != null">
-        volume_width = #{volumeWidth,jdbcType=INTEGER},
+        volume_width = #{volumeWidth,jdbcType=DECIMAL},
       </if>
       <if test="volumeHeight != null">
-        volume_height = #{volumeHeight,jdbcType=INTEGER},
+        volume_height = #{volumeHeight,jdbcType=DECIMAL},
       </if>
       <if test="volume != null">
         volume = #{volume,jdbcType=DOUBLE},
@@ -542,9 +542,9 @@
       min_moq = #{minMoq,jdbcType=INTEGER},
       max_moq = #{maxMoq,jdbcType=INTEGER},
       weight = #{weight,jdbcType=DECIMAL},
-      volume_lenght = #{volumeLenght,jdbcType=INTEGER},
-      volume_width = #{volumeWidth,jdbcType=INTEGER},
-      volume_height = #{volumeHeight,jdbcType=INTEGER},
+      volume_lenght = #{volumeLenght,jdbcType=DECIMAL},
+      volume_width = #{volumeWidth,jdbcType=DECIMAL},
+      volume_height = #{volumeHeight,jdbcType=DECIMAL},
       volume = #{volume,jdbcType=DOUBLE},
       ships_from = #{shipsFrom,jdbcType=VARCHAR},
       profit = #{profit,jdbcType=VARCHAR},

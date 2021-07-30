@@ -54,13 +54,13 @@ public class PmsSkuStock implements Serializable {
     private BigDecimal weight;
 
     @ApiModelProperty(value = "体积长（新加字段）")
-    private Integer volumeLenght;
+    private BigDecimal volumeLenght;
 
     @ApiModelProperty(value = "体积宽（新加字段）")
-    private Integer volumeWidth;
+    private BigDecimal volumeWidth;
 
     @ApiModelProperty(value = "体积高（新加字段）")
-    private Integer volumeHeight;
+    private BigDecimal volumeHeight;
 
     @ApiModelProperty(value = "需求体积")
     private Double volume;
@@ -215,27 +215,27 @@ public class PmsSkuStock implements Serializable {
         this.weight = weight;
     }
 
-    public Integer getVolumeLenght() {
+    public BigDecimal getVolumeLenght() {
         return volumeLenght;
     }
 
-    public void setVolumeLenght(Integer volumeLenght) {
+    public void setVolumeLenght(BigDecimal volumeLenght) {
         this.volumeLenght = volumeLenght;
     }
 
-    public Integer getVolumeWidth() {
+    public BigDecimal getVolumeWidth() {
         return volumeWidth;
     }
 
-    public void setVolumeWidth(Integer volumeWidth) {
+    public void setVolumeWidth(BigDecimal volumeWidth) {
         this.volumeWidth = volumeWidth;
     }
 
-    public Integer getVolumeHeight() {
+    public BigDecimal getVolumeHeight() {
         return volumeHeight;
     }
 
-    public void setVolumeHeight(Integer volumeHeight) {
+    public void setVolumeHeight(BigDecimal volumeHeight) {
         this.volumeHeight = volumeHeight;
     }
 
