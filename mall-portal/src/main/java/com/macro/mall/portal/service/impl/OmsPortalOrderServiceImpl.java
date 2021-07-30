@@ -266,8 +266,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             orderItem.setPromotionName(cartPromotionItem.getPromotionMessage());
             orderItem.setGiftIntegration(cartPromotionItem.getIntegration());
             orderItem.setGiftGrowth(cartPromotionItem.getGrowth());
+
+            orderItem.setPromotionAmount(BigDecimal.ZERO);
+            orderItem.setCouponAmount(BigDecimal.ZERO);
+            orderItem.setIntegrationAmount(BigDecimal.ZERO);
             orderItemList.add(orderItem);
         }
+
+
 
         //计算order_item的实付金额
         handleRealAmount(orderItemList);

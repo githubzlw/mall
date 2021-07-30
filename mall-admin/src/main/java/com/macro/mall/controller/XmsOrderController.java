@@ -132,8 +132,8 @@ public class XmsOrderController {
                                 e.setLockStock(e.getStock() - intValue);
                                 e.setStock(e.getStock() + intValue);
                             } else {
-                                e.setLockStock(0);
                                 e.setStock(e.getStock() + e.getLockStock());
+                                e.setLockStock(0);
                             }
                             e.setUpdateTime(new Date());
                             rsMap.put(e.getSkuCode(), e);

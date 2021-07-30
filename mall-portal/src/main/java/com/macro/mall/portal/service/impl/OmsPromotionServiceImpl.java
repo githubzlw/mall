@@ -39,6 +39,9 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
             PromotionProduct promotionProduct = getPromotionProductById(productId, promotionProductList);
             List<OmsCartItem> itemList = entry.getValue();
             Integer promotionType = promotionProduct.getPromotionType();
+            if(null == promotionType){
+                promotionType = 0;
+            }
             if (promotionType == 1) {
                 //单品促销
                 for (OmsCartItem item : itemList) {
@@ -164,8 +167,8 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
             cartPromotionItem.setPromotionMessage("无优惠");
             cartPromotionItem.setReduceAmount(new BigDecimal(0));
             PmsSkuStock skuStock = getOriginalPrice(promotionProduct,item.getProductSkuId());
-            if(skuStock!=null){
-                cartPromotionItem.setRealStock(skuStock.getStock()-skuStock.getLockStock());
+            if (skuStock != null && null != skuStock.getStock() && null != skuStock.getLockStock()) {
+                cartPromotionItem.setRealStock(skuStock.getStock() - skuStock.getLockStock());
             }
             cartPromotionItem.setIntegration(promotionProduct.getGiftPoint());
             cartPromotionItem.setGrowth(promotionProduct.getGiftGrowth());
