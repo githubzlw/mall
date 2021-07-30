@@ -1165,52 +1165,52 @@ public class PmsSkuStockExample {
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtEqualTo(Integer value) {
+        public Criteria andVolumeLenghtEqualTo(BigDecimal value) {
             addCriterion("volume_lenght =", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtNotEqualTo(Integer value) {
+        public Criteria andVolumeLenghtNotEqualTo(BigDecimal value) {
             addCriterion("volume_lenght <>", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtGreaterThan(Integer value) {
+        public Criteria andVolumeLenghtGreaterThan(BigDecimal value) {
             addCriterion("volume_lenght >", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtGreaterThanOrEqualTo(Integer value) {
+        public Criteria andVolumeLenghtGreaterThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_lenght >=", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtLessThan(Integer value) {
+        public Criteria andVolumeLenghtLessThan(BigDecimal value) {
             addCriterion("volume_lenght <", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtLessThanOrEqualTo(Integer value) {
+        public Criteria andVolumeLenghtLessThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_lenght <=", value, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtIn(List<Integer> values) {
+        public Criteria andVolumeLenghtIn(List<BigDecimal> values) {
             addCriterion("volume_lenght in", values, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtNotIn(List<Integer> values) {
+        public Criteria andVolumeLenghtNotIn(List<BigDecimal> values) {
             addCriterion("volume_lenght not in", values, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeLenghtBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_lenght between", value1, value2, "volumeLenght");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeLenghtNotBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeLenghtNotBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_lenght not between", value1, value2, "volumeLenght");
             return (Criteria) this;
         }
@@ -1225,52 +1225,52 @@ public class PmsSkuStockExample {
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthEqualTo(Integer value) {
+        public Criteria andVolumeWidthEqualTo(BigDecimal value) {
             addCriterion("volume_width =", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthNotEqualTo(Integer value) {
+        public Criteria andVolumeWidthNotEqualTo(BigDecimal value) {
             addCriterion("volume_width <>", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthGreaterThan(Integer value) {
+        public Criteria andVolumeWidthGreaterThan(BigDecimal value) {
             addCriterion("volume_width >", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthGreaterThanOrEqualTo(Integer value) {
+        public Criteria andVolumeWidthGreaterThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_width >=", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthLessThan(Integer value) {
+        public Criteria andVolumeWidthLessThan(BigDecimal value) {
             addCriterion("volume_width <", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthLessThanOrEqualTo(Integer value) {
+        public Criteria andVolumeWidthLessThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_width <=", value, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthIn(List<Integer> values) {
+        public Criteria andVolumeWidthIn(List<BigDecimal> values) {
             addCriterion("volume_width in", values, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthNotIn(List<Integer> values) {
+        public Criteria andVolumeWidthNotIn(List<BigDecimal> values) {
             addCriterion("volume_width not in", values, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeWidthBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_width between", value1, value2, "volumeWidth");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeWidthNotBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeWidthNotBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_width not between", value1, value2, "volumeWidth");
             return (Criteria) this;
         }
@@ -1285,52 +1285,52 @@ public class PmsSkuStockExample {
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightEqualTo(Integer value) {
+        public Criteria andVolumeHeightEqualTo(BigDecimal value) {
             addCriterion("volume_height =", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightNotEqualTo(Integer value) {
+        public Criteria andVolumeHeightNotEqualTo(BigDecimal value) {
             addCriterion("volume_height <>", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightGreaterThan(Integer value) {
+        public Criteria andVolumeHeightGreaterThan(BigDecimal value) {
             addCriterion("volume_height >", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightGreaterThanOrEqualTo(Integer value) {
+        public Criteria andVolumeHeightGreaterThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_height >=", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightLessThan(Integer value) {
+        public Criteria andVolumeHeightLessThan(BigDecimal value) {
             addCriterion("volume_height <", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightLessThanOrEqualTo(Integer value) {
+        public Criteria andVolumeHeightLessThanOrEqualTo(BigDecimal value) {
             addCriterion("volume_height <=", value, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightIn(List<Integer> values) {
+        public Criteria andVolumeHeightIn(List<BigDecimal> values) {
             addCriterion("volume_height in", values, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightNotIn(List<Integer> values) {
+        public Criteria andVolumeHeightNotIn(List<BigDecimal> values) {
             addCriterion("volume_height not in", values, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeHeightBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_height between", value1, value2, "volumeHeight");
             return (Criteria) this;
         }
 
-        public Criteria andVolumeHeightNotBetween(Integer value1, Integer value2) {
+        public Criteria andVolumeHeightNotBetween(BigDecimal value1, BigDecimal value2) {
             addCriterion("volume_height not between", value1, value2, "volumeHeight");
             return (Criteria) this;
         }
