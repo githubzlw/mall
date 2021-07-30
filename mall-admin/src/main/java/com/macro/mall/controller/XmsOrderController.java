@@ -2,6 +2,7 @@ package com.macro.mall.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsCustomerSkuStock;
@@ -15,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -103,6 +102,61 @@ public class XmsOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getOrderStockList,orderNo[{}],error:", orderNo, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/updateStockMatch")
+    @ResponseBody
+    public CommonResult updateStockMatch(String orderNo, String matchInfo) {
+        Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
+        Assert.isTrue(StrUtil.isNotBlank(matchInfo), "matchInfo null");
+
+
+        try {
+
+            JSONObject jsonObject = JSONObject.parseObject(matchInfo);
+            QueryWrapper<XmsCustomerSkuStock> stockQueryWrapper = new QueryWrapper<>();
+            stockQueryWrapper.lambda().eq(XmsCustomerSkuStock::getOrderNo, orderNo);
+            List<XmsCustomerSkuStock> list = this.iXmsCustomerSkuStockService.list(stockQueryWrapper);
+            int total = 0;
+            if (CollectionUtil.isNotEmpty(list)) {
+                Map<String, XmsCustomerSkuStock> rsMap = new HashMap<>();
+                list.forEach(e -> {
+                    if (jsonObject.containsKey(e.getSkuCode())) {
+                        int intValue = jsonObject.getIntValue(e.getSkuCode());
+                        if (e.getLockStock() > 0) {
+                            // 使用锁定库存
+                            if (e.getLockStock() > intValue) {
+                                e.setLockStock(e.getStock() - intValue);
+                                e.setStock(e.getStock() + intValue);
+                            } else {
+                                e.setLockStock(0);
+                                e.setStock(e.getStock() + e.getLockStock());
+                            }
+                            e.setUpdateTime(new Date());
+                            rsMap.put(e.getSkuCode(), e);
+                        }
+                    }
+                });
+                if (rsMap.size() > 0) {
+                    total = rsMap.size();
+                    List<XmsCustomerSkuStock> upList = new ArrayList<>();
+                    rsMap.forEach((k, v) -> upList.add(v));
+                    this.iXmsCustomerSkuStockService.saveOrUpdateBatch(upList);
+                    rsMap.clear();
+                    upList.clear();
+
+                }
+                return CommonResult.success(total);
+            } else {
+                return CommonResult.failed("此订单没有匹配的库存");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("updateStockMatch,orderNo[{}],matchInfo[{}],error:", orderNo, matchInfo, e);
             return CommonResult.failed(e.getMessage());
         }
     }

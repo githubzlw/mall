@@ -26,6 +26,9 @@ public class SourcingOrderParam extends OrderPayParam {
     private Double discountPrice;
     private Double priceTotal;
 
+    private String modeOfTransport;
+    private String locationType;
+
     @ApiModelProperty("购物车Json信息")
     private String carInfo;
 }
