@@ -1,11 +1,16 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.model.OmsCartItem;
+import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.portal.domain.CartProduct;
 import com.macro.mall.portal.domain.CartPromotionItem;
 import com.macro.mall.portal.service.OmsCartItemService;
+import com.macro.mall.portal.service.PmsPortalProductService;
 import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.util.BigDecimalUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +18,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 购物车管理Controller
@@ -27,6 +35,8 @@ public class OmsCartItemController {
     private OmsCartItemService cartItemService;
     @Autowired
     private UmsMemberService memberService;
+     @Autowired
+    private PmsPortalProductService portalProductService;
 
     @ApiOperation("添加商品到购物车")
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -44,6 +54,31 @@ public class OmsCartItemController {
     @ResponseBody
     public CommonResult<List<OmsCartItem>> list() {
         List<OmsCartItem> cartItemList = cartItemService.list(memberService.getCurrentMember().getId());
+        if (CollectionUtil.isNotEmpty(cartItemList)) {
+            Map<String, OmsCartItem> clMap = new HashMap<>();
+            List<Long> productIdList = new ArrayList<>();
+            List<Long> skuIdList = new ArrayList<>();
+            cartItemList.forEach(e -> {
+                clMap.put(e.getProductId().toString() + "_" + e.getProductSkuId().toString(), e);
+                productIdList.add(e.getProductId());
+                skuIdList.add(e.getProductSkuId());
+            });
+            List<PmsSkuStock> skuStockList = portalProductService.queryByProductAndIds(productIdList, skuIdList);
+            if(CollectionUtil.isNotEmpty(skuStockList)){
+                skuStockList.forEach(e->{
+                    if(clMap.containsKey(e.getProductId().toString() + "_" + e.getId().toString())){
+                        JSONObject param = new JSONObject();
+                        param.put("maxMoq", e.getMaxMoq());
+                        param.put("maxPrice", e.getMaxPrice());
+                        param.put("minMoq",e.getMinMoq());
+                        param.put("minPrice", e.getMinPrice());
+                        param.put("moq", e.getMoq());
+                        param.put("price", e.getPrice());
+                        clMap.get(e.getProductId().toString() + "_" + e.getId().toString()).setMoqInfo(param.toJSONString());
+                    }
+                });
+            }
+        }
         return CommonResult.success(cartItemList);
     }
 

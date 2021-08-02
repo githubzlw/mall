@@ -310,6 +310,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         //订单类型：0->正常订单；1->秒杀订单
         order.setOrderType(0);
         //收货人信息：姓名、电话、邮编、地址
+        order.setReceiverCountry(orderParam.getReceiverCountry());
         order.setReceiverName(orderParam.getReceiverName());
         order.setReceiverPhone(orderParam.getReceiverPhone());
         order.setReceiverPostCode(orderParam.getReceiverPostCode());
@@ -435,7 +436,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrder cancelOrder = cancelOrderList.get(0);
         if (cancelOrder != null) {
             //修改订单状态为取消
-            cancelOrder.setStatus(4);
+            cancelOrder.setStatus(6);
             orderMapper.updateByPrimaryKeySelective(cancelOrder);
             OmsOrderItemExample orderItemExample = new OmsOrderItemExample();
             orderItemExample.createCriteria().andOrderIdEqualTo(orderId);
@@ -481,7 +482,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
     @Override
     public CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName) {
-        if (status == -1) {
+        if (status == -2) {
             status = null;
         }
         UmsMember member = memberService.getCurrentMember();
@@ -489,10 +490,18 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId())
-                .andReceiverCountryIsNotNull();
+                .andMemberIdEqualTo(member.getId());
+               /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
-            criteria.andStatusEqualTo(status);
+            if (1 == status) {
+                criteria.andStatusIn(Arrays.asList(1, 5));
+            } else if (3 == status) {
+                criteria.andStatusIn(Arrays.asList(2, 3, 4));
+            } else if (6 == status) {
+                criteria.andStatusIn(Arrays.asList(-1, 6));
+            } else {
+                criteria.andStatusEqualTo(status);
+            }
         }
         orderExample.setOrderByClause("create_time desc");
         List<OmsOrder> orderList = new ArrayList<>();

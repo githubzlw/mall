@@ -137,6 +137,14 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
     }
 
 
+    @Override
+    public List<PmsSkuStock> queryByProductAndIds(List<Long> productIdLis, List<Long> skuIdList) {
+        PmsSkuStockExample skuExample = new PmsSkuStockExample();
+        skuExample.createCriteria().andProductIdIn(productIdLis).andIdIn(skuIdList);
+        return skuStockMapper.selectByExample(skuExample);
+    }
+
+
     /**
      * 初始对象转化为节点对象
      */

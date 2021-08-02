@@ -59,6 +59,17 @@ public class OmsCartItem implements Serializable {
 
     private String shipTo;
 
+    @ApiModelProperty(value = "选中商品的MOQ数据")
+    private String moqInfo;
+
+    public String getMoqInfo() {
+        return moqInfo;
+    }
+
+    public void setMoqInfo(String moqInfo) {
+        this.moqInfo = moqInfo;
+    }
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {

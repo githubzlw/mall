@@ -72,6 +72,7 @@ PAYPAL:
   CANCEL_URL_TYPE: 1
   SUCCESS_URL1: https://app.busysell.com/#/PaymentResult
   SUCCESS_URL2: https://app.busysell.com/#/PayResult
+  SUCCESS_URL3: https://app.busysell.com/#/purchaseOrders
   CANCEL_URL: https://app.busysell.com/
   BUSINESS_ID: 584JZVFU6PPVU
 
