@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.common.service.RedisService;
+import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.component.CancelOrderSender;
@@ -65,6 +66,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private OmsOrderItemMapper orderItemMapper;
     @Autowired
     private CancelOrderSender cancelOrderSender;
+    @Autowired
+    private IXmsCustomerSkuStockService iXmsCustomerSkuStockService;
 
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
@@ -338,12 +341,41 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
         //删除购物车中的下单商品
         deleteCartItemList(cartPromotionItemList, currentMember);
+
+        //加入到客户的库存里面
+        genOrderStock(orderItemList, currentMember, order.getOrderSn());
+
         //发送延迟消息取消订单
         sendDelayMessageCancelOrder(order.getId());
         Map<String, Object> result = new HashMap<>();
         result.put("order", order);
         result.put("orderItemList", orderItemList);
         return result;
+    }
+
+
+    private void genOrderStock(List<OmsOrderItem> orderItemList, UmsMember currentMember, String orderNo) {
+
+        List<XmsCustomerSkuStock> skuStockInsertList = new ArrayList<>();
+
+        orderItemList.forEach(e -> {
+            XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
+            tempSkuStock.setUsername(currentMember.getUsername());
+            tempSkuStock.setMemberId(currentMember.getId());
+            tempSkuStock.setProductId(e.getProductId());
+            tempSkuStock.setPrice(e.getProductPrice());
+            tempSkuStock.setSpData(e.getProductAttr());
+            tempSkuStock.setStock(0);
+            tempSkuStock.setLockStock(e.getProductQuantity());
+            tempSkuStock.setSkuCode(e.getProductSkuCode());
+            tempSkuStock.setSkuStockId(e.getProductSkuId().intValue());
+            tempSkuStock.setStatus(1);
+            tempSkuStock.setOrderNo(orderNo);
+            skuStockInsertList.add(tempSkuStock);
+        });
+        this.iXmsCustomerSkuStockService.saveBatch(skuStockInsertList);
+        skuStockInsertList.clear();
+
     }
 
     @Override

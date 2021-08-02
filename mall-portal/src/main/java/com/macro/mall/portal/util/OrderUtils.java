@@ -71,7 +71,7 @@ public class OrderUtils {
                 memberId = omsOrders.get(0).getMemberId();
                 OmsOrder tempOrder = new OmsOrder();
                 tempOrder.setId(omsOrders.get(0).getId());
-                tempOrder.setStatus(flag > 0 ? 1 : -1);
+                tempOrder.setStatus(flag > 0 ? 5 : -1);
                 this.orderMapper.updateByPrimaryKeySelective(tempOrder);
                 omsOrders.clear();
             }
