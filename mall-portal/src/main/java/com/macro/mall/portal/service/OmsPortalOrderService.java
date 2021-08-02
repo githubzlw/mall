@@ -61,7 +61,7 @@ public interface OmsPortalOrderService {
     /**
      * 分页获取用户订单
      */
-    CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize);
+    CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName);
 
     /**
      * 根据订单ID获取订单详情

@@ -115,9 +115,10 @@ public class OmsPortalOrderController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     public CommonResult<CommonPage<OmsOrderDetail>> list(@RequestParam Integer status,
-                                                   @RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                                   @RequestParam(required = false, defaultValue = "5") Integer pageSize) {
-        CommonPage<OmsOrderDetail> orderPage = portalOrderService.list(status,pageNum,pageSize);
+                                                         @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+                                                         @RequestParam(required = false, defaultValue = "5") Integer pageSize,
+                                                         @RequestParam(required = false, defaultValue = "") String productName) {
+        CommonPage<OmsOrderDetail> orderPage = portalOrderService.list(status, pageNum, pageSize, productName);
         return CommonResult.success(orderPage);
     }
 
