@@ -345,7 +345,10 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         deleteCartItemList(cartPromotionItemList, currentMember);
 
         //加入到客户的库存里面
-        genOrderStock(orderItemList, currentMember, order.getOrderSn());
+        if("inv".equalsIgnoreCase(orderParam.getModeOfTransport()) ){
+            genOrderStock(orderItemList, currentMember, order.getOrderSn());
+        }
+
 
         //发送延迟消息取消订单
         sendDelayMessageCancelOrder(order.getId());
@@ -371,7 +374,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             tempSkuStock.setLockStock(e.getProductQuantity());
             tempSkuStock.setSkuCode(e.getProductSkuCode());
             tempSkuStock.setSkuStockId(e.getProductSkuId().intValue());
-            tempSkuStock.setStatus(1);
+            tempSkuStock.setStatus(0);
             tempSkuStock.setOrderNo(orderNo);
             skuStockInsertList.add(tempSkuStock);
         });

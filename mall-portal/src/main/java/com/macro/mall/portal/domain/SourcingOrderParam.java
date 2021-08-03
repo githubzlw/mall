@@ -31,4 +31,6 @@ public class SourcingOrderParam extends OrderPayParam {
 
     @ApiModelProperty("购物车Json信息")
     private String carInfo;
+
+    private String invCountry;
 }
