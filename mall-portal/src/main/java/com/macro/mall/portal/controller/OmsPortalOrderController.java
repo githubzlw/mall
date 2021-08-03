@@ -4,13 +4,13 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
-import com.macro.mall.portal.domain.ConfirmOrderResult;
-import com.macro.mall.portal.domain.OmsOrderDetail;
-import com.macro.mall.portal.domain.OrderParam;
-import com.macro.mall.portal.domain.SourcingOrderParam;
+import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.OmsPortalOrderService;
 import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.util.PayUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +39,8 @@ public class OmsPortalOrderController {
     private RedisUtil redisUtil;
     @Autowired
     private UmsMemberService umsMemberService;
+    @Autowired
+    private PayUtil payUtil;
 
     private static final String SOURCING_BEFORE_ORDER = "sourcing:beForeOrder:";
 
@@ -153,4 +158,66 @@ public class OmsPortalOrderController {
         portalOrderService.deleteOrder(orderId);
         return CommonResult.success(null);
     }
+
+
+    @ApiOperation("订单BeforePay")
+    @RequestMapping(value = "/beforePayOrder", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult beforePayOrder(Long orderId, HttpServletRequest request) {
+
+        UmsMember currentMember = umsMemberService.getCurrentMember();
+        synchronized (currentMember.getId()) {
+
+            OmsOrderDetail detail = portalOrderService.detail(orderId);
+            if (null == detail || null == detail.getId() || detail.getId() == 0) {
+                return CommonResult.failed("no this order");
+            }
+
+            double totalAmount = 0; // 总金额
+            double payAmount = 0; // PayPal支付
+            double balanceAmount = 0; // 余额支付
+            GenerateOrderResult orderResult = new GenerateOrderResult();
+            // 判断已经做过处理的，不再进行计算
+            if (detail.getStatus() == 0 && null != detail.getPaymentTime()) {
+                totalAmount = detail.getPayAmount().doubleValue() + detail.getBalanceAmount(); // 总金额
+                balanceAmount = 0; // 余额支付
+            } else {
+                totalAmount = detail.getPayAmount().doubleValue(); // 总金额
+                balanceAmount = 0; // 余额支付
+            }
+
+            UmsMember umsMember = umsMemberService.getById(currentMember.getId());
+            Double tempBalance = umsMember.getBalance();
+            // 存在余额则部分余额支付或者余额支付
+            if (null != tempBalance && tempBalance > 0) {
+
+                if (tempBalance >= totalAmount) {
+                    payAmount = 0;
+                    balanceAmount = totalAmount;
+                } else {
+                    balanceAmount = tempBalance;
+                    payAmount = totalAmount - balanceAmount;
+                }
+            } else {
+                payAmount = totalAmount;
+            }
+            detail.setPayAmount(new BigDecimal(payAmount));
+            detail.setBalanceAmount(balanceAmount);
+            detail.setPaymentTime(new Date());
+
+
+            orderResult.setOrderNo(detail.getOrderSn());
+            orderResult.setBalanceAmount(balanceAmount);
+            orderResult.setPayAmount(payAmount);
+            orderResult.setTotalAmount(totalAmount);
+            orderResult.setProductCost(detail.getTotalAmount().floatValue());
+            orderResult.setTotalFreight(detail.getFreightAmount().doubleValue());
+
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
+        }
+
+
+    }
+
+
 }

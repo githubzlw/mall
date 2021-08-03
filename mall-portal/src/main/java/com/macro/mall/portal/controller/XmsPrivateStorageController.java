@@ -111,14 +111,14 @@ public class XmsPrivateStorageController {
                                     tempObj.setPendingArrival(tempObj.getPendingArrival() + e.getLockStock());
                                     break;
                                 case 2:
-                                    tempObj.setAvailable(tempObj.getAvailable() + e.getLockStock());
+                                    tempObj.setAvailable(tempObj.getAvailable() + e.getStock());
                                     break;
                                 case 3:
-                                    tempObj.setReserved(tempObj.getReserved() + e.getLockStock());
-                                    tempObj.setAwaitingShipment(tempObj.getAwaitingShipment() + +e.getLockStock());
+                                    tempObj.setReserved(tempObj.getReserved() + e.getStock());
+                                    tempObj.setAwaitingShipment(tempObj.getAwaitingShipment() + +e.getStock());
                                     break;
                                 case 4:
-                                    tempObj.setFulfilled(tempObj.getFulfilled() + e.getLockStock());
+                                    tempObj.setFulfilled(tempObj.getFulfilled() + e.getStock());
                                     break;
                             }
                         }

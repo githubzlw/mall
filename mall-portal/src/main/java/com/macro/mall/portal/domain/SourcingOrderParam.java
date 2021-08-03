@@ -33,4 +33,13 @@ public class SourcingOrderParam extends OrderPayParam {
     private String carInfo;
 
     private String invCountry;
+
+
+    private String shippingMethodRadioIndex;
+    private String fbaSelsect;
+    private String isLabelingFree;
+    private String shippingMethodName;
+    private String shipTo;
+    private String shippingRadio;
+
 }

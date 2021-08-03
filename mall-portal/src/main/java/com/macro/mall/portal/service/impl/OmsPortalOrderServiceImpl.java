@@ -2,11 +2,15 @@ package com.macro.mall.portal.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.common.service.RedisService;
+import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsCustomerSkuStock;
+import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.component.CancelOrderSender;
@@ -69,6 +73,12 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private CancelOrderSender cancelOrderSender;
     @Autowired
     private IXmsCustomerSkuStockService iXmsCustomerSkuStockService;
+    @Autowired
+    private IXmsCustomerProductService iXmsCustomerProductService;
+    @Autowired
+    private PmsProductMapper pmsProductMapper;
+    @Autowired
+    private IXmsSourcingListService xmsSourcingListService;
 
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
@@ -286,14 +296,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         //根据商品合计、运费、活动优惠、优惠券、积分计算应付金额
         OmsOrder order = new OmsOrder();
         order.setDiscountAmount(new BigDecimal(0));
+        order.setFreightAmount(new BigDecimal(orderParam.getShippingCostValue()));
         order.setTotalAmount(calcTotalAmount(orderItemList));
-        order.setFreightAmount(new BigDecimal(0));
         order.setPromotionAmount(calcPromotionAmount(orderItemList));
         order.setPromotionInfo(getOrderPromotionInfo(orderItemList));
 
         order.setCouponAmount(new BigDecimal(0));
         order.setIntegration(0);
-            order.setIntegrationAmount(new BigDecimal(0));
+        order.setIntegrationAmount(new BigDecimal(0));
 
 
         order.setPayAmount(calcPayAmount(order));
@@ -363,6 +373,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
         List<XmsCustomerSkuStock> skuStockInsertList = new ArrayList<>();
 
+        List<Long> productList = new ArrayList<>();
         orderItemList.forEach(e -> {
             XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
             tempSkuStock.setUsername(currentMember.getUsername());
@@ -376,8 +387,71 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             tempSkuStock.setSkuStockId(e.getProductSkuId().intValue());
             tempSkuStock.setStatus(0);
             tempSkuStock.setOrderNo(orderNo);
+            if(!productList.contains(e.getProductId())){
+                productList.add(e.getProductId());
+            }
             skuStockInsertList.add(tempSkuStock);
         });
+
+
+        // 如果没有客户的产品数据在，则插入进去
+        QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(XmsCustomerProduct::getProductId, productList);
+        List<XmsCustomerProduct> list = this.iXmsCustomerProductService.list(queryWrapper);
+
+        List<Long> queryList;
+        if(CollectionUtil.isNotEmpty(list)){
+            queryList = list.stream().filter(e-> !productList.contains(e.getProductId())).mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
+            list.clear();
+        } else{
+            queryList = productList;
+        }
+
+        if (CollectionUtil.isNotEmpty(queryList)) {
+
+            // 读取sourcing的数据
+            QueryWrapper<XmsSourcingList> sourcingListQueryWrapper = new QueryWrapper<>();
+            sourcingListQueryWrapper.lambda().eq(XmsSourcingList::getMemberId, currentMember.getId()).in(XmsSourcingList::getProductId, queryList);
+            List<XmsSourcingList> sourcingLists = this.xmsSourcingListService.list(sourcingListQueryWrapper);
+            Map<Long, XmsSourcingList> sourcingListMap = new HashMap<>();
+            if(CollectionUtil.isNotEmpty(sourcingLists)){
+                sourcingLists.forEach(e-> sourcingListMap.put(e.getProductId(), e));
+                sourcingLists.clear();
+            }
+
+            PmsProductExample productExample = new PmsProductExample();
+            productExample.createCriteria().andIdIn(queryList);
+            List<PmsProduct> pmsProducts = this.pmsProductMapper.selectByExample(productExample);
+            if(CollectionUtil.isNotEmpty(pmsProducts)){
+                List<XmsCustomerProduct> insertList = new ArrayList<>();
+                pmsProducts.forEach(e->{
+                    XmsCustomerProduct tmProduct = new XmsCustomerProduct();
+                    BeanUtil.copyProperties(e, tmProduct);
+                    tmProduct.setMemberId(currentMember.getId());
+                    tmProduct.setUsername(currentMember.getUsername());
+                    tmProduct.setCreateTime(new Date());
+                    tmProduct.setUpdateTime(new Date());
+                    tmProduct.setStatus(0);
+
+                    if(sourcingListMap.containsKey(e.getId())){
+                        tmProduct.setSourcingId(sourcingListMap.get(e.getId()).getId().intValue());
+                        tmProduct.setSiteType(sourcingListMap.get(e.getId()).getSiteType());
+                        tmProduct.setProductId(sourcingListMap.get(e.getId()).getProductId());
+                    } else{
+                        tmProduct.setProductId(e.getId());
+                        tmProduct.setSiteType(10);
+                    }
+                    insertList.add(tmProduct);
+                });
+                this.iXmsCustomerProductService.saveBatch(insertList);
+                pmsProducts.clear();
+                insertList.clear();
+            }
+            sourcingListMap.clear();
+            queryList.clear();
+        }
+        // 插入到客户商品结束
+
         this.iXmsCustomerSkuStockService.saveBatch(skuStockInsertList);
         skuStockInsertList.clear();
 

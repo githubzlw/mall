@@ -72,6 +72,7 @@ public class OrderUtils {
                 OmsOrder tempOrder = new OmsOrder();
                 tempOrder.setId(omsOrders.get(0).getId());
                 tempOrder.setStatus(flag > 0 ? 5 : -1);
+                tempOrder.setPaymentTime(new Date());
                 this.orderMapper.updateByPrimaryKeySelective(tempOrder);
                 omsOrders.clear();
             }
