@@ -345,7 +345,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         deleteCartItemList(cartPromotionItemList, currentMember);
 
         //加入到客户的库存里面
-        if("inv".equalsIgnoreCase(orderParam.getModeOfTransport()) ){
+        if("inv".equalsIgnoreCase(orderParam.getModeOfTransportation()) ){
             genOrderStock(orderItemList, currentMember, order.getOrderSn());
         }
 
