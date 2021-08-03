@@ -55,6 +55,10 @@ public class TrafficFreightUtils {
      */
     private List<XmsListOfCountries> countriesList = new ArrayList<>();
     /**
+     * 国家列表
+     */
+    private List<XmsListOfCountries> countriesFilterList = new ArrayList<>();
+    /**
      * FBA国家城市列表
      */
     private List<XmsListOfFbaCountries> listOfFbaCountries = new ArrayList<>();
@@ -768,6 +772,9 @@ public class TrafficFreightUtils {
             if (null != this.countriesList) {
                 this.countriesList.clear();
             }
+            if (null != this.countriesFilterList) {
+                this.countriesFilterList.clear();
+            }
             if (null != this.listOfFbaCountries) {
                 this.listOfFbaCountries.clear();
             }
@@ -827,11 +834,12 @@ public class TrafficFreightUtils {
         synchronized (TrafficFreightUtils.class) {
             // 初始化国家列表
             if (CollectionUtil.isEmpty(this.countriesList)) {
+                this.countriesFilterList.clear();
                 QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
-                this.countriesList = this.listOfCountriesMapper.selectList(queryWrapper);
-                if (CollectionUtil.isNotEmpty(this.countriesList)) {
+                this.countriesFilterList = this.listOfCountriesMapper.selectList(queryWrapper);
+                if (CollectionUtil.isNotEmpty(this.countriesFilterList)) {
                     this.initFreightUnitList();
-                    this.countriesList = this.countriesList.stream().filter(e -> this.trafficFreightMap.containsKey(e.getId())).collect(Collectors.toList());
+                    this.countriesList = this.countriesFilterList.stream().filter(e -> this.trafficFreightMap.containsKey(e.getId())).collect(Collectors.toList());
                     // 排序
                     this.countriesList.sort(Comparator.comparing(XmsListOfCountries::getEnglishNameOfCountry));
                 }
@@ -906,6 +914,14 @@ public class TrafficFreightUtils {
         initCountriesList();
         if (CollectionUtil.isNotEmpty(this.countriesList)) {
             return BeanCopyUtil.deepListCopy(this.countriesList);
+        }
+        return null;
+    }
+
+    public List<XmsListOfCountries> getCountriesFilterList() {
+        initCountriesList();
+        if (CollectionUtil.isNotEmpty(this.countriesFilterList)) {
+            return BeanCopyUtil.deepListCopy(this.countriesFilterList);
         }
         return null;
     }

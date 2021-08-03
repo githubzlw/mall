@@ -312,7 +312,7 @@ public class XmsFreightCalculateController {
     @GetMapping("/getCountriesList")
     public CommonResult getCountriesList() {
         try {
-            List<XmsListOfCountries> countriesList = freightUtils.getCountriesList();
+            List<XmsListOfCountries> countriesList = freightUtils.getCountriesFilterList();
             return CommonResult.success(countriesList);
         } catch (Exception e) {
             e.printStackTrace();
