@@ -95,7 +95,7 @@ public class XmsPrivateStorageController {
                 List<String> tempSkuCodes = productRsList.stream().map(XmsCustomerProductQuery::getSkuCode).collect(Collectors.toList());
 
                 QueryWrapper<XmsCustomerSkuStock> stockQueryWrapper = new QueryWrapper<>();
-                stockQueryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, tempProductIds).in(XmsCustomerSkuStock::getSkuCode, tempSkuCodes);
+                stockQueryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, tempProductIds).in(XmsCustomerSkuStock::getSkuCode, tempSkuCodes).gt(XmsCustomerSkuStock::getStatus, 0);
 
                 List<XmsCustomerSkuStock> list = this.iXmsCustomerSkuStockService.list(stockQueryWrapper);
                 if (CollectionUtil.isNotEmpty(list)) {
@@ -107,16 +107,19 @@ public class XmsPrivateStorageController {
                                 tempObj.setSkuData(e.getSpData());
                             }
                             switch (e.getStatus()) {
-                                case 0:
-                                    tempObj.setPendingArrival(tempObj.getPendingArrival() + 1);
                                 case 1:
-                                    tempObj.setAvailable(tempObj.getAvailable() + 1);
+                                    tempObj.setPendingArrival(tempObj.getPendingArrival() + e.getLockStock());
+                                    break;
                                 case 2:
-                                    tempObj.setReserved(tempObj.getReserved() + 1);
+                                    tempObj.setAvailable(tempObj.getAvailable() + e.getLockStock());
+                                    break;
                                 case 3:
-                                    tempObj.setAwaitingShipment(tempObj.getAwaitingShipment() + 1);
+                                    tempObj.setReserved(tempObj.getReserved() + e.getLockStock());
+                                    tempObj.setAwaitingShipment(tempObj.getAwaitingShipment() + +e.getLockStock());
+                                    break;
                                 case 4:
-                                    tempObj.setFulfilled(tempObj.getFulfilled() + 1);
+                                    tempObj.setFulfilled(tempObj.getFulfilled() + e.getLockStock());
+                                    break;
                             }
                         }
                     });

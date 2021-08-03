@@ -69,6 +69,9 @@ public class XmsPaymentController {
 
             PayPalParam payPalParam = this.payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
             this.payUtil.insertPayment(currentMember, orderNo, totalAmount, 0, "", "订单支付", 0, payFromEnum);
+            if(payFromEnum == PayFromEnum.PURCHASE_INVENTORY){
+                payPalParam.setSuccessUrlType("1");
+            }
             CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam);
             return commonResult;
         } catch (Exception e) {
@@ -154,6 +157,7 @@ public class XmsPaymentController {
                         }
                     }
                 } else {
+                    System.err.println(itemNumber + ",pay result: " + payment.toJSON());
                     this.orderUtils.paySuccessUpdate(itemNumber, 0);
                     log.error("paypalApiCalAndConfirm Bad response：" + payment.toJSON());
                 }

@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.exception.Asserts;
 import com.macro.mall.common.service.RedisService;
+import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.component.CancelOrderSender;
@@ -66,6 +67,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private OmsOrderItemMapper orderItemMapper;
     @Autowired
     private CancelOrderSender cancelOrderSender;
+    @Autowired
+    private IXmsCustomerSkuStockService iXmsCustomerSkuStockService;
 
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
@@ -267,8 +270,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             orderItem.setPromotionName(cartPromotionItem.getPromotionMessage());
             orderItem.setGiftIntegration(cartPromotionItem.getIntegration());
             orderItem.setGiftGrowth(cartPromotionItem.getGrowth());
+
+            orderItem.setPromotionAmount(BigDecimal.ZERO);
+            orderItem.setCouponAmount(BigDecimal.ZERO);
+            orderItem.setIntegrationAmount(BigDecimal.ZERO);
             orderItemList.add(orderItem);
         }
+
+
 
         //计算order_item的实付金额
         handleRealAmount(orderItemList);
@@ -301,6 +310,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         //订单类型：0->正常订单；1->秒杀订单
         order.setOrderType(0);
         //收货人信息：姓名、电话、邮编、地址
+        order.setReceiverCountry(orderParam.getReceiverCountry());
         order.setReceiverName(orderParam.getReceiverName());
         order.setReceiverPhone(orderParam.getReceiverPhone());
         order.setReceiverPostCode(orderParam.getReceiverPostCode());
@@ -333,12 +343,44 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
         //删除购物车中的下单商品
         deleteCartItemList(cartPromotionItemList, currentMember);
+
+        //加入到客户的库存里面
+        if("inv".equalsIgnoreCase(orderParam.getModeOfTransportation()) ){
+            genOrderStock(orderItemList, currentMember, order.getOrderSn());
+        }
+
+
         //发送延迟消息取消订单
         sendDelayMessageCancelOrder(order.getId());
         Map<String, Object> result = new HashMap<>();
         result.put("order", order);
         result.put("orderItemList", orderItemList);
         return result;
+    }
+
+
+    private void genOrderStock(List<OmsOrderItem> orderItemList, UmsMember currentMember, String orderNo) {
+
+        List<XmsCustomerSkuStock> skuStockInsertList = new ArrayList<>();
+
+        orderItemList.forEach(e -> {
+            XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
+            tempSkuStock.setUsername(currentMember.getUsername());
+            tempSkuStock.setMemberId(currentMember.getId());
+            tempSkuStock.setProductId(e.getProductId());
+            tempSkuStock.setPrice(e.getProductPrice());
+            tempSkuStock.setSpData(e.getProductAttr());
+            tempSkuStock.setStock(0);
+            tempSkuStock.setLockStock(e.getProductQuantity());
+            tempSkuStock.setSkuCode(e.getProductSkuCode());
+            tempSkuStock.setSkuStockId(e.getProductSkuId().intValue());
+            tempSkuStock.setStatus(0);
+            tempSkuStock.setOrderNo(orderNo);
+            skuStockInsertList.add(tempSkuStock);
+        });
+        this.iXmsCustomerSkuStockService.saveBatch(skuStockInsertList);
+        skuStockInsertList.clear();
+
     }
 
     @Override
@@ -397,7 +439,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrder cancelOrder = cancelOrderList.get(0);
         if (cancelOrder != null) {
             //修改订单状态为取消
-            cancelOrder.setStatus(4);
+            cancelOrder.setStatus(6);
             orderMapper.updateByPrimaryKeySelective(cancelOrder);
             OmsOrderItemExample orderItemExample = new OmsOrderItemExample();
             orderItemExample.createCriteria().andOrderIdEqualTo(orderId);
@@ -443,7 +485,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
     @Override
     public CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName) {
-        if (status == -1) {
+        if (status == -2) {
             status = null;
         }
         UmsMember member = memberService.getCurrentMember();
@@ -451,10 +493,18 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId())
-                .andReceiverCountryIsNotNull();
+                .andMemberIdEqualTo(member.getId());
+               /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
-            criteria.andStatusEqualTo(status);
+            if (1 == status) {
+                criteria.andStatusIn(Arrays.asList(1, 5));
+            } else if (3 == status) {
+                criteria.andStatusIn(Arrays.asList(2, 3, 4));
+            } else if (6 == status) {
+                criteria.andStatusIn(Arrays.asList(-1, 6));
+            } else {
+                criteria.andStatusEqualTo(status);
+            }
         }
         orderExample.setOrderByClause("create_time desc");
         List<OmsOrder> orderList = new ArrayList<>();

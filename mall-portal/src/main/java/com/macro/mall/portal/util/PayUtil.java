@@ -74,6 +74,8 @@ public class PayUtil {
         requestMap.put("customMsg", payPalParam.getCustomMsg());
         if ("2".equals(payPalParam.getSuccessUrlType())) {
             requestMap.put("successUrl", payConfig.getSuccessUrl2());
+        } else if("1".equals(payPalParam.getSuccessUrlType())) {
+            requestMap.put("successUrl", payConfig.getSuccessUrl3());
         } else {
             requestMap.put("successUrl", payConfig.getSuccessUrl1());
         }

@@ -77,7 +77,7 @@ public class XmsCustomerSkuStock implements Serializable {
     @ApiModelProperty(value = "库存表ID")
     private Integer skuStockId;
 
-    @ApiModelProperty(value = "0 默认 1购买中 2 可使用 3无效库存")
+    @ApiModelProperty(value = "0购买中 1已经购买 2 入库 3发货")
     private Integer status;
 
     @ApiModelProperty(value = "下单的订单号")

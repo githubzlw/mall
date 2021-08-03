@@ -71,12 +71,12 @@ public class OrderUtils {
                 memberId = omsOrders.get(0).getMemberId();
                 OmsOrder tempOrder = new OmsOrder();
                 tempOrder.setId(omsOrders.get(0).getId());
-                tempOrder.setStatus(flag > 0 ? 1 : -1);
+                tempOrder.setStatus(flag > 0 ? 5 : -1);
                 this.orderMapper.updateByPrimaryKeySelective(tempOrder);
                 omsOrders.clear();
             }
             // LP开头的订单，清空购物车数据
-            if (flag > 0 && orderNo.indexOf("LP") == 0) {
+            /*if (flag > 0 && orderNo.indexOf("LP") == 0) {
                 List<OmsCartItem> cartItemList = this.cartItemService.list(memberId);
                 if (CollectionUtil.isNotEmpty(cartItemList)) {
                     cartItemList = cartItemList.stream().filter(e -> e.getCheckFlag() == 1).collect(Collectors.toList());
@@ -92,7 +92,8 @@ public class OrderUtils {
             // SL和LP开头的订单，更新库存
             if (orderNo.indexOf(OrderPrefixEnum.LiveProduct.getName()) == 0 || orderNo.indexOf(OrderPrefixEnum.SourcingList.getName()) == 0) {
                 this.iXmsCustomerSkuStockService.updateStateByOrderNo(orderNo, flag > 0 ? 2 : 3);
-            }
+            }*/
+            this.iXmsCustomerSkuStockService.updateStateByOrderNo(orderNo, flag > 0 ? 1 : -1);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.model.PmsProduct;
+import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.portal.domain.PmsPortalProductDetail;
 import com.macro.mall.portal.domain.PmsProductCategoryNode;
 
@@ -27,4 +28,6 @@ public interface PmsPortalProductService {
     PmsPortalProductDetail detail(Long id);
 
     List<PmsProduct> queryByIds(List<Long> ids);
+
+    List<PmsSkuStock> queryByProductAndIds(List<Long> productIdLis, List<Long> skuIdList);
 }

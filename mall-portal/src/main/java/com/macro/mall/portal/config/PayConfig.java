@@ -24,6 +24,9 @@ public class PayConfig {
     @Value("${PAYPAL.SUCCESS_URL2}")
     private String successUrl2;
 
+    @Value("${PAYPAL.SUCCESS_URL3}")
+    private String successUrl3;
+
     @ApiModelProperty(value = "取消后调用链接")
     @Value("${PAYPAL.CANCEL_URL}")
     private String cancelUrl;
