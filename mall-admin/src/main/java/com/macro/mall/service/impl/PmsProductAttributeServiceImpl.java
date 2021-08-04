@@ -10,6 +10,7 @@ import com.macro.mall.dto.ProductAttrInfo;
 import com.macro.mall.mapper.PmsProductAttributeCategoryMapper;
 import com.macro.mall.mapper.PmsProductAttributeMapper;
 import com.macro.mall.mapper.PmsProductAttributeValueMapper;
+import com.macro.mall.mapper.PmsSkuStockMapper;
 import com.macro.mall.model.*;
 import com.macro.mall.service.PmsProductAttributeService;
 import org.slf4j.Logger;
@@ -41,6 +42,8 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
 
     @Autowired
     private PmsProductAttributeValueMapper productAttributeValueMapper;
+    @Autowired
+    private PmsSkuStockMapper skuStockMapper;
 
     @Override
     public List<PmsProductAttribute> getList(Long cid, Integer type, Integer pageSize, Integer pageNum) {
@@ -166,6 +169,12 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
         pmsProductAttributeCategory.setParamCount(0);
         pmsProductAttributeCategory.setAttributeCount(0);
         productAttributeCategoryMapper.updateByPrimaryKey(pmsProductAttributeCategory);
+
+        //关联sku数据删除
+        PmsSkuStockExample skuExample = new PmsSkuStockExample();
+        skuExample.createCriteria().andProductIdEqualTo(productId);
+        skuStockMapper.deleteByExample(skuExample);
+
         return count;
     }
 
