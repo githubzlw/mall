@@ -88,7 +88,7 @@ public class XmsTrafficFreightUnit implements Serializable {
         if (totalWeight <= 0) {
             return this.totalFreight;
         }
-        if (totalWeight <= 210000) {
+        if (totalWeight <= 21) {
             this.totalFreight = calculateNormalFreight(totalWeight);
         } else {
             this.totalFreight = calculateBigFreight(totalWeight);
@@ -106,14 +106,14 @@ public class XmsTrafficFreightUnit implements Serializable {
         BigDecimal tempTotalWeight = new BigDecimal(totalWeight);
         BigDecimal tempTotalFreight = BigDecimal.ZERO;
 
-        double gradeWeight = 500;
+        double gradeWeight = 0.5;
         if (totalWeight > 0) {
-            if (this.firstHeavy == gradeWeight) {
+            if (this.firstHeavy == gradeWeight * 1000) {
                 tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.divide(new BigDecimal(gradeWeight)).setScale(0, BigDecimal.ROUND_UP).subtract(new BigDecimal(1d)).multiply(this.continuedHeavyPrice));
 
                 // tempTotalFreight = this.firstHeavyPrice.doubleValue() + Math.ceil(totalWeight / gradeWeight - 1) * this.continuedHeavyPrice.doubleValue();
             } else {
-                tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.subtract(new BigDecimal(this.firstHeavy)).divide(new BigDecimal(this.firstHeavy)).multiply(this.continuedHeavyPrice));
+                tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.subtract(new BigDecimal(this.firstHeavy / 1000)).divide(new BigDecimal(this.firstHeavy / 1000)).multiply(this.continuedHeavyPrice));
 
                 //tempTotalFreight = this.firstHeavyPrice.doubleValue() + Math.ceil(totalWeight - this.firstHeavy) / this.firstHeavy * this.continuedHeavyPrice.doubleValue();
             }
@@ -130,12 +130,10 @@ public class XmsTrafficFreightUnit implements Serializable {
      * @param totalWeight
      */
     public double calculateBigFreight(double totalWeight) {
-        BigDecimal tempTotalWeight = new BigDecimal(totalWeight);
+        BigDecimal tempTotalWeight = new BigDecimal(totalWeight- this.firstHeavy / 1000);
 
-        double gradeWeight = 1000;
+        BigDecimal tempTotalFreight = this.firstHeavyPrice.add( tempTotalWeight.multiply(this.bigHeavyPrice) ).setScale(2, BigDecimal.ROUND_UP);
 
-        BigDecimal tempTotalFreight = tempTotalWeight.divide(new BigDecimal(gradeWeight)).setScale(2, BigDecimal.ROUND_UP).multiply(this.bigHeavyPriceOfSpecial);
-        // tempTotalFreight = totalWeight / gradeWeight * this.bigHeavyPriceOfSpecial.doubleValue();
         if (null == tempTotalFreight || tempTotalFreight.doubleValue() <= 0) {
             tempTotalFreight = BigDecimal.ZERO;
         }
