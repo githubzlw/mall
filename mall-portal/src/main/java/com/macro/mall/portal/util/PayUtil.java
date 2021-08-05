@@ -60,6 +60,8 @@ public class PayUtil {
 
     @Autowired
     private XmsRecordOfChangeInBalanceMapper xmsRecordOfChangeInBalanceMapper;
+    @Autowired
+    private OrderUtils orderUtils;
 
     /**
      * getPayPalRedirectUtlByPayInfo
@@ -505,6 +507,8 @@ public class PayUtil {
             return this.getPayPalRedirectUtlByPayInfo(payPalParam);
         } else {
             orderResult.setBalanceFlag(1);
+            // 更新订单状态
+            this.orderUtils.paySuccessUpdate(orderResult.getOrderNo(), 1);
             return CommonResult.success(orderResult, "Balance paid successfully");
         }
     }
