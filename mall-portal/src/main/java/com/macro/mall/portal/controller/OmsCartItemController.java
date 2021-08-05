@@ -74,6 +74,11 @@ public class OmsCartItemController {
                         param.put("minPrice", e.getMinPrice());
                         param.put("moq", e.getMoq());
                         param.put("price", e.getPrice());
+                        param.put("volume", e.getVolume());
+                        param.put("weight", e.getWeight());
+                        param.put("volumeHeight", e.getVolumeHeight());
+                        param.put("volumeLenght", e.getVolumeLenght());
+                        param.put("volumeWidth", e.getVolumeWidth());
                         clMap.get(e.getProductId().toString() + "_" + e.getId().toString()).setMoqInfo(param.toJSONString());
                     }
                 });

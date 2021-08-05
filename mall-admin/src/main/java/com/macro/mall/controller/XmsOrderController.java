@@ -49,6 +49,9 @@ public class XmsOrderController {
         try {
 
             int i = this.orderService.updateOrderStatus(orderNo, state);
+            if(state >= 2 && state < 5){
+                i = this.iXmsCustomerSkuStockService.updateStateByOrderNo(orderNo, 2);
+            }
             return CommonResult.success(i);
         } catch (Exception e) {
             e.printStackTrace();

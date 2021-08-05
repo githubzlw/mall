@@ -74,7 +74,7 @@ public class PayUtil {
         requestMap.put("customMsg", payPalParam.getCustomMsg());
         if ("2".equals(payPalParam.getSuccessUrlType())) {
             requestMap.put("successUrl", payConfig.getSuccessUrl2());
-        } else if("1".equals(payPalParam.getSuccessUrlType())) {
+        } else if ("1".equals(payPalParam.getSuccessUrlType())) {
             requestMap.put("successUrl", payConfig.getSuccessUrl3());
         } else {
             requestMap.put("successUrl", payConfig.getSuccessUrl1());
@@ -83,7 +83,14 @@ public class PayUtil {
         try {
             String resUrl = microServiceConfig.getPayUrl() + "/" + payPalParam.getSiteName() + "/create/";
             JSONObject jsonObject = instance.postURL(resUrl, requestMap);
-            return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            if (commonResult.getCode() == 200) {
+                Map<String, String> param = new HashMap<>();
+                param.put("balanceFlag", "0");
+                param.put("payUrl", commonResult.getData().toString());
+                return CommonResult.success(param);
+            }
+            return commonResult;
         } catch (IOException e) {
             log.error("getPayPalRedirectUtlByPayInfo,payPalParam:[{}],error:", payPalParam, e);
             return CommonResult.failed(e.getMessage());
@@ -494,9 +501,10 @@ public class PayUtil {
         }
         if (orderResult.getPayAmount() > 0) {
             PayPalParam payPalParam = this.getPayPalParam(request, currentMember.getId(), orderResult.getOrderNo(), orderResult.getPayAmount());
-            payPalParam.setSuccessUrlType("2");
+            payPalParam.setSuccessUrlType("1");
             return this.getPayPalRedirectUtlByPayInfo(payPalParam);
         } else {
+            orderResult.setBalanceFlag(1);
             return CommonResult.success(orderResult, "Balance paid successfully");
         }
     }
