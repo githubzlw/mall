@@ -317,7 +317,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         order.setSourceType(0);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
-        //订单类型：0->正常订单；1->秒杀订单
+        //订单类型：0->正常订单；1->充值订单
         order.setOrderType(0);
         //收货人信息：姓名、电话、邮编、地址
         order.setReceiverCountry(orderParam.getReceiverCountry());
@@ -567,7 +567,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId());
+                .andMemberIdEqualTo(member.getId())
+        .andOrderTypeEqualTo(0);// 只获取正常支付的订单
                /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
             if (1 == status) {

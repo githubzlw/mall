@@ -241,7 +241,8 @@ public class OrderUtils {
         order.setCreateTime(new Date());
         order.setFreightAmount(BigDecimal.ZERO);
         order.setPromotionAmount(BigDecimal.ZERO);
-
+        // 标识余额支付
+        order.setOrderType(1);
         // 地址相关信息
         Map<String, String> addressMap = new HashMap<>();
         addressMap.put("modeOfTransportation", "modeOfTransportation");
