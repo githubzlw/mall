@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -165,6 +166,7 @@ public class OmsPortalOrderController {
     @ResponseBody
     public CommonResult beforePayOrder(Long orderId, HttpServletRequest request) {
 
+        Assert.isTrue(null != orderId && orderId > 0, "orderId null");
         UmsMember currentMember = umsMemberService.getCurrentMember();
         synchronized (currentMember.getId()) {
 

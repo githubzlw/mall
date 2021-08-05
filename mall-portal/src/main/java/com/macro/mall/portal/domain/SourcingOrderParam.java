@@ -41,5 +41,6 @@ public class SourcingOrderParam extends OrderPayParam {
     private String shippingMethodName;
     private String shipTo;
     private String shippingRadio;
+    private String allCountryOptions;
 
 }

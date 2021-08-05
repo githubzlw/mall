@@ -26,4 +26,7 @@ public class GenerateOrderResult {
     private double balanceAmount = 0;
     @ApiModelProperty("总运费")
     private double totalFreight;
+
+    @ApiModelProperty("全部余额支付标识 1全部, 0部分或者没有")
+    private int balanceFlag;
 }

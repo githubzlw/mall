@@ -400,12 +400,12 @@ public class TrafficFreightUtils {
         if (surcharge > 0 && isJcexTemp) {
             hasInsuranceFee = 1;
         }
-        System.err.println("surcharge:" + surcharge);
+        /*System.err.println("surcharge:" + surcharge);
         System.err.println("hasInsuranceFee:" + hasInsuranceFee);
         System.err.println("defaultShippingMethod:" + defaultShippingMethod);
 
         System.err.println("shippingCost:" + DoubleUtil.divide(shippingCost, 1d, 2));
-        System.err.println("chooseShippingMethod:" + chooseShippingMethod);
+        System.err.println("chooseShippingMethod:" + chooseShippingMethod);*/
         /*map.put("insuranceFee", surcharge);
         map.put("hasInsuranceFee", hasInsuranceFee);
         map.put("defultShippingMethod", defaultShippingMethod);
