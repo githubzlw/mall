@@ -131,11 +131,10 @@ public class XmsTrafficFreightUnit implements Serializable {
      */
     public double calculateBigFreight(double totalWeight) {
         BigDecimal tempTotalWeight = new BigDecimal(totalWeight);
-        BigDecimal tempTotalFreight = BigDecimal.ZERO;
 
         double gradeWeight = 1000;
 
-        tempTotalWeight.divide(new BigDecimal(gradeWeight)).setScale(0, BigDecimal.ROUND_UP).multiply(this.bigHeavyPriceOfSpecial);
+        BigDecimal tempTotalFreight = tempTotalWeight.divide(new BigDecimal(gradeWeight)).setScale(2, BigDecimal.ROUND_UP).multiply(this.bigHeavyPriceOfSpecial);
         // tempTotalFreight = totalWeight / gradeWeight * this.bigHeavyPriceOfSpecial.doubleValue();
         if (null == tempTotalFreight || tempTotalFreight.doubleValue() <= 0) {
             tempTotalFreight = BigDecimal.ZERO;
