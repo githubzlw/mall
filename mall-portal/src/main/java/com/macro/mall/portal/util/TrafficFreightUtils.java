@@ -616,7 +616,7 @@ public class TrafficFreightUtils {
     private double getFreePostagePrice(double totalWeight) {
         // Description : 获取正常重量的免邮价格
         // return 5 + 0.042f * totalWeight;
-        return 25 + 0.085f * totalWeight;
+        return 25 + 85f * totalWeight;
     }
 
     /**
@@ -627,7 +627,7 @@ public class TrafficFreightUtils {
      */
     private double getFreePostagePrice(double totalWeight, int num) {
         // Description : 获取正常重量的免邮价格
-        return 5 + 0.042f * totalWeight * num;
+        return 25 + 85f * totalWeight * num;
     }
 
     /**
@@ -680,6 +680,8 @@ public class TrafficFreightUtils {
         if (totalFreight <= 0) {
             totalFreight = 0;
         }
+        //直接使用免邮价格
+        //return freeTotalPrice / exchangeRateUtils.getUsdToCnyRate();
         return totalFreight / exchangeRateUtils.getUsdToCnyRate();
     }
 

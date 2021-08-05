@@ -54,7 +54,7 @@ public class XmsFreightCalculateController {
 
             FreightResult freightResult = new FreightResult();
             BeanUtil.copyProperties(freightParam, freightResult);
-            freightResult.setTotalWeight(freightResult.getTotalWeight() * 1000);
+            freightResult.setTotalWeight(freightResult.getTotalWeight());
             return this.freightUtils.commonCalculate(freightResult);
 
         } catch (Exception e) {
