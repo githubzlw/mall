@@ -151,8 +151,14 @@ public class TrafficFreightUtils {
             unitList = BeanCopyUtil.deepListCopy(this.trafficFreightMap.get(freightResult.getCountryId()));
         }
 
+        double freeWeight = 0;
         // 获取正常重量的免邮价格
-        double freePostagePrice = this.getFreePostagePrice(freightResult.getTotalWeight());
+        double freePostagePrice = 0;
+        if (freightResult.getProductCost() > 0) {
+            freePostagePrice = this.getFreePostagePrice(freightResult.getTotalWeight(), 1);
+        } else {
+            freePostagePrice = this.getFreePostagePrice(freeWeight);
+        }
 
         boolean canFreeShipping = false;//超过99 免邮free shipping
         boolean supplyFreeCountry = false;//不超过99 但是免邮
@@ -611,6 +617,17 @@ public class TrafficFreightUtils {
         // Description : 获取正常重量的免邮价格
         // return 5 + 0.042f * totalWeight;
         return 25 + 0.085f * totalWeight;
+    }
+
+    /**
+     * 有价格的重量的免邮价格
+     *
+     * @param totalWeight
+     * @return
+     */
+    private double getFreePostagePrice(double totalWeight, int num) {
+        // Description : 获取正常重量的免邮价格
+        return 5 + 0.042f * totalWeight * num;
     }
 
     /**
