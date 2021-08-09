@@ -855,6 +855,7 @@ public class TrafficFreightUtils {
             if (CollectionUtil.isEmpty(this.countriesList)) {
                 this.countriesFilterList.clear();
                 QueryWrapper<XmsListOfCountries> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsListOfCountries::getDel, 0);
                 this.countriesFilterList = this.listOfCountriesMapper.selectList(queryWrapper);
                 if (CollectionUtil.isNotEmpty(this.countriesFilterList)) {
                     this.initFreightUnitList();
