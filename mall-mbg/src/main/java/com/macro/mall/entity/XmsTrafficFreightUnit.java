@@ -1,10 +1,13 @@
 package com.macro.mall.entity;
 
 import java.math.BigDecimal;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,7 +15,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author jack.luo
@@ -20,7 +23,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsTrafficFreightUnit对象", description="")
+@ApiModel(value = "XmsTrafficFreightUnit对象", description = "")
 public class XmsTrafficFreightUnit implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -108,7 +111,7 @@ public class XmsTrafficFreightUnit implements Serializable {
 
         double gradeWeight = 0.5;
         if (totalWeight > 0) {
-            if (this.firstHeavy == gradeWeight * 1000) {
+            /*if (this.firstHeavy == gradeWeight * 1000) {
                 tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.divide(new BigDecimal(gradeWeight)).setScale(0, BigDecimal.ROUND_UP).subtract(new BigDecimal(1d)).multiply(this.continuedHeavyPrice));
 
                 // tempTotalFreight = this.firstHeavyPrice.doubleValue() + Math.ceil(totalWeight / gradeWeight - 1) * this.continuedHeavyPrice.doubleValue();
@@ -116,7 +119,9 @@ public class XmsTrafficFreightUnit implements Serializable {
                 tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.subtract(new BigDecimal(this.firstHeavy / 1000)).divide(new BigDecimal(this.firstHeavy / 1000)).multiply(this.continuedHeavyPrice));
 
                 //tempTotalFreight = this.firstHeavyPrice.doubleValue() + Math.ceil(totalWeight - this.firstHeavy) / this.firstHeavy * this.continuedHeavyPrice.doubleValue();
-            }
+            }*/
+
+            tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.multiply(this.continuedHeavyPrice)).setScale(2, BigDecimal.ROUND_UP);
         }
         if (null == tempTotalFreight || tempTotalFreight.doubleValue() <= 0) {
             tempTotalFreight = BigDecimal.ZERO;
@@ -130,9 +135,9 @@ public class XmsTrafficFreightUnit implements Serializable {
      * @param totalWeight
      */
     public double calculateBigFreight(double totalWeight) {
-        BigDecimal tempTotalWeight = new BigDecimal(totalWeight- this.firstHeavy / 1000);
+        BigDecimal tempTotalWeight = new BigDecimal(totalWeight);
 
-        BigDecimal tempTotalFreight = this.firstHeavyPrice.add( tempTotalWeight.multiply(this.bigHeavyPrice) ).setScale(2, BigDecimal.ROUND_UP);
+        BigDecimal tempTotalFreight = this.firstHeavyPrice.add(tempTotalWeight.multiply(this.bigHeavyPrice)).setScale(2, BigDecimal.ROUND_UP);
 
         if (null == tempTotalFreight || tempTotalFreight.doubleValue() <= 0) {
             tempTotalFreight = BigDecimal.ZERO;

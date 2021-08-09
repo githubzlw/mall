@@ -91,14 +91,14 @@
 
     <select id="getOrderListByProductName" resultMap="orderDetailMap">
         SELECT distinct
-        o.id,
-        o.order_sn,
-        o.create_time,
-        o.total_amount,
-        o.member_id,
-        o.receiver_country,
-        o.receiver_name,
-        o.status
+        o.id, o.member_id, o.coupon_id, o.order_sn, o.create_time, o.member_username, o.total_amount, o.pay_amount, o.
+    balance_amount, o.freight_amount, o.promotion_amount, o.integration_amount, o.coupon_amount, o.
+    discount_amount, o.pay_type, o.source_type, o.status, o.order_type, o.delivery_company, o.delivery_sn, o.
+    auto_confirm_day, o.integration, o.growth, o.promotion_info, o.bill_type, o.bill_header, o.bill_content, o.
+    bill_receiver_phone, o.bill_receiver_email, o.receiver_name, o.receiver_phone, o.receiver_post_code, o.
+    receiver_country, o.receiver_province, o.receiver_city, o.receiver_region, o.receiver_detail_address, o.
+    note, o.confirm_status, o.delete_status, o.use_integration, o.payment_time, o.delivery_time, o.
+    receive_time, o.comment_time, o.modify_time
         FROM
         oms_order o
         LEFT JOIN oms_order_item ot ON o.id = ot.order_id
