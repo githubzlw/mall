@@ -126,6 +126,18 @@ public class OmsCartItemController {
         return CommonResult.failed();
     }
 
+    @ApiOperation("批量修改购物车中商品的购买价格")
+    @RequestMapping(value = "/batchUpdatePrice", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult batchUpdatePrice(@RequestBody Map<Long, Double> map) {
+        Assert.isTrue(null != map && map.size() > 0, "map null");
+        int count = cartItemService.batchUpdatePrice(map);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
 
     @ApiOperation("选中购物车中的某个商品")
     @RequestMapping(value = "/selectProducts", method = RequestMethod.POST)
