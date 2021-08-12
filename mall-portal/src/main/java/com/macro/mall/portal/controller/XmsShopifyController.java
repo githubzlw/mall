@@ -1,5 +1,6 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyCollections;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.model.UmsMember;
@@ -15,6 +17,7 @@ import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
+import com.macro.mall.portal.service.IXmsShopifyAuthService;
 import com.macro.mall.portal.service.IXmsShopifyCollectionsService;
 import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
 import com.macro.mall.portal.service.UmsMemberService;
@@ -56,10 +59,10 @@ public class XmsShopifyController {
     @Autowired
     private IXmsShopifyOrderinfoService shopifyOrderinfoService;
 
-    private final Map<String, UmsMember> umsMemberMap = new HashMap<>();
-
     @Autowired
     private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
+    @Autowired
+    private IXmsShopifyAuthService xmsShopifyAuthService;
 
 
     @PostMapping(value = "/authorization")
@@ -75,7 +78,11 @@ public class XmsShopifyController {
                 return CommonResult.failed("Already bind shop");
             }
 
-            if (this.umsMemberMap.containsKey(shopName)) {
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+            List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.clear();
                 return CommonResult.failed("Already bind shop");
             }
 
@@ -90,7 +97,6 @@ public class XmsShopifyController {
                     System.err.println("clientId:" + clientId);
                     String uri = dataJson.getString("uri");
                     redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
-                    this.umsMemberMap.put(shopName, null);
                     return CommonResult.success(uri);
                 }
             }
@@ -316,5 +322,26 @@ public class XmsShopifyController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+
+    @PostMapping(value = "/clearCustomShopifyInfo")
+    @ApiOperation("清空shopify的店铺授权数据")
+    public CommonResult clearCustomShopifyInfo() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isNotBlank(byId.getShopifyName())) {
+
+            }
+            return CommonResult.success(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("clearCustomShopifyInfo,memberId[{}],error:", currentMember.getId(), e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
 }

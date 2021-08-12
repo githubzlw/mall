@@ -16,10 +16,7 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
-import com.macro.mall.portal.util.BeanCopyUtil;
-import com.macro.mall.portal.util.OrderPrefixEnum;
-import com.macro.mall.portal.util.OrderUtils;
-import com.macro.mall.portal.util.PayUtil;
+import com.macro.mall.portal.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -96,10 +93,14 @@ public class XmsYouLiveProductController {
                 if(CollectionUtil.isNotEmpty(pmsProducts)){
                     Map<Long, PmsProduct> mapCombos = pmsProducts.stream().collect(Collectors.toMap(PmsProduct::getId, e -> e, (a, b) -> b));
                     productPage.getRecords().forEach(e-> {
-                        if(mapCombos.containsKey(e.getProductId())){
+                        if (mapCombos.containsKey(e.getProductId())) {
                             e.setTitle(mapCombos.get(e.getProductId()).getName());
                             e.setSourceLink(mapCombos.get(e.getProductId()).getUrl());
                             e.setImg(mapCombos.get(e.getProductId()).getPic());
+                            e.setCostPrice(mapCombos.get(e.getProductId()).getPriceXj());
+                            if (StrUtil.isEmpty(e.getShopifyPrice())) {
+                                e.setShopifyPrice("0");
+                            }
                         }
                     });
                 }

@@ -21,6 +21,7 @@ public class Product {
     private String body_html;
     private String vendor;
     private String product_type;
+    private String weight_value;
     private String created_at;
     private String handle;
     private String updated_at;

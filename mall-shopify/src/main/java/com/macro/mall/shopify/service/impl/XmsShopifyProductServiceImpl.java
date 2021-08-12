@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,6 +142,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         data.setCategory(String.valueOf(goods.getProductCategoryId()));
         data.setTags(goods.getShopifyTags());
         data.setProductType(goods.getShopifyType());
+        data.setPerWeight(String.valueOf(goods.getWeight().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
         return data;
     }
 
@@ -159,6 +161,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         product.setProduct_type(goods.getCategory());
         product.setTags(goods.getTags());
         product.setProduct_type(goods.getProductType());
+        product.setWeight_value(goods.getPerWeight());
         OptionWrap wrap;
         try {
             wrap = optionVariant(goods.getSkuList());
@@ -368,7 +371,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         int result = 0;
         if (sopifyId != null) {
             UpdateWrapper<XmsShopifyPidInfo> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("shopifyName",shopifyBean.getShopifyName()).eq("pid",shopifyBean.getPid());
+            updateWrapper.eq("shopify_name",shopifyBean.getShopifyName()).eq("pid",shopifyBean.getPid());
             XmsShopifyPidInfo bean = new XmsShopifyPidInfo();
             bean.setShopifyPid(shopifyBean.getShopifyPid());
             bean.setPublish(shopifyBean.getPublish());
