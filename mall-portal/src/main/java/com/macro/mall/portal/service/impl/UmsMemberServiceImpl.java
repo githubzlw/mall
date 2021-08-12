@@ -351,4 +351,15 @@ public class UmsMemberServiceImpl implements UmsMemberService {
 
     }
 
+
+    @Override
+    public void updateSecurityContext() {
+        UmsMember umsMember = this.memberMapper.selectByPrimaryKey(getCurrentMember().getId());
+        MemberDetails userDetails = new MemberDetails(umsMember);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            this.memberCacheService.delMember(umsMember.getId());
+            this.memberCacheService.setMember(umsMember);
+    }
+
 }

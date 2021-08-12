@@ -106,4 +106,9 @@ public interface UmsMemberService {
     int updateGuidedFlag(Long id);
 
     String verifyOldPassword(String username, String password);
+
+    /**
+     * 更新缓存信息
+     */
+    void updateSecurityContext();
 }
