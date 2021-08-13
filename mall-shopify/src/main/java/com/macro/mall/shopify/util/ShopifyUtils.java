@@ -61,7 +61,60 @@ public class ShopifyUtils {
 
     @Autowired
     private IXmsSourcingListService sourcingListService;
+    @Autowired
+    private IXmsShopifyPidImgService xmsShopifyPidImgService;
+    @Autowired
+    private IXmsShopifyCountryService xmsShopifyCountryService;
 
+
+    public int getCountryByShopifyName(String shopifyName) {
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+        String url = String.format(shopifyConfig.SHOPIFY_URI_COUNTRIES_LIST, shopifyName);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
+        int total = 0;
+        if (null != json) {
+            JSONArray jsonArray = JSONObject.parseObject(json).getJSONArray("countries");
+            if (null != jsonArray && jsonArray.size() > 0) {
+                List<XmsShopifyCountry> list = new ArrayList<>();
+                Set<String> set = new HashSet<>();
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    XmsShopifyCountry country = new XmsShopifyCountry();
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    country.setCountryId(jsonObject.getString("id"));
+                    set.add(jsonObject.getString("id"));
+                    country.setName(jsonObject.getString("name"));
+                    country.setTax(jsonObject.getString("tax"));
+                    country.setCode(jsonObject.getString("code"));
+                    country.setTaxName(jsonObject.getString("tax_name"));
+                    country.setCreateTime(new Date());
+                    country.setProvinces(jsonObject.getString("provinces"));
+                    country.setShopifyName(shopifyName);
+                    list.add(country);
+                }
+                QueryWrapper<XmsShopifyCountry> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, shopifyName);
+                List<XmsShopifyCountry> hasList = this.xmsShopifyCountryService.list(queryWrapper);
+                List<XmsShopifyCountry> insertList = new ArrayList<>();
+                if (CollectionUtil.isNotEmpty(hasList)) {
+                    hasList.forEach(e -> {
+                        if (!set.contains(e.getCountryId())) {
+                            insertList.add(e);
+                        }
+                    });
+                } else {
+                    insertList.addAll(list);
+                }
+                total = list.size();
+                this.xmsShopifyCountryService.saveBatch(insertList);
+                list.clear();
+                set.clear();
+                hasList.clear();
+                insertList.clear();
+
+            }
+        }
+        return total;
+    }
 
     /**
      * 根据shopify的店铺名称获取订单信息
@@ -232,7 +285,7 @@ public class ShopifyUtils {
         customerProduct.setSyncTime(new Date());
         customerProduct.setStatus(9);
         customerProduct.setTitle(shopifyProduct.getString("title"));
-        if(shopifyProduct.containsKey("image") && shopifyProduct.getJSONObject("image").containsKey("src")){
+        if (shopifyProduct.containsKey("image") && shopifyProduct.getJSONObject("image").containsKey("src")) {
             customerProduct.setImg(shopifyProduct.getJSONObject("image").getString("src"));
         }
         return customerProduct;
@@ -449,6 +502,7 @@ public class ShopifyUtils {
             insertList = new ArrayList<>(shopifyOrderList);
         }
         if (CollectionUtil.isNotEmpty(insertList)) {
+            String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
             for (Orders orderInfo : insertList) {
                 try {
                     orderInfo.setShopify_name(shopifyName);
@@ -457,16 +511,23 @@ public class ShopifyUtils {
                     this.shopifyOrderinfoService.save(xmsShopifyOrderinfo);
 
                     if (CollectionUtil.isNotEmpty(orderInfo.getLine_items())) {
+
+                        List<Long> productList = new ArrayList<>();
+
                         // 删除原来数据
                         this.shopifyOrderDetailsService.deleteByOrderNo(orderInfo.getId());
                         for (Line_items item : orderInfo.getLine_items()) {
                             item.setOrder_no(orderInfo.getId());
-
                             // shopifyOrderMapper.insertOrderDetails(item);
+                            productList.add(item.getProduct_id());
 
                             XmsShopifyOrderDetails xmsShopifyOrderDetails = this.genXmsShopifyOrderDetails(item);
                             this.shopifyOrderDetailsService.save(xmsShopifyOrderDetails);
                         }
+
+                        // 读取商品的图片信息
+                        this.dealShopifyProductImg(productList, accessToken, shopifyName);
+
                     }
                     if (orderInfo.getShipping_address() != null) {
                         // 删除原来数据
@@ -488,6 +549,60 @@ public class ShopifyUtils {
         shopifyOrderList.clear();
     }
 
+
+    /**
+     * 读取商品的图片信息
+     *
+     * @param productList
+     * @param shopifyName
+     */
+    private void dealShopifyProductImg(List<Long> productList, String accessToken, String shopifyName) {
+        if (CollectionUtil.isNotEmpty(productList)) {
+            QueryWrapper<XmsShopifyPidImg> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, productList)
+                    .eq(XmsShopifyPidImg::getShopifyName, shopifyName);
+            List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(queryWrapper);
+            List<String> noList = new ArrayList<>();
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.forEach(e -> {
+                    if (!productList.contains(Long.parseLong(e.getShopifyPid()))) {
+                        noList.add(e.getShopifyPid());
+                    }
+                });
+            } else {
+                productList.forEach(e -> noList.add(String.valueOf(e)));
+            }
+            // 过滤后，挨个读取图片信息
+            noList.forEach(e -> this.singleGetImgInfo(e, accessToken, shopifyName));
+        }
+    }
+
+
+    private void singleGetImgInfo(String pid, String accessToken, String shopifyName) {
+        try {
+
+            String url = String.format(shopifyConfig.SHOPIFY_URI_PRODUCTS_IMGS, shopifyName, pid);
+
+            String json = this.shopifyRestTemplate.exchange(url, accessToken);
+            if (null != json) {
+                JSONObject jsonObject = JSONObject.parseObject(json);
+                XmsShopifyPidImg pidImg = new XmsShopifyPidImg();
+                JSONArray images = jsonObject.getJSONArray("images");
+                if (null != images && images.size() > 0) {
+                    pidImg.setShopifyPid(pid);
+                    pidImg.setShopifyName(shopifyName);
+                    pidImg.setImg(images.getJSONObject(0).getString("src"));
+                    pidImg.setImgInfo(images.toJSONString());
+                    pidImg.setCreateTime(new Date());
+                    this.xmsShopifyPidImgService.save(pidImg);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * shopify过来的数据转换成可存储数据
      *
@@ -505,7 +620,9 @@ public class ShopifyUtils {
         shopifyOrderinfo.setOrderNo(orderInfo.getId());
         shopifyOrderinfo.setShopifyName(orderInfo.getShopify_name());
         shopifyOrderinfo.setClosedAt(orderInfo.getClosed_at());
-        shopifyOrderinfo.setCreatedAt(orderInfo.getCreated_at());
+        if (StrUtil.isNotBlank(orderInfo.getCreated_at())) {
+            shopifyOrderinfo.setCreatedAt(orderInfo.getCreated_at().trim().substring(0, 10));
+        }
         shopifyOrderinfo.setUpdatedAt(orderInfo.getUpdated_at());
         shopifyOrderinfo.setTotalPrice(orderInfo.getTotal_price());
         shopifyOrderinfo.setSubtotalPrice(orderInfo.getSubtotal_price());
@@ -545,6 +662,11 @@ public class ShopifyUtils {
         shopifyOrderinfo.setCreateTime(new Date());
         shopifyOrderinfo.setUpdateTime(new Date());
         shopifyOrderinfo.setLocationId(orderInfo.getLocation_id());
+        if (null != orderInfo.getTotal_shipping_price_set() && null != orderInfo.getTotal_shipping_price_set().getShop_money()) {
+            shopifyOrderinfo.setTotalShippingPrice(orderInfo.getTotal_shipping_price_set().getShop_money().getAmount());
+        } else {
+            shopifyOrderinfo.setTotalShippingPrice("0");
+        }
 
         return shopifyOrderinfo;
     }

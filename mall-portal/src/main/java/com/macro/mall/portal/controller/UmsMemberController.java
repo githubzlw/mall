@@ -99,6 +99,8 @@ public class UmsMemberController {
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
 
+        memberService.updateSecurityContext();
+
         UmsMember currentMember = memberService.getById(userinfo.getUmsMember().getId());
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {

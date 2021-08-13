@@ -80,5 +80,7 @@ public class XmsShopifyOrderDetails implements Serializable {
     @TableField("Line_item_id")
     private Long lineItemId;
 
+    private String mainImg;
+
 
 }

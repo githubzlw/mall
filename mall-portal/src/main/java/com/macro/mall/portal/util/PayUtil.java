@@ -1,5 +1,6 @@
 package com.macro.mall.portal.util;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -9,8 +10,11 @@ import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsPayment;
 import com.macro.mall.entity.XmsRecordOfChangeInBalance;
+import com.macro.mall.mapper.OmsOrderMapper;
 import com.macro.mall.mapper.UmsMemberMapper;
 import com.macro.mall.mapper.XmsRecordOfChangeInBalanceMapper;
+import com.macro.mall.model.OmsOrder;
+import com.macro.mall.model.OmsOrderExample;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.PayConfig;
@@ -62,6 +66,8 @@ public class PayUtil {
     private XmsRecordOfChangeInBalanceMapper xmsRecordOfChangeInBalanceMapper;
     @Autowired
     private OrderUtils orderUtils;
+    @Autowired
+    private OmsOrderMapper orderMapper;
 
     /**
      * getPayPalRedirectUtlByPayInfo
@@ -518,6 +524,7 @@ public class PayUtil {
      *
      * @param amount
      * @param currentMember
+     * @param operatingType 操作类型 0:扣除余额 1:增加余额
      * @return
      */
     public int payBalance(Double amount, UmsMember currentMember, Integer operatingType) {
@@ -547,6 +554,24 @@ public class PayUtil {
             changeInBalance.setMemberId(currentMember.getId());
             changeInBalance.setUsername(currentMember.getUsername());
             return xmsRecordOfChangeInBalanceMapper.insert(changeInBalance);
+        }
+    }
+
+
+    /**
+     * 根据订单支付的扣除余额
+     * @param orderNo
+     */
+    public void payBalanceByOrderNo(String orderNo, Long memberId){
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andOrderSnEqualTo(orderNo);
+        List<OmsOrder> omsOrders = this.orderMapper.selectByExample(example);
+        if(CollectionUtil.isNotEmpty(omsOrders)){
+            Double balanceAmount = omsOrders.get(0).getBalanceAmount();
+            if(null != balanceAmount && balanceAmount > 0){
+                UmsMember umsMember = this.memberMapper.selectByPrimaryKey(memberId);
+                this.payBalance(balanceAmount, umsMember, 0);
+            }
         }
     }
 

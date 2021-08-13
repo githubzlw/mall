@@ -63,5 +63,11 @@ public class ShopifyConfig {
     @Value("${shopify.uri_query_inventory_levels}")
     public String SHOPIFY_URI_QUERY_INVENTORY_LEVELS;
 
+    @Value("${shopify.uri_products_imgs}")
+    public String SHOPIFY_URI_PRODUCTS_IMGS;
+
+    @Value("${shopify.uri_countries_list}")
+    public String SHOPIFY_URI_COUNTRIES_LIST;
+
 
 }

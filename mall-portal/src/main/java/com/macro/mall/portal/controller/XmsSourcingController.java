@@ -268,6 +268,7 @@ public class XmsSourcingController {
         Assert.notNull(sourcingProductParam, "sourcingProductParam null");
         Assert.isTrue(null != sourcingProductParam.getProductId() && sourcingProductParam.getProductId() > 0, "productId null");
         Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
+        Assert.isTrue(null != sourcingProductParam.getWeight() && sourcingProductParam.getWeight().doubleValue() > 0, "weight null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -284,14 +285,16 @@ public class XmsSourcingController {
             }
             stockEditList.forEach(e-> e.setMemberId(currentMember.getId()));
 
+            Long productId;
             // 判断是否存在编辑表数据
             QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
             productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, sourcingProductParam.getProductId());
 
-            int count = this.xmsPmsProductEditService.count(productEditWrapper);
+            List<XmsPmsProductEdit> list = this.xmsPmsProductEditService.list(productEditWrapper);
 
             // 如果存在，则进行更新处理，sku查询是否重复处理
-            if (count > 0) {
+            if (CollectionUtil.isNotEmpty(list)) {
+                productId = list.get(0).getId();
                 // 处理sku数据
                 QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
                 skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
@@ -330,7 +333,9 @@ public class XmsSourcingController {
                 BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
                 pmsProductEdit.setProductId(sourcingProductParam.getProductId());
                 pmsProductEdit.setMemberId(currentMember.getId());
+                pmsProductEdit.setWeight(sourcingProductParam.getWeight());
                 this.xmsPmsProductEditService.save(pmsProductEdit);
+                productId = pmsProductEdit.getId();
                 // 插入sku数据
                 this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                 stockEditList.clear();
@@ -342,7 +347,7 @@ public class XmsSourcingController {
             }
 
             Map<String, String> param = new HashMap<>();
-            param.put("pid", String.valueOf(xmsSourcingList.getProductId()));
+            param.put("pid", String.valueOf(productId));
             param.put("published", "0");
             param.put("shopname", byId.getShopifyName());
 

@@ -6,6 +6,7 @@ import com.macro.mall.portal.domain.CartPromotionItem;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 购物车管理Service
@@ -50,6 +51,9 @@ public interface OmsCartItemService {
      */
     @Transactional
     int updateAttr(OmsCartItem cartItem);
+
+    @Transactional
+    int batchUpdatePrice(Map<Long, Double> map);
 
     /**
      * 清空购物车

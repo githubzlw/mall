@@ -156,6 +156,7 @@ public class XmsPaymentController {
                             this.payUtil.payBalance(Double.parseDouble(amount), currentMember, 1);
                         }
                     }
+                    this.payUtil.payBalanceByOrderNo(itemNumber, currentMember.getId());
                 } else {
                     System.err.println(itemNumber + ",pay result: " + payment.toJSON());
                     this.orderUtils.paySuccessUpdate(itemNumber, 0);

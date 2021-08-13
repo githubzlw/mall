@@ -105,9 +105,17 @@
         WHERE
         ot.product_name like concat('%',#{productName},'%')
         AND o.member_id = #{memberId}
-        AND o.receiver_country is not null
+        <!--AND o.receiver_country is not null-->
         <if test="status != null ">
-            AND o.status = #{status}
+            <if test="status == 1">
+                AND o.status in(1, 5)
+            </if>
+            <if test="status == 3">
+                AND o.status in(2, 3, 4)
+            </if>
+            <if test="status == 6">
+                AND o.status in(-1, 6)
+            </if>
         </if>
     </select>
 </mapper>

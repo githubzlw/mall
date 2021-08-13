@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.macro.mall.mapper.OmsCartItemMapper;
 import com.macro.mall.model.OmsCartItem;
 import com.macro.mall.model.OmsCartItemExample;
@@ -16,9 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -137,6 +141,31 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
         cartItem.setId(null);
         add(cartItem);
         return 1;
+    }
+
+    @Override
+    public int batchUpdatePrice(Map<Long, Double> map) {
+
+        AtomicInteger count = new AtomicInteger();
+        OmsCartItemExample example= new OmsCartItemExample();
+        List<Long> ids = new ArrayList<>();
+        map.forEach((k,v)-> ids.add(k));
+        example.createCriteria().andIdIn(ids);
+        List<OmsCartItem> cartItemList = cartItemMapper.selectByExample(example);
+        if(CollectionUtil.isNotEmpty(cartItemList)){
+            cartItemList.forEach(e->{
+                if(map.containsKey(e.getId())){
+                    e.setPrice(new BigDecimal(map.get(e.getId())));
+                    OmsCartItem tempItem = new OmsCartItem();
+                    tempItem.setId(e.getId());
+                    tempItem.setPrice(e.getPrice());
+                    cartItemMapper.updateByPrimaryKeySelective(tempItem);
+                    count.getAndIncrement();
+                }
+            });
+            cartItemList.clear();
+        }
+        return count.get();
     }
 
     @Override

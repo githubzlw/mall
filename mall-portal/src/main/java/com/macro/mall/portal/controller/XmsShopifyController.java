@@ -1,29 +1,33 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
+import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyCollections;
+import com.macro.mall.entity.XmsShopifyCountry;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
+import com.macro.mall.portal.domain.XmsShopifyOrderComb;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
-import com.macro.mall.portal.service.IXmsShopifyCollectionsService;
-import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
-import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.Mac;
@@ -56,10 +60,12 @@ public class XmsShopifyController {
     @Autowired
     private IXmsShopifyOrderinfoService shopifyOrderinfoService;
 
-    private final Map<String, UmsMember> umsMemberMap = new HashMap<>();
-
     @Autowired
     private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
+    @Autowired
+    private IXmsShopifyAuthService xmsShopifyAuthService;
+    @Autowired
+    private IXmsShopifyCountryService xmsShopifyCountryService;
 
 
     @PostMapping(value = "/authorization")
@@ -75,7 +81,11 @@ public class XmsShopifyController {
                 return CommonResult.failed("Already bind shop");
             }
 
-            if (this.umsMemberMap.containsKey(shopName)) {
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+            List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.clear();
                 return CommonResult.failed("Already bind shop");
             }
 
@@ -90,7 +100,6 @@ public class XmsShopifyController {
                     System.err.println("clientId:" + clientId);
                     String uri = dataJson.getString("uri");
                     redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
-                    this.umsMemberMap.put(shopName, null);
                     return CommonResult.success(uri);
                 }
             }
@@ -155,6 +164,10 @@ public class XmsShopifyController {
                     this.umsMemberService.updateShopifyInfo(currentMember.getId(), shop, 1);
                     currentMember.setShopifyFlag(1);
                     currentMember.setShopifyName(shop);
+
+
+                    this.umsMemberService.updateSecurityContext();
+
                     // 插入shopify的token
                     // ------------------
                     rsMap.put("shopifyName", shop);
@@ -181,17 +194,15 @@ public class XmsShopifyController {
 
     @ApiOperation("shopify的订单List列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public CommonResult list(XmsShopifyOrderinfoParam orderinfoParam) {
 
-        XmsShopifyOrderinfoParam orderinfoParam = new XmsShopifyOrderinfoParam();
+        Assert.notNull(orderinfoParam, "orderinfoParam null");
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-
-            orderinfoParam.setPageNum(pageNum);
-            orderinfoParam.setPageSize(pageSize);
-            orderinfoParam.setShopifyName(this.umsMemberService.getCurrentMember().getShopifyName());
-            Page<XmsShopifyOrderinfo> listPage = this.shopifyOrderinfoService.list(orderinfoParam);
-            return CommonResult.success(listPage);
+            orderinfoParam.setShopifyName(currentMember.getShopifyName());
+            CommonPage<XmsShopifyOrderComb> list = this.shopifyOrderinfoService.list(orderinfoParam);
+            return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("list,orderinfoParam[{}],error:", orderinfoParam, e);
@@ -209,10 +220,39 @@ public class XmsShopifyController {
             QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyCollections::getShopName, currentMember.getShopifyName());
             List<XmsShopifyCollections> list = this.xmsShopifyCollectionsService.list(queryWrapper);
+            if (CollectionUtil.isEmpty(list)) {
+                Map<String, String> param = new HashMap<>();
+                param.put("shopifyName", currentMember.getShopifyName());
+                //请求数据
+                JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
+                if (jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")) {
+                    list = this.xmsShopifyCollectionsService.list(queryWrapper);
+                }
+            }
             return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("collections,currentMember[{}],error:", currentMember, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+    @ApiOperation("shopify的Country列表")
+    @RequestMapping(value = "/countryList", method = RequestMethod.GET)
+    public CommonResult countryList() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyCountry> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, currentMember.getShopifyName());
+            List<XmsShopifyCountry> list = xmsShopifyCountryService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.forEach(e -> e.setProvinces(null));
+            }
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("countryList,currentMember[{}],error:", currentMember, e);
             return CommonResult.failed("query failed");
         }
     }
@@ -316,5 +356,55 @@ public class XmsShopifyController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+
+    @PostMapping(value = "/clearCustomShopifyInfo")
+    @ApiOperation("清空客户绑定的shopify的店铺数据")
+    public CommonResult clearCustomShopifyInfo() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isNotBlank(byId.getShopifyName())) {
+                QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("shop_name", byId.getShopifyName());
+                this.xmsShopifyAuthService.remove(queryWrapper);
+                this.umsMemberService.updateShopifyInfo(byId.getId(), "", 0);
+            }
+            return CommonResult.success(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("clearCustomShopifyInfo,memberId[{}],error:", currentMember.getId(), e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/getCollections")
+    @ApiOperation("获取客户shopify的Collections")
+    public CommonResult getCollections() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            // 数据库判断是否绑定
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("shopifyName", byId.getShopifyName());
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            return commonResult;
+        } catch (Exception e) {
+            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
 }

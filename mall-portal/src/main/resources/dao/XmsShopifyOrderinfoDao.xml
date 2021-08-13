@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.portal.dao.XmsShopifyOrderinfoDao">
+
+    <resultMap id="BaseResultMap" type="com.macro.mall.entity.XmsShopifyOrderinfo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="order_no" jdbcType="BIGINT" property="orderNo" />
+    <result column="shopify_name" jdbcType="VARCHAR" property="shopifyName" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="closed_at" jdbcType="VARCHAR" property="closedAt" />
+    <result column="created_at" jdbcType="VARCHAR" property="createdAt" />
+    <result column="updated_at" jdbcType="VARCHAR" property="updatedAt" />
+    <result column="number" jdbcType="INTEGER" property="number" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="token" jdbcType="VARCHAR" property="token" />
+    <result column="gateway" jdbcType="VARCHAR" property="gateway" />
+    <result column="test" jdbcType="INTEGER" property="test" />
+    <result column="total_price" jdbcType="VARCHAR" property="totalPrice" />
+    <result column="subtotal_price" jdbcType="VARCHAR" property="subtotalPrice" />
+    <result column="total_weight" jdbcType="INTEGER" property="totalWeight" />
+    <result column="total_tax" jdbcType="VARCHAR" property="totalTax" />
+    <result column="taxes_included" jdbcType="INTEGER" property="taxesIncluded" />
+    <result column="currency" jdbcType="VARCHAR" property="currency" />
+    <result column="financial_status" jdbcType="VARCHAR" property="financialStatus" />
+    <result column="confirmed" jdbcType="INTEGER" property="confirmed" />
+    <result column="total_discounts" jdbcType="VARCHAR" property="totalDiscounts" />
+    <result column="cart_token" jdbcType="VARCHAR" property="cartToken" />
+    <result column="buyer_accepts_marketing" jdbcType="INTEGER" property="buyerAcceptsMarketing" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="referring_site" jdbcType="VARCHAR" property="referringSite" />
+    <result column="landing_site" jdbcType="VARCHAR" property="landingSite" />
+    <result column="cancelled_at" jdbcType="VARCHAR" property="cancelledAt" />
+    <result column="cancel_reason" jdbcType="VARCHAR" property="cancelReason" />
+    <result column="total_price_usd" jdbcType="VARCHAR" property="totalPriceUsd" />
+    <result column="checkout_token" jdbcType="VARCHAR" property="checkoutToken" />
+    <result column="reference" jdbcType="VARCHAR" property="reference" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="location_id" jdbcType="VARCHAR" property="locationId" />
+    <result column="source_identifier" jdbcType="VARCHAR" property="sourceIdentifier" />
+    <result column="source_url" jdbcType="VARCHAR" property="sourceUrl" />
+    <result column="processed_at" jdbcType="VARCHAR" property="processedAt" />
+    <result column="device_id" jdbcType="VARCHAR" property="deviceId" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="customer_locale" jdbcType="VARCHAR" property="customerLocale" />
+    <result column="app_id" jdbcType="VARCHAR" property="appId" />
+    <result column="browser_ip" jdbcType="VARCHAR" property="browserIp" />
+    <result column="landing_site_ref" jdbcType="VARCHAR" property="landingSiteRef" />
+    <result column="order_number" jdbcType="INTEGER" property="orderNumber" />
+    <result column="processing_method" jdbcType="VARCHAR" property="processingMethod" />
+    <result column="checkout_id" jdbcType="BIGINT" property="checkoutId" />
+    <result column="source_name" jdbcType="VARCHAR" property="sourceName" />
+    <result column="fulfillment_status" jdbcType="VARCHAR" property="fulfillmentStatus" />
+    <result column="tags" jdbcType="VARCHAR" property="tags" />
+    <result column="contact_email" jdbcType="VARCHAR" property="contactEmail" />
+    <result column="order_status_url" jdbcType="VARCHAR" property="orderStatusUrl" />
+    <result column="presentment_currency" jdbcType="VARCHAR" property="presentmentCurrency" />
+    <result column="admin_graphql_api_id" jdbcType="VARCHAR" property="adminGraphqlApiId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="fulfillment_service_id" jdbcType="BIGINT" property="fulfillmentServiceId" />
+  </resultMap>
+
+
+    <select id="queryForList" parameterType="com.macro.mall.portal.domain.XmsShopifyOrderinfoParam" resultMap="BaseResultMap">
+        select a.* from xms_shopify_orderinfo a
+        left join xms_shopify_order_details b on a.order_no = b.order_no
+        left join xms_shopify_order_address c on a.order_no = c.order_no
+        where shopify_name = #{shopifyName}
+        <if test="beginTime != null">
+            and date(created_at) >= date(#{beginTime})
+        </if>
+        <if test="endTime != null">
+            and date(#{endTime}) > date(created_at)
+        </if>
+        <if test="url != null">
+            and (b.title like concat('%',url,'%') or b.name like concat('%',url,'%'))
+        </if>
+        <if test="countryName != null">
+            and c.country = #{countryName}
+        </if>
+    </select>
+
+</mapper>
