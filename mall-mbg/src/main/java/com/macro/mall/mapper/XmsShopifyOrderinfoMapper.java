@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-20
+ * @since 2021-08-12
  */
 public interface XmsShopifyOrderinfoMapper extends BaseMapper<XmsShopifyOrderinfo> {
 

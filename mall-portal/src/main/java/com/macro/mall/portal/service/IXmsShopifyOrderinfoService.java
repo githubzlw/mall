@@ -1,8 +1,9 @@
 package com.macro.mall.portal.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
+import com.macro.mall.portal.domain.XmsShopifyOrderComb;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
 
 /**
@@ -15,6 +16,6 @@ import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
  */
 public interface IXmsShopifyOrderinfoService extends IService<XmsShopifyOrderinfo> {
 
-    Page<XmsShopifyOrderinfo> list(XmsShopifyOrderinfoParam orderinfoParam);
+   CommonPage<XmsShopifyOrderComb> list(XmsShopifyOrderinfoParam orderinfoParam);
 
 }

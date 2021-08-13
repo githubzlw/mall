@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-20
+ * @since 2021-08-12
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -142,6 +142,9 @@ public class XmsShopifyOrderinfo implements Serializable {
 
     @ApiModelProperty(value = "运单服务的ID")
     private Long fulfillmentServiceId;
+
+    @ApiModelProperty(value = "运费")
+    private String totalShippingPrice;
 
 
 }

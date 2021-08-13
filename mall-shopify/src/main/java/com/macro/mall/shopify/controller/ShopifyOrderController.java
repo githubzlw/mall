@@ -39,6 +39,21 @@ public class ShopifyOrderController {
     @Autowired
     private ShopifyUtils shopifyUtils;
 
+    @PostMapping("/getCountryByShopifyName")
+    @ApiOperation("根据shopifyName获取国家数据")
+    public CommonResult getCountryByShopifyName(String shopifyName) {
+        Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
+        try {
+            int total = this.shopifyUtils.getCountryByShopifyName(shopifyName);
+            return CommonResult.success(total);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCountryByShopifyName, shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
     @PostMapping("/getOrdersByShopifyName")
     @ApiOperation("根据shopifyName获取订单数据")
     public CommonResult getOrdersByShopifyName(@RequestParam("shopifyNameList") List<String> shopifyNameList) {
@@ -52,7 +67,6 @@ public class ShopifyOrderController {
             return CommonResult.failed(e.getMessage());
         }
     }
-
 
 
     @PostMapping("/createFulfillment")
@@ -86,7 +100,7 @@ public class ShopifyOrderController {
                 return CommonResult.failed("Cannot match Details List");
             }
 
-            String updateOrder = this.shopifyUtils.createFulfillmentOrders(xmsShopifyOrderinfos.get(0),detailsList, fulfillmentParam, anElse);
+            String updateOrder = this.shopifyUtils.createFulfillmentOrders(xmsShopifyOrderinfos.get(0), detailsList, fulfillmentParam, anElse);
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
@@ -99,17 +113,11 @@ public class ShopifyOrderController {
     }
 
 
-
-
-
     @RequestMapping(value = "/fulfillmentCallback", method = {RequestMethod.POST, RequestMethod.GET})
     @ApiOperation("创建运单服务回调")
     public CommonResult fulfillmentCallback(HttpServletRequest request) {
         return CommonResult.success(request.getParameterMap());
     }
-
-
-
 
 
     @PostMapping("/putOrders")

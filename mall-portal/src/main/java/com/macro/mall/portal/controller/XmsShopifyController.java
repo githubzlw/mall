@@ -7,26 +7,27 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
+import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.entity.XmsShopifyCollections;
+import com.macro.mall.entity.XmsShopifyCountry;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
+import com.macro.mall.portal.domain.XmsShopifyOrderComb;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
-import com.macro.mall.portal.service.IXmsShopifyAuthService;
-import com.macro.mall.portal.service.IXmsShopifyCollectionsService;
-import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
-import com.macro.mall.portal.service.UmsMemberService;
+import com.macro.mall.portal.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.Mac;
@@ -63,6 +64,8 @@ public class XmsShopifyController {
     private IXmsShopifyCollectionsService xmsShopifyCollectionsService;
     @Autowired
     private IXmsShopifyAuthService xmsShopifyAuthService;
+    @Autowired
+    private IXmsShopifyCountryService xmsShopifyCountryService;
 
 
     @PostMapping(value = "/authorization")
@@ -191,17 +194,15 @@ public class XmsShopifyController {
 
     @ApiOperation("shopify的订单List列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public CommonResult list(XmsShopifyOrderinfoParam orderinfoParam) {
 
-        XmsShopifyOrderinfoParam orderinfoParam = new XmsShopifyOrderinfoParam();
+        Assert.notNull(orderinfoParam, "orderinfoParam null");
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-
-            orderinfoParam.setPageNum(pageNum);
-            orderinfoParam.setPageSize(pageSize);
-            orderinfoParam.setShopifyName(this.umsMemberService.getCurrentMember().getShopifyName());
-            Page<XmsShopifyOrderinfo> listPage = this.shopifyOrderinfoService.list(orderinfoParam);
-            return CommonResult.success(listPage);
+            orderinfoParam.setShopifyName(currentMember.getShopifyName());
+            CommonPage<XmsShopifyOrderComb> list = this.shopifyOrderinfoService.list(orderinfoParam);
+            return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("list,orderinfoParam[{}],error:", orderinfoParam, e);
@@ -224,7 +225,7 @@ public class XmsShopifyController {
                 param.put("shopifyName", currentMember.getShopifyName());
                 //请求数据
                 JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
-                if(jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")){
+                if (jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")) {
                     list = this.xmsShopifyCollectionsService.list(queryWrapper);
                 }
             }
@@ -232,6 +233,23 @@ public class XmsShopifyController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("collections,currentMember[{}],error:", currentMember, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+    @ApiOperation("shopify的Country列表")
+    @RequestMapping(value = "/countryList", method = RequestMethod.GET)
+    public CommonResult countryList() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyCountry> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, currentMember.getShopifyName());
+            List<XmsShopifyCountry> list = xmsShopifyCountryService.list(queryWrapper);
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("countryList,currentMember[{}],error:", currentMember, e);
             return CommonResult.failed("query failed");
         }
     }
