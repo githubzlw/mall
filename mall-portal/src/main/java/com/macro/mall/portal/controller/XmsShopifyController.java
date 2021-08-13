@@ -246,6 +246,9 @@ public class XmsShopifyController {
             QueryWrapper<XmsShopifyCountry> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, currentMember.getShopifyName());
             List<XmsShopifyCountry> list = xmsShopifyCountryService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.forEach(e -> e.setProvinces(null));
+            }
             return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
