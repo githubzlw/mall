@@ -206,7 +206,7 @@ public class OmsPortalOrderController {
             detail.setPayAmount(new BigDecimal(payAmount));
             detail.setBalanceAmount(balanceAmount);
             detail.setPaymentTime(new Date());
-
+            this.portalOrderService.updateBalanceRecode(detail);
 
             orderResult.setOrderNo(detail.getOrderSn());
             orderResult.setBalanceAmount(balanceAmount);

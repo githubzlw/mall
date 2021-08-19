@@ -72,4 +72,11 @@ public interface OmsPortalOrderService {
      * 用户根据订单ID删除订单
      */
     void deleteOrder(Long orderId);
+
+    /**
+     * 更新订单余额支付信息
+     * @param detail
+     * @return
+     */
+    int updateBalanceRecode(OmsOrderDetail detail);
 }

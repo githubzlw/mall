@@ -505,7 +505,10 @@ public class PayUtil {
             remark = "余额支付前日志";
             this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 1, payFromEnum);
             // 扣除客户余额
-            this.payBalance(orderResult.getBalanceAmount(), currentMember, 0);
+            if(orderResult.getPayAmount() == 0){
+                this.payBalance(orderResult.getBalanceAmount(), currentMember, 0);
+            }
+
         }
         if (orderResult.getPayAmount() > 0) {
             PayPalParam payPalParam = this.getPayPalParam(request, currentMember.getId(), orderResult.getOrderNo(), orderResult.getPayAmount());

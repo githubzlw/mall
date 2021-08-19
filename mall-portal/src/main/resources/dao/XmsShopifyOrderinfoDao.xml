@@ -62,15 +62,15 @@
 
 
     <select id="queryForList" parameterType="com.macro.mall.portal.domain.XmsShopifyOrderinfoParam" resultMap="BaseResultMap">
-        select a.* from xms_shopify_orderinfo a
+        select distinct a.* from xms_shopify_orderinfo a
         left join xms_shopify_order_details b on a.order_no = b.order_no
         left join xms_shopify_order_address c on a.order_no = c.order_no
         where shopify_name = #{shopifyName}
         <if test="beginTime != null">
-            and date(created_at) >= date(#{beginTime})
+            and date(a.created_at) >= date(#{beginTime})
         </if>
         <if test="endTime != null">
-            and date(#{endTime}) > date(created_at)
+            and date(#{endTime}) > date(a.created_at)
         </if>
         <if test="url != null">
             and (b.title like concat('%',url,'%') or b.name like concat('%',url,'%'))

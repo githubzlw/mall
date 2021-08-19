@@ -484,7 +484,7 @@ public class ShopifyUtils {
         if (CollectionUtil.isNotEmpty(existList)) {
             // 过滤已经存在的订单
             Map<Long, XmsShopifyOrderinfo> idSet = new HashMap<>(existList.size() * 2);
-            existList.forEach(e -> idSet.put(e.getId(), e));
+            existList.forEach(e -> idSet.put(e.getOrderNo(), e));
             insertList = shopifyOrderList.stream().filter(e -> {
                 if (idSet.containsKey(e.getId())) {
                     XmsShopifyOrderinfo tempOrder = idSet.get(e.getId());
