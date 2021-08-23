@@ -80,4 +80,40 @@
         </if>
     </select>
 
+
+    <select id="queryCount" parameterType="com.macro.mall.portal.domain.XmsShopifyOrderinfoParam" resultType="java.lang.Integer">
+        select count(0) from (
+        select distinct a.* from xms_shopify_orderinfo a
+        left join xms_shopify_order_details b on a.order_no = b.order_no
+        left join xms_shopify_order_address c on a.order_no = c.order_no
+        where shopify_name = #{shopifyName}
+        <if test="beginTime != null">
+            and date(a.created_at) >= date(#{beginTime})
+        </if>
+        <if test="endTime != null">
+            and date(#{endTime}) > date(a.created_at)
+        </if>
+        <if test="url != null">
+            and (b.title like concat('%',url,'%') or b.name like concat('%',url,'%'))
+        </if>
+        <if test="countryName != null">
+            and c.country = #{countryName}
+        </if>
+        <if test="financialStatus != null">
+            <if test="financialStatus == 'pending'">
+                and a.financial_status = #{financialStatus}
+            </if>
+            <if test="financialStatus == 'paid'">
+                and a.financial_status = #{financialStatus}
+                <if test="fulfillmentStatus == 'fulfilled'">
+                    and a.fulfillment_status = #{fulfillmentStatus}
+                </if>
+                <if test="fulfillmentStatus == null">
+                    and a.fulfillment_status is null
+                </if>
+            </if>
+        </if>
+        ) aa
+    </select>
+
 </mapper>

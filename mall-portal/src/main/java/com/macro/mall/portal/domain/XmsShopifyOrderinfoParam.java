@@ -33,4 +33,9 @@ public class XmsShopifyOrderinfoParam {
     private Integer pageNum;
 
     private Integer pageSize;
+
+    private String financialStatus;
+
+    private String fulfillmentStatus;
+
 }

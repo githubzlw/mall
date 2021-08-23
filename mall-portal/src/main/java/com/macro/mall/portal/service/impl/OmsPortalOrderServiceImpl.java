@@ -200,7 +200,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         order.setMemberUsername(currentMember.getUsername());
         //支付方式：0->未支付；1->支付宝；2->微信
         order.setPayType(orderParam.getPayType());
-        //订单来源：0->PC订单；1->app订单
+        //订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)
         order.setSourceType(1);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
@@ -313,7 +313,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         order.setMemberUsername(currentMember.getUsername());
         //支付方式：0->未支付；1->支付宝；2->微信
         order.setPayType(1);
-        //订单来源：0->PC订单；1->app订单
+        //订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)
         order.setSourceType(0);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
@@ -654,7 +654,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     /**
      * 生成18位订单编号:8位日期+2位平台号码+2位支付方式+6位以上自增id
      */
-    private String generateOrderSn(OmsOrder order) {
+    @Override
+    public String generateOrderSn(OmsOrder order) {
         StringBuilder sb = new StringBuilder();
         String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String key = REDIS_DATABASE+":"+ REDIS_KEY_ORDER_ID + date;
@@ -668,7 +669,12 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         } else {
             sb.append(incrementStr);
         }
-        return sb.toString();
+        if(1 == order.getSourceType()){
+            return "DG" + sb.toString();
+        } else{
+            return "SC" + sb.toString();
+        }
+
     }
 
     /**

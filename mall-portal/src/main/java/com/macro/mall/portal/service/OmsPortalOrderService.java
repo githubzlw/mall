@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.common.api.CommonPage;
+import com.macro.mall.model.OmsOrder;
 import com.macro.mall.portal.domain.ConfirmOrderResult;
 import com.macro.mall.portal.domain.OmsOrderDetail;
 import com.macro.mall.portal.domain.OrderParam;
@@ -79,4 +80,6 @@ public interface OmsPortalOrderService {
      * @return
      */
     int updateBalanceRecode(OmsOrderDetail detail);
+
+    String generateOrderSn(OmsOrder order);
 }
