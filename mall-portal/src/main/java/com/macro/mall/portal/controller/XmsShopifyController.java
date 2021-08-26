@@ -531,10 +531,12 @@ public class XmsShopifyController {
                         preOrderItem.setImg(pmsProduct.getPic());
                         preOrderItem.setPrice(pmsProduct.getPriceXj());
                         preOrderItem.setProductId(pmsProduct.getId());
+                        preOrderItem.setFreeStatus(pmsProduct.getFreeStatus());
                     }else{
                         preOrderItem.setImg("");
                         preOrderItem.setPrice("0");
                         preOrderItem.setProductId(0L);
+                        preOrderItem.setFreeStatus(0);
                     }
                     if(shopifyPidMap.containsKey(e.getProductId()) && finalSkuStockMap.containsKey(shopifyPidMap.get(e.getProductId()))){
                         preOrderItem.setStockList(finalSkuStockMap.get(shopifyPidMap.get(e.getProductId())));
@@ -777,33 +779,23 @@ public class XmsShopifyController {
     public CommonResult deliverOrderList(XmsShopifyOrderinfoParam orderInfoParam) {
 
         Assert.notNull(orderInfoParam, "orderInfoParam null");
+        Assert.isTrue(null != orderInfoParam.getDeliverOrderStatus(), "deliverOrderStatus null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if (null == orderInfoParam.getPageNum() || orderInfoParam.getPageNum() == 0) {
+                orderInfoParam.setPageNum(1);
+            }
+            if (null == orderInfoParam.getPageSize() || orderInfoParam.getPageSize() == 0) {
+                orderInfoParam.setPageSize(5);
+            }
+
             orderInfoParam.setShopifyName(currentMember.getShopifyName());
             CommonPage<OmsOrderDetail> list = this.omsPortalOrderService.list(orderInfoParam);
             return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("deliverOrderList,orderInfoParam[{}],error:", orderInfoParam, e);
-            return CommonResult.failed("query failed");
-        }
-    }
-
-    @ApiOperation("shopify的发货订单List统计")
-    @RequestMapping(value = "/deliverOrderStatistics", method = RequestMethod.GET)
-    public CommonResult deliverOrderStatistics(XmsShopifyOrderinfoParam orderInfoParam) {
-
-        Assert.notNull(orderInfoParam, "orderinfoParam null");
-
-        UmsMember currentMember = this.umsMemberService.getCurrentMember();
-        try {
-            orderInfoParam.setShopifyName(currentMember.getShopifyName());
-            CommonPage<XmsShopifyOrderComb> list = this.shopifyOrderinfoService.list(orderInfoParam);
-            return CommonResult.success(list);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("deliverOrderStatistics,orderInfoParam[{}],error:", orderInfoParam, e);
             return CommonResult.failed("query failed");
         }
     }

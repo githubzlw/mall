@@ -29,6 +29,8 @@ public class ShopifyPreOrderItem {
     private String img;
     @ApiModelProperty(value = "sourcing后我司的商品价格")
     private String price;
+    @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
+    private Integer freeStatus;
 
     @ApiModelProperty(value = "需要采购的数量")
     private int needNumber;

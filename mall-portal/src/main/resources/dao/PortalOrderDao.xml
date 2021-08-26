@@ -50,18 +50,18 @@
     <update id="updateSkuStock">
         UPDATE pms_sku_stock
         SET
-            stock = CASE id
-            <foreach collection="itemList" item="item">
-              WHEN #{item.productSkuId} THEN stock - #{item.productQuantity}
-            </foreach>
-            END,
-            lock_stock = CASE id
-            <foreach collection="itemList" item="item">
-              WHEN #{item.productSkuId} THEN lock_stock - #{item.productQuantity}
-            </foreach>
-            END
+        stock = CASE id
+        <foreach collection="itemList" item="item">
+            WHEN #{item.productSkuId} THEN stock - #{item.productQuantity}
+        </foreach>
+        END,
+        lock_stock = CASE id
+        <foreach collection="itemList" item="item">
+            WHEN #{item.productSkuId} THEN lock_stock - #{item.productQuantity}
+        </foreach>
+        END
         WHERE
-            id IN
+        id IN
         <foreach collection="itemList" item="item" separator="," open="(" close=")">
             #{item.productSkuId}
         </foreach>
@@ -92,20 +92,19 @@
     <select id="getOrderListByProductName" resultMap="orderDetailMap">
         SELECT distinct
         o.id, o.member_id, o.coupon_id, o.order_sn, o.create_time, o.member_username, o.total_amount, o.pay_amount, o.
-    balance_amount, o.freight_amount, o.promotion_amount, o.integration_amount, o.coupon_amount, o.
-    discount_amount, o.pay_type, o.source_type, o.status, o.order_type, o.delivery_company, o.delivery_sn, o.
-    auto_confirm_day, o.integration, o.growth, o.promotion_info, o.bill_type, o.bill_header, o.bill_content, o.
-    bill_receiver_phone, o.bill_receiver_email, o.receiver_name, o.receiver_phone, o.receiver_post_code, o.
-    receiver_country, o.receiver_province, o.receiver_city, o.receiver_region, o.receiver_detail_address, o.
-    note, o.confirm_status, o.delete_status, o.use_integration, o.payment_time, o.delivery_time, o.
-    receive_time, o.comment_time, o.modify_time
+        balance_amount, o.freight_amount, o.promotion_amount, o.integration_amount, o.coupon_amount, o.
+        discount_amount, o.pay_type, o.source_type, o.status, o.order_type, o.delivery_company, o.delivery_sn, o.
+        auto_confirm_day, o.integration, o.growth, o.promotion_info, o.bill_type, o.bill_header, o.bill_content, o.
+        bill_receiver_phone, o.bill_receiver_email, o.receiver_name, o.receiver_phone, o.receiver_post_code, o.
+        receiver_country, o.receiver_province, o.receiver_city, o.receiver_region, o.receiver_detail_address, o.
+        note, o.confirm_status, o.delete_status, o.use_integration, o.payment_time, o.delivery_time, o.
+        receive_time, o.comment_time, o.modify_time
         FROM
         oms_order o
         LEFT JOIN oms_order_item ot ON o.id = ot.order_id
         WHERE
         ot.product_name like concat('%',#{productName},'%')
         AND o.member_id = #{memberId}
-        <!--AND o.receiver_country is not null-->
         <if test="status != null ">
             <if test="status == 1">
                 AND o.status in(1, 5)
@@ -121,4 +120,49 @@
             o.order_type = #{orderType}
         </if>
     </select>
+
+    <select id="getDeliverOrderList" resultMap="orderDetailMap">
+        SELECT distinct
+        o.id, o.member_id, o.coupon_id, o.order_sn, o.create_time, o.member_username, o.total_amount, o.pay_amount, o.
+        balance_amount, o.freight_amount, o.promotion_amount, o.integration_amount, o.coupon_amount, o.
+        discount_amount, o.pay_type, o.source_type, o.status, o.order_type, o.delivery_company, o.delivery_sn, o.
+        auto_confirm_day, o.integration, o.growth, o.promotion_info, o.bill_type, o.bill_header, o.bill_content, o.
+        bill_receiver_phone, o.bill_receiver_email, o.receiver_name, o.receiver_phone, o.receiver_post_code, o.
+        receiver_country, o.receiver_province, o.receiver_city, o.receiver_region, o.receiver_detail_address, o.
+        note, o.confirm_status, o.delete_status, o.use_integration, o.payment_time, o.delivery_time, o.
+        receive_time, o.comment_time, o.modify_time
+        FROM
+        oms_order o
+        LEFT JOIN oms_order_item ot ON o.id = ot.order_id
+        WHERE
+        ot.product_name like concat('%',#{productName},'%')
+        AND o.member_id = #{memberId}
+        <if test="status != null ">
+            <if test="status == 5">
+                AND o.status in(1, 2, 3, 5)
+            </if>
+            <if test="status == 4">
+                AND o.status in(4)
+            </if>
+            <if test="status == 6">
+                AND o.status in(-1, 6)
+            </if>
+            <if test="status == 0">
+                AND o.status = 0
+            </if>
+        </if>
+        <if test="orderType != null">
+            o.order_type = #{orderType}
+        </if>
+        <if test="countryName != null">
+            o.receiver_country = #{countryName}
+        </if>
+        <if test="beginTime != null">
+            o.create_time >= #{beginTime}
+        </if>
+        <if test="beginTime != null">
+            #{endTime} > o.create_time
+        </if>
+    </select>
+
 </mapper>

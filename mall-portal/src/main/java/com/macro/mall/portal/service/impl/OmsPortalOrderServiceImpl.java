@@ -3,6 +3,7 @@ package com.macro.mall.portal.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -575,8 +577,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId())
-                .andOrderTypeEqualTo(0).andOrderTypeEqualTo(orderType);// 只获取正常支付的订单
+                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType);// 只获取正常支付的订单
                /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
             if (1 == status) {
@@ -628,7 +629,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     @Override
-    public CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam) {
+    public CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam) throws ParseException {
         Integer status = orderInfoParam.getDeliverOrderStatus();
         if (status == -2) {
             status = null;
@@ -639,27 +640,46 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId())
-                .andOrderTypeEqualTo(0).andOrderTypeEqualTo(orderType);
+                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType);
         if (status != null) {
-            if (1 == status) {
-                criteria.andStatusIn(Arrays.asList(1, 5));
-            } else if (3 == status) {
-                criteria.andStatusIn(Arrays.asList(2, 3, 4));
+            if (5 == status) {
+                criteria.andStatusIn(Arrays.asList(1, 2, 3, 5));
+            } else if (4 == status) {
+                criteria.andStatusEqualTo(4);
             } else if (6 == status) {
                 criteria.andStatusIn(Arrays.asList(-1, 6));
             } else {
                 criteria.andStatusEqualTo(status);
             }
         }
+        if(StrUtil.isNotBlank(orderInfoParam.getCountryName())){
+            criteria.andReceiverCountryEqualTo(orderInfoParam.getCountryName());
+        }else{
+            orderInfoParam.setCountryName(null);
+        }
+        String strDateFormat = "yyyy-MM-dd";
+        SimpleDateFormat sdf = new SimpleDateFormat(strDateFormat);
+
+        if(StrUtil.isNotBlank(orderInfoParam.getBeginTime())){
+            criteria.andCreateTimeGreaterThanOrEqualTo(sdf.parse(orderInfoParam.getBeginTime()));
+        } else{
+            orderInfoParam.setBeginTime(null);
+        }
+        if(StrUtil.isNotBlank(orderInfoParam.getEndTime())){
+            Date parse = sdf.parse(orderInfoParam.getEndTime());
+            parse.setTime(parse.getTime() + 24 * 60 * 60 * 1000);
+            orderInfoParam.setEndTime(sdf.format(parse));
+            criteria.andCreateTimeLessThan(sdf.parse(orderInfoParam.getEndTime()));
+        } else{
+            orderInfoParam.setEndTime(null);
+        }
         orderExample.setOrderByClause("create_time desc");
         List<OmsOrder> orderList = new ArrayList<>();
 
         if (StringUtils.isEmpty(orderInfoParam.getUrl())) {
             orderList = orderMapper.selectByExample(orderExample);
-
         } else {
-            orderList = portalOrderDao.getOrderListByProductName(orderInfoParam.getUrl(), status, member.getId(), orderType);
+            orderList = portalOrderDao.getDeliverOrderList(orderInfoParam.getUrl(), status, member.getId(), orderType, orderInfoParam.getCountryName(), orderInfoParam.getBeginTime(), orderInfoParam.getEndTime());
         }
 
 
@@ -681,7 +701,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         List<OmsOrderDetail> orderDetailList = new ArrayList<>();
         for (OmsOrder omsOrder : orderList) {
             OmsOrderDetail orderDetail = new OmsOrderDetail();
-            BeanUtil.copyProperties(omsOrder,orderDetail);
+            BeanUtil.copyProperties(omsOrder, orderDetail);
             List<OmsOrderItem> relatedItemList = orderItemList.stream().filter(item -> item.getOrderId().equals(orderDetail.getId())).collect(Collectors.toList());
             orderDetail.setOrderItemList(relatedItemList);
             orderDetailList.add(orderDetail);
