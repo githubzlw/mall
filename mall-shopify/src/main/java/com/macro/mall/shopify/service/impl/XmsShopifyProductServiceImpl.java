@@ -112,7 +112,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(wrap.getPid()));
+        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(pmsProduct.getProductId()));
         List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
         goods.setSkuList(skuList);
 
@@ -208,10 +208,17 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         Images images;
         Iterator<String> iterator = setImage.iterator();
         while (iterator.hasNext()) {
-            String imgSrc = iterator.next().replace(".60x60", ".400x400");
-            images = new Images();
-            images.setSrc(imgSrc);
-            lstImages.add(images);
+
+//            if(iterator.next()!=null){
+//                String imgSrc = iterator.next().replace(".60x60", ".400x400");
+                images = new Images();
+//                System.err.println(iterator.next());
+                images.setSrc(iterator.next());
+
+
+                lstImages.add(images);
+//            }
+
         }
         return lstImages;
     }
@@ -232,7 +239,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         variants.setInventory_management("shopify");
         List<PresentmentPrices> presentment_prices = Lists.newArrayList();
         PresentmentPrices prices = new PresentmentPrices();
-        prices.setCompare_at_price(null);
+//        prices.setCompare_at_price(null);
         Price price = new Price();
         price.setAmount(goodsPrice);
         price.setCurrency_code("USD");
@@ -410,7 +417,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             variants.setInventory_policy("deny");
             variants.setInventory_quantity(skuList.get(i).getStock());
             variants.setInventory_management("shopify");
-            variants.setCompare_at_price(String.valueOf(skuList.get(i).getComparedAtPrice()));
+//            variants.setCompare_at_price(String.valueOf(skuList.get(i).getComparedAtPrice()));
             image.add(skuList.get(i).getPic());
             // 规格数据
             Gson gson = new Gson();
