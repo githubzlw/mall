@@ -50,5 +50,8 @@ public class XmsListOfCountries implements Serializable {
 
     private Integer del;
 
+    @ApiModelProperty(value = "shopify对应的国家名称")
+    private String shopifyCountryName;
+
 
 }

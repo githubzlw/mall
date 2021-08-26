@@ -38,6 +38,6 @@ public interface PortalOrderDao {
      */
     int releaseSkuStockLock(@Param("itemList") List<OmsOrderItem> orderItemList);
 
-    List<OmsOrder> getOrderListByProductName(@Param("productName") String productName, @Param("status") Integer status, @Param("memberId") Long memberId);
+    List<OmsOrder> getOrderListByProductName(@Param("productName") String productName, @Param("status") Integer status, @Param("memberId") Long memberId, @Param("orderType") Integer orderType);
 
 }

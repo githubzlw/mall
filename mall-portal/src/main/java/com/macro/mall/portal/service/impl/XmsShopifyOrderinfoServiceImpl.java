@@ -8,13 +8,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
-import com.macro.mall.entity.XmsShopifyOrderAddress;
-import com.macro.mall.entity.XmsShopifyOrderDetails;
-import com.macro.mall.entity.XmsShopifyOrderinfo;
-import com.macro.mall.entity.XmsShopifyPidImg;
+import com.macro.mall.entity.*;
 import com.macro.mall.mapper.XmsShopifyOrderAddressMapper;
 import com.macro.mall.mapper.XmsShopifyOrderDetailsMapper;
 import com.macro.mall.mapper.XmsShopifyOrderinfoMapper;
+import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.model.OmsOrder;
 import com.macro.mall.portal.dao.XmsShopifyOrderinfoDao;
 import com.macro.mall.portal.domain.XmsShopifyOrderComb;
@@ -56,6 +54,8 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
     private XmsShopifyOrderAddressMapper xmsShopifyOrderAddressMapper;
     @Autowired
     private IXmsShopifyPidImgService xmsShopifyPidImgService;
+    @Autowired
+    private XmsShopifyPidInfoMapper xmsShopifyPidInfoMapper;
 
     @Override
     public CommonPage<XmsShopifyOrderComb> list(XmsShopifyOrderinfoParam orderinfoParam) {
@@ -147,4 +147,18 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         resultPage.setList(combList);
         return resultPage;
     }
+
+    @Override
+    public int queryCount(XmsShopifyOrderinfoParam xmsShopifyOrderinfoParam) {
+        return this.xmsShopifyOrderinfoDao.queryCount(xmsShopifyOrderinfoParam);
+    }
+
+    @Override
+    public List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems) {
+        QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName,shopifyName).in(XmsShopifyPidInfo::getShopifyPid, lineItems);
+        return this.xmsShopifyPidInfoMapper.selectList(queryWrapper);
+    }
+
+
 }

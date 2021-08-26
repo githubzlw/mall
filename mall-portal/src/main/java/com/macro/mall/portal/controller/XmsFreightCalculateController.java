@@ -448,4 +448,118 @@ public class XmsFreightCalculateController {
     }
 
 
+    @ApiOperation(value = "shopify的运费计算")
+    @RequestMapping(value = "/shopifyFreightCalculate", method = RequestMethod.POST)
+    public CommonResult shopifyFreightCalculate(ShopifyFreightParam freightParam) {
+
+        Assert.notNull(freightParam, "fbaFreightParam null");
+        Assert.isTrue(null != freightParam.getFreeShippingWeight() && freightParam.getFreeShippingWeight() >= 0, "freeShippingWeight null");
+        Assert.isTrue(null != freightParam.getFreeShippingVolume() && freightParam.getFreeShippingVolume() >= 0, "freeShippingVolume null");
+        if (freightParam.getFreeShippingWeight() > 0) {
+            Assert.isTrue(null != freightParam.getCountryId() && freightParam.getCountryId() >= 0, "countryId null");
+            Assert.isTrue(null != freightParam.getFreeShippingProductCost() && freightParam.getFreeShippingProductCost() >= 0, "freeShippingProductCost null");
+        }
+        Assert.isTrue(null != freightParam.getNonFreeShippingWeight() && freightParam.getNonFreeShippingWeight() >= 0, "nonFreeShippingWeight null");
+        Assert.isTrue(null != freightParam.getNonFreeShippingVolume() && freightParam.getNonFreeShippingVolume() >= 0, "nonFreeShippingVolume null");
+        Assert.isTrue(null != freightParam.getTransportType() && freightParam.getTransportType() >= 0 && freightParam.getTransportType() < 2, "transportType null");
+        Assert.isTrue(null != freightParam.getSingleMaxWeight() && freightParam.getSingleMaxWeight() > 0, "singleMaxWeight null");
+        Assert.isTrue(null != freightParam.getSingleMaxVolume() && freightParam.getSingleMaxVolume() > 0, "singleMaxVolume null");
+        try {
+            /**
+             * Shopify订单运输方式计算逻辑和运输方式
+             * 1、ship from china
+             * 当商品免邮时，运输方式包括
+             * Busysell standard express 免邮
+             * Busysell premium express 计算逻辑，单个包括重量不能超过4.5KG，体积不能超过0.028立方米，有单个商品不满足此标准，不提供busysel premium express选项，满足条件的情况下，总重量/4.5，运费=((整数部分*61.95+35.2)+(小数部分*4.5*（赛诚表内对应单位运费）+赛诚表内对应操作费))/汇率 - 易U宝运费
+             * 其他正常空运快递运输方式，计算逻辑为实际运费 - 易U宝运费
+             *
+             * 当商品非免邮时，运输方式包括
+             * Busysell standard express 按易U宝逻辑计算运费
+             * Busysell premium express 同免邮，区别不减去易U宝运费
+             * 其他正常空运快递运输方式，计算逻辑为实际运费
+             *
+             * 2、ship from usa
+             * 万邑通的尾程计算逻辑，计算公式同预估费用中的尾程计算公式
+             */
+            ShopifyFreightResult shopifyFreightResult = new ShopifyFreightResult();
+            BeanUtil.copyProperties(freightParam, shopifyFreightResult);
+            shopifyFreightResult.setStandardFreight(0D);
+            List<TrafficFreightUnitShort> premiumFreightList = new ArrayList<>();
+
+            double standardFreight = 0;
+            double premiumFreight = 0;
+            FreightResult freightResult = new FreightResult();
+            freightResult.setCountryId(freightParam.getCountryId());
+
+            if (0 == freightParam.getTransportType()) {
+                // CHINA
+                Map<String, TrafficFreightUnitShort> unitShortMap = new HashMap<>();
+                if (freightParam.getFreeShippingWeight() > 0) {
+                    // 当商品免邮时
+                    // Busysell standard express 免邮,价格是0
+                    standardFreight += 0;
+                    double tempEub = this.freightUtils.getEubFreight(freightParam.getFreeShippingWeight());// EUB
+                    double shareNum = freightParam.getFreeShippingWeight() / 4.5;
+                    double integerPart = Math.floor(shareNum);
+                    double decimalPart = shareNum - integerPart;
+
+                    if (freightParam.getSingleMaxWeight() <= 4.5 && freightParam.getSingleMaxVolume() <= 0.028) {
+                        //总重量/4.5，运费=((整数部分*61.95+35.2)+(小数部分*4.5*（赛诚表内对应单位运费）+赛诚表内对应操作费))/汇率 - 易U宝运费
+                        premiumFreight += ((integerPart * 61.95 + 35.2) + (this.freightUtils.getCentralizedTransportFreight(decimalPart * 4.5))) / this.freightUtils.getCurrRate() - tempEub;
+                    } else {
+                        premiumFreight += ((integerPart * 61.95 + 35.2) + (this.freightUtils.getCentralizedTransportFreight(decimalPart * 4.5))) / this.freightUtils.getCurrRate() - tempEub;
+                    }
+                    if (premiumFreight < 0) {
+                        premiumFreight = 0;
+                    }
+                    freightResult.setTotalWeight(freightParam.getFreeShippingWeight());
+                    freightResult.setProductCost(freightParam.getFreeShippingProductCost());
+                    // 其他正常空运快递运输方式，计算逻辑为实际运费 - 易U宝运费
+                    TrafficFreightUnitResult unitResult = this.freightUtils.commonCalculateResult(freightResult);
+                    unitResult.getUnitList().forEach(e -> {
+                        e.setTotalFreight(e.getTotalFreight() - tempEub > 0 ? e.getTotalFreight() - tempEub : 0);
+                        e.setCostAndFreightOfOurCompany(0);
+                        unitShortMap.put(e.getModeOfTransport(), e);
+                    });
+                }
+
+                if (freightParam.getNonFreeShippingWeight() > 0) {
+                    double shareNum = freightParam.getNonFreeShippingWeight() / 4.5;
+                    double integerPart = Math.floor(shareNum);
+                    double decimalPart = shareNum - integerPart;
+                    //当商品非免邮时 按易U宝逻辑计算运费
+                    standardFreight += this.freightUtils.getEubFreight(freightParam.getNonFreeShippingWeight());// EUB
+                    premiumFreight += ((integerPart * 61.95 + 35.2) + (this.freightUtils.getCentralizedTransportFreight(decimalPart * 4.5))) / this.freightUtils.getCurrRate();
+                    // 同免邮，区别不减去易U宝运费
+                    TrafficFreightUnitResult unitResult = this.freightUtils.commonCalculateResult(freightResult);
+                    unitResult.getUnitList().forEach(e -> {
+                        if (unitShortMap.containsKey(e.getModeOfTransport())) {
+                            TrafficFreightUnitShort unitShort = unitShortMap.get(e.getModeOfTransport());
+                            unitShort.setTotalFreight(unitShort.getTotalFreight() + e.getTotalFreight());
+                        }
+                    });
+                }
+
+                unitShortMap.forEach((k, v) -> v.setTotalFreight(BigDecimalUtil.truncateDouble(v.getTotalFreight(), 2)));
+                shopifyFreightResult.setStandardFreight(BigDecimalUtil.truncateDouble(standardFreight, 2));
+                shopifyFreightResult.setPremiumFreight(BigDecimalUtil.truncateDouble(premiumFreight, 2));
+                List<TrafficFreightUnitShort> airFreightList = new ArrayList<>(unitShortMap.values());
+                airFreightList.sort(Comparator.comparing(TrafficFreightUnitShort::getTotalFreight));
+                shopifyFreightResult.setAirFreightList(airFreightList);
+            } else {
+                // USA
+                premiumFreight = this.freightUtils.getCentralizedTransportFreight(freightParam.getNonFreeShippingWeight());
+                shopifyFreightResult.setStandardFreight(BigDecimalUtil.truncateDouble(standardFreight, 2));
+                shopifyFreightResult.setPremiumFreight(BigDecimalUtil.truncateDouble(premiumFreight, 2));
+                shopifyFreightResult.setAirFreightList(new ArrayList<>());
+            }
+            return CommonResult.success(shopifyFreightResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("shopifyFreightCalculate,freightParam:[{}],error:", freightParam, e);
+            return CommonResult.failed("shopifyFreightCalculate error");
+        }
+    }
+
+
 }

@@ -1,10 +1,8 @@
 package com.macro.mall.portal.service;
 
 import com.macro.mall.common.api.CommonPage;
-import com.macro.mall.portal.domain.ConfirmOrderResult;
-import com.macro.mall.portal.domain.OmsOrderDetail;
-import com.macro.mall.portal.domain.OrderParam;
-import com.macro.mall.portal.domain.SourcingOrderParam;
+import com.macro.mall.model.OmsOrder;
+import com.macro.mall.portal.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -64,6 +62,11 @@ public interface OmsPortalOrderService {
     CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName);
 
     /**
+     * 分页获取用户发货订单
+     */
+    CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam);
+
+    /**
      * 根据订单ID获取订单详情
      */
     OmsOrderDetail detail(Long orderId);
@@ -72,4 +75,13 @@ public interface OmsPortalOrderService {
      * 用户根据订单ID删除订单
      */
     void deleteOrder(Long orderId);
+
+    /**
+     * 更新订单余额支付信息
+     * @param detail
+     * @return
+     */
+    int updateBalanceRecode(OmsOrderDetail detail);
+
+    String generateOrderSn(OmsOrder order);
 }

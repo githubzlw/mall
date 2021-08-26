@@ -18,6 +18,7 @@ import com.macro.mall.portal.dao.PortalOrderDao;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
 import com.macro.mall.portal.dao.SmsCouponHistoryDao;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.OrderTypeEnum;
 import com.macro.mall.portal.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -200,7 +201,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         order.setMemberUsername(currentMember.getUsername());
         //支付方式：0->未支付；1->支付宝；2->微信
         order.setPayType(orderParam.getPayType());
-        //订单来源：0->PC订单；1->app订单
+        //订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)
         order.setSourceType(1);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
@@ -313,7 +314,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         order.setMemberUsername(currentMember.getUsername());
         //支付方式：0->未支付；1->支付宝；2->微信
         order.setPayType(1);
-        //订单来源：0->PC订单；1->app订单
+        //订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)
         order.setSourceType(0);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
@@ -356,7 +357,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
         //加入到客户的库存里面
         if("inv".equalsIgnoreCase(orderParam.getModeOfTransportation()) ){
-            genOrderStock(orderItemList, currentMember, order.getOrderSn());
+            genOrderStock(orderItemList, currentMember, order.getOrderSn(), orderParam.getReceiverCountry());
         }
 
 
@@ -369,11 +370,16 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
 
-    private void genOrderStock(List<OmsOrderItem> orderItemList, UmsMember currentMember, String orderNo) {
+    private void genOrderStock(List<OmsOrderItem> orderItemList, UmsMember currentMember, String orderNo, String countryName) {
 
         List<XmsCustomerSkuStock> skuStockInsertList = new ArrayList<>();
 
+        int shippingFrom = 0;
+        if("usa".equalsIgnoreCase(countryName)){
+            shippingFrom = 1;
+        }
         List<Long> productList = new ArrayList<>();
+        int finalShippingFrom = shippingFrom;
         orderItemList.forEach(e -> {
             XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
             tempSkuStock.setUsername(currentMember.getUsername());
@@ -387,6 +393,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             tempSkuStock.setSkuStockId(e.getProductSkuId().intValue());
             tempSkuStock.setStatus(0);
             tempSkuStock.setOrderNo(orderNo);
+            tempSkuStock.setShippingFrom(finalShippingFrom);
             if(!productList.contains(e.getProductId())){
                 productList.add(e.getProductId());
             }
@@ -562,13 +569,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         if (status == -2) {
             status = null;
         }
+        Integer orderType = 0;
         UmsMember member = memberService.getCurrentMember();
         PageHelper.startPage(pageNum, pageSize);
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
                 .andMemberIdEqualTo(member.getId())
-        .andOrderTypeEqualTo(0);// 只获取正常支付的订单
+                .andOrderTypeEqualTo(0).andOrderTypeEqualTo(orderType);// 只获取正常支付的订单
                /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
             if (1 == status) {
@@ -588,7 +596,70 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             orderList = orderMapper.selectByExample(orderExample);
 
         } else {
-            orderList = portalOrderDao.getOrderListByProductName(productName, status, member.getId());
+            orderList = portalOrderDao.getOrderListByProductName(productName, status, member.getId(), orderType);
+        }
+
+
+        CommonPage<OmsOrder> orderPage = CommonPage.restPage(orderList);
+        //设置分页信息
+        CommonPage<OmsOrderDetail> resultPage = new CommonPage<>();
+        resultPage.setPageNum(orderPage.getPageNum());
+        resultPage.setPageSize(orderPage.getPageSize());
+        resultPage.setTotal(orderPage.getTotal());
+        resultPage.setTotalPage(orderPage.getTotalPage());
+        if (CollUtil.isEmpty(orderList)) {
+            return resultPage;
+        }
+        //设置数据信息
+        List<Long> orderIds = orderList.stream().map(OmsOrder::getId).collect(Collectors.toList());
+        OmsOrderItemExample orderItemExample = new OmsOrderItemExample();
+        orderItemExample.createCriteria().andOrderIdIn(orderIds);
+        List<OmsOrderItem> orderItemList = orderItemMapper.selectByExample(orderItemExample);
+        List<OmsOrderDetail> orderDetailList = new ArrayList<>();
+        for (OmsOrder omsOrder : orderList) {
+            OmsOrderDetail orderDetail = new OmsOrderDetail();
+            BeanUtil.copyProperties(omsOrder,orderDetail);
+            List<OmsOrderItem> relatedItemList = orderItemList.stream().filter(item -> item.getOrderId().equals(orderDetail.getId())).collect(Collectors.toList());
+            orderDetail.setOrderItemList(relatedItemList);
+            orderDetailList.add(orderDetail);
+        }
+        resultPage.setList(orderDetailList);
+        return resultPage;
+    }
+
+    @Override
+    public CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam) {
+        Integer status = orderInfoParam.getDeliverOrderStatus();
+        if (status == -2) {
+            status = null;
+        }
+        Integer orderType = 2;
+        UmsMember member = memberService.getCurrentMember();
+        PageHelper.startPage(orderInfoParam.getPageNum(), orderInfoParam.getPageSize());
+        OmsOrderExample orderExample = new OmsOrderExample();
+        OmsOrderExample.Criteria criteria = orderExample.createCriteria();
+        criteria.andDeleteStatusEqualTo(0)
+                .andMemberIdEqualTo(member.getId())
+                .andOrderTypeEqualTo(0).andOrderTypeEqualTo(orderType);
+        if (status != null) {
+            if (1 == status) {
+                criteria.andStatusIn(Arrays.asList(1, 5));
+            } else if (3 == status) {
+                criteria.andStatusIn(Arrays.asList(2, 3, 4));
+            } else if (6 == status) {
+                criteria.andStatusIn(Arrays.asList(-1, 6));
+            } else {
+                criteria.andStatusEqualTo(status);
+            }
+        }
+        orderExample.setOrderByClause("create_time desc");
+        List<OmsOrder> orderList = new ArrayList<>();
+
+        if (StringUtils.isEmpty(orderInfoParam.getUrl())) {
+            orderList = orderMapper.selectByExample(orderExample);
+
+        } else {
+            orderList = portalOrderDao.getOrderListByProductName(orderInfoParam.getUrl(), status, member.getId(), orderType);
         }
 
 
@@ -646,24 +717,37 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         }
     }
 
+    @Override
+    public int updateBalanceRecode(OmsOrderDetail detail) {
+        return orderMapper.updateByPrimaryKeySelective(detail);
+    }
+
     /**
      * 生成18位订单编号:8位日期+2位平台号码+2位支付方式+6位以上自增id
      */
-    private String generateOrderSn(OmsOrder order) {
+    @Override
+    public String generateOrderSn(OmsOrder order) {
         StringBuilder sb = new StringBuilder();
-        String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String date = new SimpleDateFormat("yyyyMMdd").format(new Date()).substring(2);
         String key = REDIS_DATABASE+":"+ REDIS_KEY_ORDER_ID + date;
         Long increment = redisService.incr(key, 1);
         sb.append(date);
         sb.append(String.format("%02d", order.getSourceType()));
-        sb.append(String.format("%02d", order.getPayType()));
+        //sb.append(String.format("%02d", order.getPayType()));
         String incrementStr = increment.toString();
-        if (incrementStr.length() <= 6) {
-            sb.append(String.format("%06d", increment));
+        if (incrementStr.length() <= 4) {
+            sb.append(String.format("%04d", increment));
         } else {
             sb.append(incrementStr);
         }
-        return sb.toString();
+        if(1 == order.getSourceType()){
+            // 出货订单
+            return OrderTypeEnum.DELIVER_GOODS.getCode() + sb.toString();
+        } else{
+            // sourcing库存订单
+            return OrderTypeEnum.SOURCING_ORDER.getCode() + sb.toString();
+        }
+
     }
 
     /**

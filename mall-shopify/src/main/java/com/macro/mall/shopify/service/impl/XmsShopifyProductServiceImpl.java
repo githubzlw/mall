@@ -148,6 +148,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     public Product toProduct(ShopifyData goods) throws ShopifyException {
         Product product = new Product();
+        product.setId(Long.parseLong(goods.getPid()));
         product.setTitle(goods.getName());
         product.setPublished(goods.isPublished());
         if(goods.isBodyHtml()){
@@ -354,6 +355,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setShopifyPid(String.valueOf(productWraper.getProduct().getId()));
             shopifyBean.setShopifyInfo(JSONObject.toJSONString(productWraper));
             shopifyBean.setPublish(product.isPublished() ? 1 : 0);
+            shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
         }

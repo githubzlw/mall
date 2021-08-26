@@ -1,5 +1,6 @@
 package com.macro.mall.portal.domain;
 
+import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
 import io.swagger.annotations.ApiModel;
@@ -33,4 +34,7 @@ public class GenerateOrderParam {
 
     @ApiModelProperty("下单类型 0库存下单 1其他订单")
     private Integer type;
+
+    @ApiModelProperty("已经购买的库存数据")
+    private List<XmsCustomerSkuStock> customerSkuStockList;
 }

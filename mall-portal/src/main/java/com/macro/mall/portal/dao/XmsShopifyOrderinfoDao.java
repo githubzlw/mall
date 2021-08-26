@@ -14,4 +14,6 @@ import java.util.List;
 public interface XmsShopifyOrderinfoDao {
 
     List<XmsShopifyOrderinfo> queryForList(XmsShopifyOrderinfoParam xmsShopifyOrderinfoParam);
+
+    int queryCount(XmsShopifyOrderinfoParam xmsShopifyOrderinfoParam);
 }
