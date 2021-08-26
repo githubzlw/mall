@@ -82,7 +82,7 @@ public class XmsShopifyControllerTest {
     @WithUserDetails(value = "1071083166@qq.com", userDetailsServiceBeanName = "userDetailsService")
     public void testGetPurchaseInfoByShopifyOrder() throws Exception {
 
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/shopify/getPurchaseInfoByShopifyOrder")).andExpect(status().isOk()).andDo(print()).andReturn();
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/shopify/getPurchaseInfoByShopifyOrder").param("shopifyOrderNoId","159")).andExpect(status().isOk()).andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         CommonResult commonResult = JSONObject.parseObject(contentAsString, CommonResult.class);
         Assert.assertTrue("commonResult null", 200 == commonResult.getCode());

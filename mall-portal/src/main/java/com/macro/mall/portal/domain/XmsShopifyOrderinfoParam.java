@@ -38,4 +38,7 @@ public class XmsShopifyOrderinfoParam {
 
     private String fulfillmentStatus;
 
+    @ApiModelProperty(value = "发货订单状态")
+    private Integer deliverOrderStatus;
+
 }

@@ -2,10 +2,7 @@ package com.macro.mall.portal.service;
 
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.model.OmsOrder;
-import com.macro.mall.portal.domain.ConfirmOrderResult;
-import com.macro.mall.portal.domain.OmsOrderDetail;
-import com.macro.mall.portal.domain.OrderParam;
-import com.macro.mall.portal.domain.SourcingOrderParam;
+import com.macro.mall.portal.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -63,6 +60,11 @@ public interface OmsPortalOrderService {
      * 分页获取用户订单
      */
     CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName);
+
+    /**
+     * 分页获取用户发货订单
+     */
+    CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam);
 
     /**
      * 根据订单ID获取订单详情

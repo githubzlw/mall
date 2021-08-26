@@ -107,6 +107,11 @@ public class TrafficFreightUtils {
      * @param freightResult
      */
     public CommonResult commonCalculate(FreightResult freightResult) {
+
+        return CommonResult.success(commonCalculateResult(freightResult));
+    }
+
+    public TrafficFreightUnitResult commonCalculateResult(FreightResult freightResult){
         // 未完成版本
         boolean isSupplyEconomicMethod = this.checkIsSupplyEconomicMethod(freightResult.getCountryId(), 1);
 
@@ -127,8 +132,7 @@ public class TrafficFreightUtils {
         TrafficFreightUnitResult calculateResult = this.getTrafficFreightUnitResult(freightResult, canToFreeFlag);
         // 2.进行数据过滤
         this.checkAndFilterUnitResult(calculateResult, false, null, false);
-
-        return CommonResult.success(calculateResult);
+        return calculateResult;
     }
 
     /**
@@ -1003,5 +1007,9 @@ public class TrafficFreightUtils {
         return null;
     }
 
+
+    public double getCurrRate() {
+        return this.exchangeRateUtils.getUsdToCnyRate();
+    }
 
 }

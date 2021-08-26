@@ -215,7 +215,7 @@ public class ShopifyUtils {
             // 检查并且保存Sourcing数据
             this.checkXmsSourcingListId(sourcingList);
             // 获取客户的商品信息
-            XmsCustomerProduct customerProduct = this.genXmsCustomerProductByShopifyProduct(shopifyName, memberId, userName, jsonObject);
+            XmsCustomerProduct customerProduct = this.genXmsCustomerProductByShopifyProduct(shopifyName, memberId, userName, jsonObject, sourcingList.getSiteType());
             // 判断是否存在并且保存数据
             boolean b = checkHasCustomerProduct(customerProduct);
             if (!b) {
@@ -271,7 +271,7 @@ public class ShopifyUtils {
         return "https://" + shopifyName + ".myshopify.com/admin/products/" + productId;
     }
 
-    public XmsCustomerProduct genXmsCustomerProductByShopifyProduct(String shopifyName, Long memberId, String userName, JSONObject shopifyProduct) {
+    public XmsCustomerProduct genXmsCustomerProductByShopifyProduct(String shopifyName, Long memberId, String userName, JSONObject shopifyProduct, Integer siteType) {
         XmsCustomerProduct customerProduct = new XmsCustomerProduct();
         customerProduct.setShopifyName(shopifyName);
         customerProduct.setMemberId(memberId);
@@ -284,6 +284,7 @@ public class ShopifyUtils {
         // customerProduct.setShopifyPrice();
         customerProduct.setSyncTime(new Date());
         customerProduct.setStatus(9);
+        customerProduct.setSiteType(siteType);
         customerProduct.setTitle(shopifyProduct.getString("title"));
         if (shopifyProduct.containsKey("image") && shopifyProduct.getJSONObject("image").containsKey("src")) {
             customerProduct.setImg(shopifyProduct.getJSONObject("image").getString("src"));

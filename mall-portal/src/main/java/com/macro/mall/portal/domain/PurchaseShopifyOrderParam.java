@@ -21,4 +21,7 @@ public class PurchaseShopifyOrderParam extends OrderPayParam{
 
     @ApiModelProperty("产品的pid:sku编码:数量")
     private List<String> skuCodeAndNumList;
+
+    @ApiModelProperty(value = "下单的时候选择的国家 0china 1usa")
+    private Integer shippingFrom;
 }

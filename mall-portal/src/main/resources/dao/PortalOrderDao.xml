@@ -117,5 +117,8 @@
                 AND o.status in(-1, 6)
             </if>
         </if>
+        <if test="orderType != null">
+            o.order_type = #{orderType}
+        </if>
     </select>
 </mapper>

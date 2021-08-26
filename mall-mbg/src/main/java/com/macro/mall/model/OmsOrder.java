@@ -55,7 +55,7 @@ public class OmsOrder implements Serializable {
     @ApiModelProperty(value = "订单状态：0->待付款；1->采购；2->入库；3->已发货；4->已完结；5->已经付款； -1/6->取消订单")
     private Integer status;
 
-    @ApiModelProperty(value = "订单类型：0->正常订单；1->充值订单")
+    @ApiModelProperty(value = "订单类型：0->正常订单；1->充值订单;2->发货订单")
     private Integer orderType;
 
     @ApiModelProperty(value = "物流公司(配送方式)")

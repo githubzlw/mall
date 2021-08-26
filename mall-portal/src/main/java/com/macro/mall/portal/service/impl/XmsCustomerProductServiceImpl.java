@@ -39,7 +39,7 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         if (!StringUtils.isEmpty(productParam.getTitle())) {
             lambdaQuery.like(XmsCustomerProduct::getTitle, productParam.getTitle());
         }
-        lambdaQuery.orderByDesc(XmsCustomerProduct::getUsername);
+        lambdaQuery.orderByDesc(XmsCustomerProduct::getCreateTime);
         return this.xmsCustomerProductMapper.selectPage(page, lambdaQuery);
     }
 
