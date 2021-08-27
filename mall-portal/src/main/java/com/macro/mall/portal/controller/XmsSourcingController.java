@@ -294,7 +294,9 @@ public class XmsSourcingController {
 
             // 如果存在，则进行更新处理，sku查询是否重复处理
             if (CollectionUtil.isNotEmpty(list)) {
-                productId = list.get(0).getId();
+                XmsPmsProductEdit pmsProductEdit = list.get(0);
+                pmsProductEdit.setAlbumPics(sourcingProductParam.getAlbumPics());
+                productId = pmsProductEdit.getId();
                 // 处理sku数据
                 QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
                 skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
@@ -326,6 +328,7 @@ public class XmsSourcingController {
                     this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                     stockEditList.clear();
                 }
+                this.xmsPmsProductEditService.saveOrUpdate(pmsProductEdit);
             } else {
                 // 如果不存在，则进行插入处理
                 // 插入product数据

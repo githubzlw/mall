@@ -55,7 +55,7 @@ public class OmsOrder implements Serializable {
     @ApiModelProperty(value = "订单状态：0->待付款；1->采购；2->入库；3->已发货；4->已完结；5->已经付款； -1/6->取消订单")
     private Integer status;
 
-    @ApiModelProperty(value = "订单类型：0->正常订单；1->充值订单;2->发货订单")
+    @ApiModelProperty(value = "订单类型：0->正常订单；1->充值订单")
     private Integer orderType;
 
     @ApiModelProperty(value = "物流公司(配送方式)")
@@ -141,6 +141,9 @@ public class OmsOrder implements Serializable {
 
     @ApiModelProperty(value = "修改时间")
     private Date modifyTime;
+
+    @ApiModelProperty(value = "shopify的订单号，目的时匹配客户下的发货订单")
+    private String shopifyOrderNo;
 
     private static final long serialVersionUID = 1L;
 
@@ -512,6 +515,14 @@ public class OmsOrder implements Serializable {
         this.modifyTime = modifyTime;
     }
 
+    public String getShopifyOrderNo() {
+        return shopifyOrderNo;
+    }
+
+    public void setShopifyOrderNo(String shopifyOrderNo) {
+        this.shopifyOrderNo = shopifyOrderNo;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -564,6 +575,7 @@ public class OmsOrder implements Serializable {
         sb.append(", receiveTime=").append(receiveTime);
         sb.append(", commentTime=").append(commentTime);
         sb.append(", modifyTime=").append(modifyTime);
+        sb.append(", shopifyOrderNo=").append(shopifyOrderNo);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
