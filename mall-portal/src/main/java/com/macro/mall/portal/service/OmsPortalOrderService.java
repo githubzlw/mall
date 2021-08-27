@@ -5,6 +5,7 @@ import com.macro.mall.model.OmsOrder;
 import com.macro.mall.portal.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public interface OmsPortalOrderService {
     /**
      * 分页获取用户发货订单
      */
-    CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam);
+    CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam) throws ParseException;
 
     /**
      * 根据订单ID获取订单详情

@@ -40,4 +40,6 @@ public interface PortalOrderDao {
 
     List<OmsOrder> getOrderListByProductName(@Param("productName") String productName, @Param("status") Integer status, @Param("memberId") Long memberId, @Param("orderType") Integer orderType);
 
+    List<OmsOrder> getDeliverOrderList(@Param("productName") String productName, @Param("status") Integer status, @Param("memberId") Long memberId, @Param("orderType") Integer orderType, @Param("countryName") String countryName, @Param("beginTime") String beginTime, @Param("endTime") String endTime);
+
 }

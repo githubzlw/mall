@@ -3045,6 +3045,76 @@ public class OmsOrderExample {
             addCriterion("modify_time not between", value1, value2, "modifyTime");
             return (Criteria) this;
         }
+
+        public Criteria andShopifyOrderNoIsNull() {
+            addCriterion("shopify_order_no is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoIsNotNull() {
+            addCriterion("shopify_order_no is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoEqualTo(String value) {
+            addCriterion("shopify_order_no =", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoNotEqualTo(String value) {
+            addCriterion("shopify_order_no <>", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoGreaterThan(String value) {
+            addCriterion("shopify_order_no >", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoGreaterThanOrEqualTo(String value) {
+            addCriterion("shopify_order_no >=", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoLessThan(String value) {
+            addCriterion("shopify_order_no <", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoLessThanOrEqualTo(String value) {
+            addCriterion("shopify_order_no <=", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoLike(String value) {
+            addCriterion("shopify_order_no like", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoNotLike(String value) {
+            addCriterion("shopify_order_no not like", value, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoIn(List<String> values) {
+            addCriterion("shopify_order_no in", values, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoNotIn(List<String> values) {
+            addCriterion("shopify_order_no not in", values, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoBetween(String value1, String value2) {
+            addCriterion("shopify_order_no between", value1, value2, "shopifyOrderNo");
+            return (Criteria) this;
+        }
+
+        public Criteria andShopifyOrderNoNotBetween(String value1, String value2) {
+            addCriterion("shopify_order_no not between", value1, value2, "shopifyOrderNo");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {
