@@ -32,6 +32,9 @@ public class ShopifyPreOrderItem {
     @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
     private Integer freeStatus;
 
+    private Double weight;
+    private Double volume;
+
     @ApiModelProperty(value = "需要采购的数量")
     private int needNumber;
     @ApiModelProperty(value = "已经购买的库存")

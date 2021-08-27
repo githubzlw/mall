@@ -283,7 +283,11 @@ public class XmsSourcingController {
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
-            stockEditList.forEach(e-> e.setMemberId(currentMember.getId()));
+            StringBuffer skuSb = new StringBuffer();
+            stockEditList.forEach(e-> {
+                e.setMemberId(currentMember.getId());
+                skuSb.append("," + e.getSkuCode());
+            });
 
             Long productId;
             // 判断是否存在编辑表数据
@@ -353,6 +357,7 @@ public class XmsSourcingController {
             param.put("pid", String.valueOf(productId));
             param.put("published", "0");
             param.put("shopname", byId.getShopifyName());
+            param.put("skuCodes", skuSb.toString().substring(1));
 
             JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
 

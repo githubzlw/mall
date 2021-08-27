@@ -354,8 +354,8 @@ public class XmsShopifyController {
             Map<String, String> param = new HashMap<>();
             param.put("shopname", byId.getShopifyName());
             param.put("pid", String.valueOf(productId));
-            param.put("skuCodes", String.valueOf(skuCodes));
-            param.put("published", "");
+            param.put("skuCodes", skuCodes);
+            param.put("published", "0");
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);
@@ -530,14 +530,17 @@ public class XmsShopifyController {
                     if (shopifyPidMap.containsKey(e.getProductId()) && pmsProductMap.containsKey(shopifyPidMap.get(e.getProductId()))) {
                         PmsProduct pmsProduct = pmsProductMap.get(shopifyPidMap.get(e.getProductId()));
                         preOrderItem.setImg(pmsProduct.getPic());
-                        preOrderItem.setPrice(pmsProduct.getPriceXj());
+                        //preOrderItem.setPrice(pmsProduct.getPriceXj());
                         preOrderItem.setProductId(pmsProduct.getId());
                         preOrderItem.setFreeStatus(pmsProduct.getFreeStatus());
+
                     }else{
                         preOrderItem.setImg("");
                         preOrderItem.setPrice("0");
                         preOrderItem.setProductId(0L);
                         preOrderItem.setFreeStatus(0);
+                        preOrderItem.setWeight(0D);
+                        preOrderItem.setVolume(0D);
                     }
                     if(shopifyPidMap.containsKey(e.getProductId()) && finalSkuStockMap.containsKey(shopifyPidMap.get(e.getProductId()))){
                         preOrderItem.setStockList(finalSkuStockMap.get(shopifyPidMap.get(e.getProductId())));

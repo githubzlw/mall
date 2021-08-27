@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-07
+ * @since 2021-08-27
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -85,5 +85,36 @@ public class XmsCustomerSkuStock implements Serializable {
 
     @ApiModelProperty(value = "下单的时候选择的国家 0china 1usa")
     private Integer shippingFrom;
+
+    @ApiModelProperty(value = "最小批量价格（新加字段）")
+    private BigDecimal minPrice;
+
+    @ApiModelProperty(value = "最大批量价格（新加字段）")
+    private BigDecimal maxPrice;
+
+    @ApiModelProperty(value = "原价格批量（新加字段）")
+    private Integer moq;
+
+    @ApiModelProperty(value = "最小价格批量（新加字段）")
+    private Integer minMoq;
+
+    @ApiModelProperty(value = "最大价格批量（新加字段）")
+    private Integer maxMoq;
+
+    @ApiModelProperty(value = "重量（新加字段）")
+    private BigDecimal weight;
+
+    @ApiModelProperty(value = "体积长（新加字段）")
+    private BigDecimal volumeLenght;
+
+    @ApiModelProperty(value = "体积宽（新加字段）")
+    private BigDecimal volumeWidth;
+
+    @ApiModelProperty(value = "体积高（新加字段）")
+    private BigDecimal volumeHeight;
+
+    @ApiModelProperty(value = "需求体积")
+    private Double volume;
+
 
 }
