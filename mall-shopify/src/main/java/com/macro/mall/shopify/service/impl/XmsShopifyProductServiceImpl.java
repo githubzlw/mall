@@ -132,7 +132,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     public static ShopifyData composeShopifyData(XmsPmsProductEdit goods, int site) {
 
         ShopifyData data = new ShopifyData();
-        data.setPid(String.valueOf(goods.getId()));
+        data.setPid(String.valueOf(goods.getProductId()));
         data.setInfo(detail(goods));
         data.setInfoHtml(goods.getDetailHtml());
         data.setName(goods.getName());
@@ -209,15 +209,11 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         Iterator<String> iterator = setImage.iterator();
         while (iterator.hasNext()) {
 
-//            if(iterator.next()!=null){
 //                String imgSrc = iterator.next().replace(".60x60", ".400x400");
-                images = new Images();
-//                System.err.println(iterator.next());
-                images.setSrc(iterator.next());
+            images = new Images();
+            images.setSrc(iterator.next());
 
-
-                lstImages.add(images);
-//            }
+            lstImages.add(images);
 
         }
         return lstImages;
