@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.BeanCopyUtil;
+import com.macro.mall.common.util.BigDecimalUtil;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.*;
 import com.macro.mall.portal.domain.CentralizedTransportFreight;

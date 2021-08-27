@@ -9,6 +9,7 @@ import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.PmsProductParam;
 import com.macro.mall.entity.XmsChromeUpload;
+import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsListOfCountries;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.mapper.*;
@@ -51,11 +52,11 @@ public class ProductUtils {
     @Autowired
     private PmsProductAttributeService productAttributeService;
     @Autowired
-    private PmsProductAttributeCategoryMapper productAttributeCategoryMapper;
-    @Autowired
     private PmsProductCategoryMapper productCategoryMapper;
     @Autowired
     private XmsListOfCountriesMapper listOfCountriesMapper;
+    @Autowired
+    private XmsCustomerProductMapper xmsCustomerProductMapper;
     @Autowired
     public ProductUtils(XmsChromeUploadMapper xmsChromeUploadMapper, XmsSourcingListMapper xmsSourcingListMapper) {
         this.xmsChromeUploadMapper = xmsChromeUploadMapper;
@@ -196,6 +197,156 @@ public class ProductUtils {
         }
 
     }
+
+
+    // shopify产品数据插入产品，及关数据
+    public boolean insertShopifyToPms(XmsCustomerProduct customerProduct) {
+
+        try{
+            //查询产品分类
+            PmsProductCategoryExample example = new PmsProductCategoryExample();
+            example.createCriteria().andNameEqualTo(getSiteTwo(customerProduct.getSiteType().toString()));
+            List<PmsProductCategory> productCategoryList = productCategoryMapper.selectByExample(example);
+            //添加商品属性分类
+            int maxProductAttributeCategoryId = productAttributeCategoryService.create(getSite(customerProduct.getSiteType().toString())+"-"+UUID.randomUUID());
+            // 添加商品属性信息
+            // 添加商品属性值信息
+            List<PmsProductAttributeValue> productAttributeValueList = new ArrayList<>();
+
+            //清洗规格颜色
+            JSONObject jsonObject = JSONObject.parseObject(customerProduct.getShopifyJson());
+            JSONArray optionsArr = jsonObject.getJSONArray("options");
+
+            if(null != optionsArr && optionsArr.size() > 0) {
+                for (int i = 0; i < optionsArr.size(); i++) {
+                    JSONObject opChild = optionsArr.getJSONObject(i);
+                    String name = opChild.getString("name");
+                    if (StrUtil.isNotBlank(name)) {
+                        PmsProductAttributeParam productAttributeParam = new PmsProductAttributeParam();
+                        productAttributeParam.setProductAttributeCategoryId((long) maxProductAttributeCategoryId);
+                        productAttributeParam.setName(name);
+                        productAttributeParam.setHandAddStatus(1);
+                        productAttributeParam.setType(0);
+                        if (opChild.containsKey("values") && StrUtil.isNotBlank(opChild.getString("values"))) {
+                            int maxId = productAttributeService.create(productAttributeParam);
+                            JSONArray jsonArray = opChild.getJSONArray("values");
+                            if (null != jsonArray && jsonArray.size() > 0) {
+                                for (int j = 0; j < jsonArray.size(); j++) {
+                                    PmsProductAttributeValue pmsProductAttributeValue = new PmsProductAttributeValue();
+                                    pmsProductAttributeValue.setProductAttributeId((long) maxId);
+                                    pmsProductAttributeValue.setValue(jsonArray.getString(j));
+                                    productAttributeValueList.add(pmsProductAttributeValue);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            //添加产品表
+            PmsProductParam productParam = new PmsProductParam();
+            XmsSourcingList xmsSourcingList = getXmsSourcingListByCustom(customerProduct);
+            //分类id
+            productParam.setProductCategoryId(productCategoryList.get(0).getId());
+            //属性分类id
+            productParam.setProductAttributeCategoryId((long) maxProductAttributeCategoryId);
+            //产品名
+            productParam.setName(xmsSourcingList.getTitle());
+            //主图
+            productParam.setPic(xmsSourcingList.getImages());
+            //橱窗图
+            productParam.setAlbumPics(xmsSourcingList.getImages());
+            //描述
+            productParam.setDescription(xmsSourcingList.getSourceLink());
+            xmsSourcingList.setSourceLink(null);
+            //详情
+            productParam.setDetailHtml(xmsSourcingList.getRemark());
+            xmsSourcingList.setRemark(null);
+            //交期
+            //productParam.setLeadTime(chromeUpload.getLeadTime());
+            productParam.setProductSn("");
+            //价格(新加字段)
+            productParam.setPriceXj(xmsSourcingList.getPrice());
+            //url(新加字段)
+            productParam.setUrl(xmsSourcingList.getUrl());
+            //moq
+            productParam.setMoq("1");
+            //shippingfee
+            //productParam.setShippingFee(chromeUpload.getShippingFee());
+            //shippingby
+            //productParam.setShippingBy(chromeUpload.getShippingBy());
+
+            productParam.setProductAttributeValueList(productAttributeValueList);
+            // 插入商品
+            int productMaxId = this.pmsProductService.create(productParam);
+            xmsSourcingList.setProductId((long) productMaxId);
+            // 插入sourcing
+            this.xmsSourcingListMapper.insert(xmsSourcingList);
+            // 更新shopify
+            customerProduct.setProductId((long)productMaxId);
+            customerProduct.setSourcingId(xmsSourcingList.getId().intValue());
+            this.xmsCustomerProductMapper.updateById(customerProduct);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error("insertShopifyToPms,error:", e);
+            return false;
+        }
+
+    }
+
+
+    /**
+     * 插入sourcing
+     * @param customerProduct
+     * @return
+     */
+    private XmsSourcingList getXmsSourcingListByCustom(XmsCustomerProduct customerProduct) {
+        Assert.notNull(customerProduct, "customerProduct null");
+
+        JSONObject jsonObject = JSONObject.parseObject(customerProduct.getShopifyJson());
+
+        XmsSourcingList sourcingInfo = new XmsSourcingList();
+        sourcingInfo.setMemberId(customerProduct.getMemberId());
+        sourcingInfo.setUsername(customerProduct.getUsername());
+        // 处理url
+        sourcingInfo.setUrl(jsonObject.getString("admin_graphql_api_id"));
+        // 处理title
+        if (StrUtil.isNotEmpty(customerProduct.getTitle())) {
+            String tempTitle = customerProduct.getTitle().replaceAll("[\\u4e00-\\u9fa5]", "");
+            if (StrUtil.isNotEmpty(tempTitle)) {
+                sourcingInfo.setTitle(tempTitle.trim());
+            }
+        }
+        // 处理img
+        JSONArray imagesArr = jsonObject.getJSONArray("images");
+        if (null != imagesArr && imagesArr.size() > 0) {
+
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < imagesArr.size(); i++) {
+                sb.append("," + imagesArr.getJSONObject(i).getString("src"));
+            }
+            sourcingInfo.setImages(sb.toString().substring(1));
+        }
+        sourcingInfo.setPrice(customerProduct.getShopifyPrice());
+        //阿里价格处理
+
+        // 处理 shippingFee
+        sourcingInfo.setCost("0");
+        //sourcingInfo.setCountryId();
+        //sourcingInfo.setShipping();
+        sourcingInfo.setSiteType(11);
+        sourcingInfo.setStatus(0);
+        sourcingInfo.setCreateTime(new Date());
+        sourcingInfo.setUpdateTime(new Date());
+        // sourcingInfo.setSkuJson(jsonObject.getString("handle"));
+        sourcingInfo.setSourceLink(jsonObject.getString("handle"));
+        sourcingInfo.setTitle(customerProduct.getTitle());
+        sourcingInfo.setRemark(jsonObject.getString("body_html"));
+        return sourcingInfo;
+    }
+
 
     //api 数据插入产品表
     public int apiDataInsertPms(XmsChromeUpload chromeUpload,List<PmsSkuStock> skuStockList, String note){
@@ -1060,6 +1211,8 @@ public class ProductUtils {
                 return "WALMART_CHILD";
             case "8":
                 return "ALI1688_CHILD";
+            case "11":
+                return "SHOPIFY_CHILD";
             default:
                 return "ALI1688_CHILD";
         }

@@ -343,6 +343,7 @@ public class OrderUtils {
                 order.setStatus(2);
             }
             this.orderMapper.insert(order);
+            orderResult.setOrderNoId(order.getId());
             orderItemList.forEach(e-> e.setOrderId(order.getId()));
             this.orderItemDao.insertList(orderItemList);
 

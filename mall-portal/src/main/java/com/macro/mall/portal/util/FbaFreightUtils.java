@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.macro.mall.common.util.BeanCopyUtil;
+import com.macro.mall.common.util.BigDecimalUtil;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.*;
 import com.macro.mall.portal.domain.XmsTailFreightResult;

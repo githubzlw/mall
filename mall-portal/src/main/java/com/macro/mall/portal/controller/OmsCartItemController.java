@@ -10,7 +10,6 @@ import com.macro.mall.portal.domain.CartPromotionItem;
 import com.macro.mall.portal.service.OmsCartItemService;
 import com.macro.mall.portal.service.PmsPortalProductService;
 import com.macro.mall.portal.service.UmsMemberService;
-import com.macro.mall.portal.util.BigDecimalUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -12,8 +12,10 @@ import com.macro.mall.dto.PmsProductParam;
 import com.macro.mall.dto.PmsProductQueryParam;
 import com.macro.mall.dto.PmsProductResult;
 import com.macro.mall.entity.XmsChromeUpload;
+import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsSkuStock;
+import com.macro.mall.service.IXmsCustomerProductService;
 import com.macro.mall.service.PmsProductService;
 import com.macro.mall.service.XmsAli1688Service;
 import com.macro.mall.service.XmsAliExpressService;
@@ -45,6 +47,8 @@ public class PmsProductController {
     private XmsAliExpressService expressService;
     @Autowired
     private XmsAli1688Service ali1688Service;
+    @Autowired
+    private IXmsCustomerProductService xmsCustomerProductService;
 
     @ApiOperation("创建商品")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -220,6 +224,30 @@ public class PmsProductController {
 
         try {
             return CommonResult.success(this.saveToProduct(sourcingParam));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/saveShopifyProduct")
+    @ApiOperation("保存Shopify的商品数据")
+    @ResponseBody
+    public CommonResult saveShopifyProduct(Long customerProductId) {
+        Assert.isTrue(null != customerProductId && customerProductId > 0, "customerProductId null");
+        try {
+
+            XmsCustomerProduct byId = this.xmsCustomerProductService.getById(customerProductId);
+            if (null == byId) {
+                return CommonResult.failed("no this customerProduct");
+            }
+            synchronized (byId.getMemberId()) {
+                // 组合产品数据
+                boolean b = this.productUtils.insertShopifyToPms(byId);
+                return CommonResult.success(b);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return CommonResult.failed(e.getMessage());

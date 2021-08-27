@@ -57,6 +57,7 @@ secure:
       - /oneBound/**
       - /product/updateProductCancle
       - /product/saveOneBoundProduct
+      - /product/saveShopifyProduct
       - /order/updateOrderState
       - /xmsOrder/**
 

@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 public class GenerateOrderResult {
 
+    private Long orderNoId;
     @ApiModelProperty("订单号")
     private String orderNo;
     @ApiModelProperty("商品金额")
