@@ -14,5 +14,5 @@ public interface XmsShopifyProductService {
      * @param published
      * @return
      */
-    CommonResult pushProduct(String pid, String shopName, boolean published);
+    CommonResult pushProduct(String pid, String shopName, boolean published, String skuCodes);
 }

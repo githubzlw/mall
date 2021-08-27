@@ -341,7 +341,7 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/addProduct")
     @ApiOperation("铺货到shopify商品")
-    public CommonResult addToShopifyProducts(@RequestParam Long productId) {
+    public CommonResult addToShopifyProducts(@RequestParam Long productId, @RequestParam String skuCodes) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
@@ -354,6 +354,7 @@ public class XmsShopifyController {
             Map<String, String> param = new HashMap<>();
             param.put("shopname", byId.getShopifyName());
             param.put("pid", String.valueOf(productId));
+            param.put("skuCodes", String.valueOf(skuCodes));
             param.put("published", "");
 
             //请求数据

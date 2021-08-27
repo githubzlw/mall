@@ -61,7 +61,7 @@ public class ShopifyProductController {
     @ApiOperation("shopify铺货")
     @RequestMapping(value = "/addProduct", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult addProduct(@RequestParam String shopname, @RequestParam String pid, @RequestParam String published) {
+    public CommonResult addProduct(@RequestParam String shopname, @RequestParam String pid, @RequestParam String published, @RequestParam String skuCodes) {
 
         if (StringUtils.isBlank(shopname)) {
             return CommonResult.failed("SHOPNAME IS NULL");
@@ -69,7 +69,7 @@ public class ShopifyProductController {
         if (StringUtils.isBlank(pid)) {
             return CommonResult.failed("PRODUCT IS NULL");
         }
-        return shopifyService.pushProduct(pid, shopname,"1".equalsIgnoreCase(published));
+        return shopifyService.pushProduct(pid, shopname,"1".equalsIgnoreCase(published), skuCodes);
     }
 
 }

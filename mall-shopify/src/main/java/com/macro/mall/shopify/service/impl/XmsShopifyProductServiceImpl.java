@@ -77,7 +77,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
     @Override
-    public CommonResult pushProduct(String pid, String shopName, boolean published) {
+    public CommonResult pushProduct(String pid, String shopName, boolean published, String skuCodes) {
         try {
 
             LOGGER.info("begin push product[{}] to shopify[{}]", pid, shopName);
@@ -85,6 +85,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             wrap.setPid(pid);
             wrap.setPublished(published);
             wrap.setShopname(shopName);
+            List<String> skuList = Arrays.asList(skuCodes.split(","));
+            wrap.setSkus(skuList);
 
             ProductWraper wraper = pushProductWFW(wrap);
             if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
@@ -114,7 +116,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(wrap.getPid()));
         List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
-        goods.setSkuList(skuList);
+
+        List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
+        goods.setSkuList(collect);
 
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
