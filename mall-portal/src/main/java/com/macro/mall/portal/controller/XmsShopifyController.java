@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
@@ -89,6 +90,8 @@ public class XmsShopifyController {
     private IXmsShopifyProductTypeService xmsShopifyProductTypeService;
     @Autowired
     private IXmsShopifyProductTagService xmsShopifyProductTagService;
+    @Autowired
+    private IXmsShopifyOrderAddressService xmsShopifyOrderAddressService;
 
 
     @PostMapping(value = "/authorization")
@@ -893,6 +896,26 @@ public class XmsShopifyController {
             return CommonResult.success(list);
         } catch (Exception e) {
             log.error("getShopifyProductTag,,error", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/updateShopifyOrderAddress")
+    @ApiOperation("更新客户的shopify地址信息")
+    public CommonResult updateShopifyOrderAddress(XmsShopifyOrderAddress shopifyOrderAddress) {
+
+        Assert.isTrue(null != shopifyOrderAddress, "shopifyOrderAddress null");
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+
+            UpdateWrapper<XmsShopifyOrderAddress> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().set(XmsShopifyOrderAddress::getAddress1, shopifyOrderAddress.getAddress1())
+                    .eq(XmsShopifyOrderAddress::getId, shopifyOrderAddress.getId());
+            boolean save = this.xmsShopifyOrderAddressService.update(null, updateWrapper);
+            return CommonResult.success(save);
+        } catch (Exception e) {
+            log.error("updateShopifyOrderAddress,shopifyOrderAddress[{}],error", shopifyOrderAddress, e);
             return CommonResult.failed(e.getMessage());
         }
     }

@@ -47,4 +47,6 @@ public class XmsShopifyCollections implements Serializable {
     private Date createTime;
 
 
+    private String collKey;
+
 }

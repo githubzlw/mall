@@ -16,7 +16,6 @@ import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.mapper.XmsSourcingListMapper;
-import com.macro.mall.model.PmsProduct;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
@@ -169,6 +168,8 @@ public class ShopifyUtils {
                 shopifyCollections.setTitle(tempJson.getString("title"));
                 shopifyCollections.setShopName(shopName);
                 shopifyCollections.setCollectionJson(tempJson.toJSONString());
+                shopifyCollections.setCreateTime(new Date());
+                shopifyCollections.setCollKey(keyName);
                 list.add(shopifyCollections);
             }
 

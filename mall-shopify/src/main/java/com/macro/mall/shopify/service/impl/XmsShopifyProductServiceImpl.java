@@ -1,6 +1,5 @@
 package com.macro.mall.shopify.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
@@ -16,14 +15,8 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.entity.XmsPmsProductEdit;
-import com.macro.mall.entity.XmsPmsSkuStockEdit;
-import com.macro.mall.entity.XmsShopifyAuth;
-import com.macro.mall.entity.XmsShopifyPidInfo;
-import com.macro.mall.mapper.XmsPmsProductEditMapper;
-import com.macro.mall.mapper.XmsPmsSkuStockEditMapper;
-import com.macro.mall.mapper.XmsShopifyAuthMapper;
-import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
+import com.macro.mall.entity.*;
+import com.macro.mall.mapper.*;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.exception.ShopifyException;
@@ -67,11 +60,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private final ShopifyRestTemplate shopifyRestTemplate;
 
     private final ShopifyConfig config;
-
     @Autowired
-    private XmsPmsProductEditMapper xmsPmsProductEditMapper;
-    @Autowired
-    private XmsPmsSkuStockEditMapper xmsPmsSkuStockEditMapper;
+    private XmsShopifyCollectionsMapper xmsShopifyCollectionsMapper;
 
     public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
@@ -392,9 +382,102 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
+
         }
         return productWraper;
     }
+
+
+
+    private void dealShopifyCollections(ProductRequestWrap wrap, ProductWraper productWraper) {
+        try {
+            // 如果有collectionId则绑定数据
+            QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
+            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname());
+            XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(authQueryWrapper);
+            String token = shopifyAuth.getAccessToken();
+
+            if (StrUtil.isNotBlank(wrap.getCollectionId())) {
+                QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyCollections::getCollectionsId, Long.parseLong(wrap.getCollectionId()));
+                XmsShopifyCollections shopifyCollections = this.xmsShopifyCollectionsMapper.selectOne(queryWrapper);
+                if (null != shopifyCollections) {
+                    String collKey = shopifyCollections.getCollKey();
+                    if ("custom_collections".equalsIgnoreCase(collKey)) {
+                        /**
+                         * PUT /admin/api/2021-07/custom_collections/841564295.json
+                         * {
+                         *   "custom_collection": {
+                         *     "id": 841564295,
+                         *     "collects": [
+                         *       {
+                         *         "product_id": 921728736,
+                         *         "position": 1
+                         *       },
+                         *       {
+                         *         "id": 455204334,
+                         *         "position": 2
+                         *       }
+                         *     ]
+                         *   }
+                         * }
+                         */
+                        JSONObject jsonObject = new JSONObject();
+                        JSONObject custom_collectionJson = new JSONObject();
+                        custom_collectionJson.put("id", wrap.getCollectionId());
+                        JSONArray collectsArr = new JSONArray();
+                        JSONObject product_json = new JSONObject();
+                        product_json.put("product_id", productWraper.getProduct().getId());
+                        product_json.put("position", "1");
+                        collectsArr.add(product_json);
+                        custom_collectionJson.put("collects", collectsArr);
+                        jsonObject.put("custom_collection", custom_collectionJson);
+
+                        //请求数据
+
+                        String returnJson = shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_CUSTOM_COLLECTIONS, wrap.getShopname()), token, jsonObject);
+                        //返回结果
+                        /**
+                         * {
+                         *   "custom_collection": {
+                         *     "handle": "ipods",
+                         *     "id": 841564295,
+                         *     "updated_at": "2021-07-01T15:10:06-04:00",
+                         *     "published_at": "2008-02-01T19:00:00-05:00",
+                         *     "sort_order": "manual",
+                         *     "template_suffix": null,
+                         *     "published_scope": "web",
+                         *     "title": "IPods",
+                         *     "body_html": "<p>The best selling ipod ever</p>",
+                         *     "admin_graphql_api_id": "gid://shopify/Collection/841564295",
+                         *     "image": {
+                         *       "created_at": "2021-07-01T14:49:47-04:00",
+                         *       "alt": "iPod Nano 8gb",
+                         *       "width": 123,
+                         *       "height": 456,
+                         *       "src": "https://cdn.shopify.com/s/files/1/0006/9093/3842/collections/ipod_nano_8gb.jpg?v=1625165387"
+                         *     }
+                         *   }
+                         * }
+                         */
+                        JSONObject rsJson = JSONObject.parseObject(returnJson);
+                        if (null == rsJson || !rsJson.containsKey("custom_collection")) {
+                            System.err.println("-----------custom_collection put error:[" + returnJson + "]");
+                        }
+                    } else {
+                        /**
+                         *PUT /admin/api/2021-07/smart_collections/482865238/order.json?products[]=921728736&products[]=632910392
+                         *
+                         */
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     /**
      * insertShopifyIdWithPid
