@@ -85,6 +85,10 @@ public class XmsShopifyController {
     private OmsCartItemService cartItemService;
     @Autowired
     private IXmsCustomStockLogService xmsCustomStockLogService;
+    @Autowired
+    private IXmsShopifyProductTypeService xmsShopifyProductTypeService;
+    @Autowired
+    private IXmsShopifyProductTagService xmsShopifyProductTagService;
 
 
     @PostMapping(value = "/authorization")
@@ -341,7 +345,7 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/addProduct")
     @ApiOperation("铺货到shopify商品")
-    public CommonResult addToShopifyProducts(@RequestParam Long productId, @RequestParam String skuCodes) {
+    public CommonResult addToShopifyProducts(@RequestParam Long productId, @RequestParam String skuCodes, @RequestParam String collectionId, @RequestParam String productType, @RequestParam String productTags) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
@@ -352,10 +356,13 @@ public class XmsShopifyController {
             }
 
             Map<String, String> param = new HashMap<>();
-            param.put("shopname", byId.getShopifyName());
+            param.put("shopName", byId.getShopifyName());
             param.put("pid", String.valueOf(productId));
             param.put("skuCodes", skuCodes);
             param.put("published", "0");
+            param.put("collectionId", collectionId);
+            param.put("productType", productType);
+            param.put("productTags", productTags);
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);
@@ -441,21 +448,22 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-            // 数据库判断是否绑定
-            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
-                return CommonResult.failed("Please bind the shopify store first");
-            }
-
             Map<String, String> param = new HashMap<>();
-            param.put("shopifyName", byId.getShopifyName());
+            param.put("shopifyName", currentMember.getShopifyName());
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
-            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
-            return commonResult;
+
+            if (jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")) {
+                QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyCollections::getShopName, currentMember.getShopifyName());
+                List<XmsShopifyCollections> list = this.xmsShopifyCollectionsService.list(queryWrapper);
+                return CommonResult.success(list);
+            } else {
+                return JSON.toJavaObject(jsonObject, CommonResult.class);
+            }
         } catch (Exception e) {
-            log.error("getShopifyProducts,currentMember[{}],error", currentMember, e);
+            log.error("getCollections,currentMember[{}],error", currentMember, e);
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -803,5 +811,91 @@ public class XmsShopifyController {
             return CommonResult.failed("query failed");
         }
     }
+
+    @PostMapping(value = "/createShopifyProductType")
+    @ApiOperation("创建客户的shopify商品的type")
+    public CommonResult createShopifyProductType(String productTypeName) {
+
+        Assert.isTrue(StrUtil.isNotBlank(productTypeName), "productTypeName null");
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyProductType> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyProductType::getShopName, currentMember.getShopifyName()).eq(XmsShopifyProductType::getTypeName, productTypeName);
+            int count = this.xmsShopifyProductTypeService.count(queryWrapper);
+            if (count > 0) {
+                return CommonResult.success("This name already exists");
+            }
+            XmsShopifyProductType shopifyProductType = new XmsShopifyProductType();
+            shopifyProductType.setShopName(currentMember.getShopifyName());
+            shopifyProductType.setTypeName(productTypeName);
+            shopifyProductType.setCreateTime(new Date());
+            boolean save = this.xmsShopifyProductTypeService.save(shopifyProductType);
+            return CommonResult.success(save);
+        } catch (Exception e) {
+            log.error("createShopifyProductType,productType[{}],error", productTypeName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(value = "/getShopifyProductType")
+    @ApiOperation("获取客户的shopify商品的type")
+    public CommonResult getShopifyProductType() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyProductType> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyProductType::getShopName, currentMember.getShopifyName());
+            List<XmsShopifyProductType> list = this.xmsShopifyProductTypeService.list(queryWrapper);
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            log.error("getShopifyProductType,,error", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/createShopifyProductTag")
+    @ApiOperation("创建客户的shopify商品的tag")
+    public CommonResult createShopifyProductTag(String productTagName) {
+
+        Assert.isTrue(StrUtil.isNotBlank(productTagName), "productTagName null");
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyProductTag> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyProductTag::getShopName, currentMember.getShopifyName()).eq(XmsShopifyProductTag::getTagName, productTagName);
+            int count = this.xmsShopifyProductTagService.count(queryWrapper);
+            if (count > 0) {
+                return CommonResult.success("This name already exists");
+            }
+            XmsShopifyProductTag shopifyProductTag = new XmsShopifyProductTag();
+            shopifyProductTag.setShopName(currentMember.getShopifyName());
+            shopifyProductTag.setTagName(productTagName);
+            shopifyProductTag.setCreateTime(new Date());
+            boolean save = this.xmsShopifyProductTagService.save(shopifyProductTag);
+            return CommonResult.success(save);
+        } catch (Exception e) {
+            log.error("createShopifyProductType,productTagName[{}],error", productTagName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(value = "/getShopifyProductTag")
+    @ApiOperation("获取客户的shopify商品的tag")
+    public CommonResult getShopifyProductTag() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            QueryWrapper<XmsShopifyProductTag> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyProductTag::getShopName, currentMember.getShopifyName());
+            List<XmsShopifyProductTag> list = this.xmsShopifyProductTagService.list(queryWrapper);
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            log.error("getShopifyProductTag,,error", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
 
 }

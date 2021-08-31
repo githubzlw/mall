@@ -71,21 +71,24 @@ public class UrlUtil {
      */
     @Nullable
     private JSONObject executeCall(String url, Request request) throws IOException {
-        Response response =null;
-        try{
+        Response response = null;
+        try {
             response = client.newCall(request).execute();
-        }catch(IOException ioe){
+        } catch (IOException ioe) {
             //重试15次（每次1秒）
             try {
-                int count=0;
-                while(true){
+                int count = 0;
+                while (true) {
                     Thread.sleep(1000);
                     try {
                         response = client.newCall(request).execute();
                     } catch (IOException e) {
                         //log.warn("do retry ,times=[{}]",count);
                     }
-                    if(count>15){
+                    if (null != response && response.isSuccessful()) {
+                        break;
+                    }
+                    if (count > 5) {
                         break;
                     }
                     ++count;
@@ -94,7 +97,7 @@ public class UrlUtil {
             }
         }
 
-        if (response==null || !response.isSuccessful()) {
+        if (response == null || !response.isSuccessful()) {
             //log.error("url:[{}]", url);
             throw new IOException("call url is not successful");
         }

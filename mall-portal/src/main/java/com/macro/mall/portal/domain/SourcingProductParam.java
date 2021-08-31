@@ -25,4 +25,8 @@ public class SourcingProductParam extends PmsProduct {
 
     @ApiModelProperty(value = "product的sku数据:list的字符串")
     private String skuList;
+
+    private String collectionId;
+    private String productType;
+    private String productTags;
 }

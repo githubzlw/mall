@@ -303,7 +303,7 @@ public class OrderUtils {
                 orderItemList.add(orderItem);
 
                 XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
-                tempSkuStock.setId(pmsSkuStock.getId().intValue());
+                tempSkuStock.setId(pmsSkuStock.getId());
                 tempSkuStock.setStock(pmsSkuStock.getStock());
                 skuStockInsertList.add(tempSkuStock);
             }

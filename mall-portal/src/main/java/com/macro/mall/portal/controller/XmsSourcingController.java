@@ -353,8 +353,11 @@ public class XmsSourcingController {
             Map<String, String> param = new HashMap<>();
             param.put("pid", String.valueOf(productId));
             param.put("published", "0");
-            param.put("shopname", byId.getShopifyName());
+            param.put("shopName", byId.getShopifyName());
             param.put("skuCodes", skuSb.toString().substring(1));
+            param.put("collectionId", sourcingProductParam.getCollectionId());
+            param.put("productType", sourcingProductParam.getProductType());
+            param.put("productTags", sourcingProductParam.getProductTags());
 
             JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
 

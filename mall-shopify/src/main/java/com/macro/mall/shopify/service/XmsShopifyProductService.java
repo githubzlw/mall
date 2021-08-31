@@ -1,6 +1,7 @@
 package com.macro.mall.shopify.service;
 
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.shopify.pojo.AddProductBean;
 
 /**
  * ShopifyService
@@ -9,10 +10,8 @@ import com.macro.mall.common.api.CommonResult;
 public interface XmsShopifyProductService {
 
     /**u铺货
-     * @param pid
-     * @param shopName
-     * @param published
+     * @param addProductBean
      * @return
      */
-    CommonResult pushProduct(String pid, String shopName, boolean published, String skuCodes);
+    CommonResult pushProduct(AddProductBean addProductBean);
 }

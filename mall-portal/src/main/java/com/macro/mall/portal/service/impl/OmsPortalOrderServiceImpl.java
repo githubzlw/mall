@@ -396,6 +396,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             tempSkuStock.setStatus(0);
             tempSkuStock.setOrderNo(orderNo);
             tempSkuStock.setShippingFrom(finalShippingFrom);
+            tempSkuStock.setPic(e.getProductPic());
             if(!productList.contains(e.getProductId())){
                 productList.add(e.getProductId());
             }

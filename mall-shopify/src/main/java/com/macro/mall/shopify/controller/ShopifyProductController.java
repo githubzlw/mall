@@ -4,6 +4,7 @@ package com.macro.mall.shopify.controller;
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.shopify.cache.RedisUtil;
+import com.macro.mall.shopify.pojo.AddProductBean;
 import com.macro.mall.shopify.service.XmsShopifyProductService;
 import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
@@ -80,11 +81,13 @@ public class ShopifyProductController {
     @ApiOperation("shopify铺货")
     @RequestMapping(value = "/addProduct", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult addProduct(@RequestParam String shopname, @RequestParam String pid, @RequestParam String published, @RequestParam String skuCodes) {
+    public CommonResult addProduct(AddProductBean addProductBean) {
 
+        String shopname = addProductBean.getShopName();
         if (StringUtils.isBlank(shopname)) {
             return CommonResult.failed("SHOPNAME IS NULL");
         }
+        String pid = addProductBean.getPid();
         if (StringUtils.isBlank(pid)) {
             return CommonResult.failed("PRODUCT IS NULL");
         }
@@ -94,7 +97,7 @@ public class ShopifyProductController {
             return CommonResult.success("this shop is execute!!");
         }
 
-        CommonResult commonResult = shopifyService.pushProduct(pid, shopname, "1".equalsIgnoreCase(published), skuCodes);
+        CommonResult commonResult = shopifyService.pushProduct(addProductBean);
         if (null != commonResult && commonResult.getCode() == 200) {
             map.put(shopname + "_" + pid, "success");
             this.redisUtil.hmset(RedisUtil.ADD_PRODUCT, map, 60);

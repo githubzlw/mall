@@ -2,7 +2,9 @@ package com.macro.mall.shopify.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,6 +27,7 @@ import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.exception.ShopifyException;
+import com.macro.mall.shopify.pojo.AddProductBean;
 import com.macro.mall.shopify.pojo.ProductRequestWrap;
 import com.macro.mall.shopify.pojo.ShopifyData;
 import com.macro.mall.shopify.pojo.SkuVal;
@@ -77,16 +80,27 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
     @Override
-    public CommonResult pushProduct(String pid, String shopName, boolean published, String skuCodes) {
+    public CommonResult pushProduct(AddProductBean addProductBean) {
         try {
 
-            LOGGER.info("begin push product[{}] to shopify[{}]", pid, shopName);
+            LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
             ProductRequestWrap wrap = new ProductRequestWrap();
-            wrap.setPid(pid);
-            wrap.setPublished(published);
-            wrap.setShopname(shopName);
-            List<String> skuList = Arrays.asList(skuCodes.split(","));
+            wrap.setPid(addProductBean.getPid());
+            wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
+            wrap.setShopname(addProductBean.getShopName());
+            List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
             wrap.setSkus(skuList);
+
+            if(StrUtil.isNotBlank(addProductBean.getCollectionId())){
+                wrap.setCollectionId(addProductBean.getCollectionId());
+            }
+            if(StrUtil.isNotBlank(addProductBean.getProductTags())){
+                wrap.setProductTags(addProductBean.getProductTags());
+            }
+            if(StrUtil.isNotBlank(addProductBean.getProductType())){
+                wrap.setProductType(addProductBean.getProductType());
+            }
+
 
             ProductWraper wraper = pushProductWFW(wrap);
             if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
@@ -114,7 +128,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(pmsProduct.getProductId()));
+        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId());
         List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
 
         List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
@@ -123,7 +137,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
         goods.setBodyHtml(wrap.isBodyHtml());
-        return onlineProduct(wrap.getShopname(),goods);
+        return onlineProduct(wrap,goods);
     }
 
     /**
@@ -344,8 +358,21 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return shopifyPidInfoMapper.selectOne(lambdaQuery);
     }
 
-    public ProductWraper onlineProduct(String shopname, ShopifyData goods) throws ShopifyException {
+    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods) throws ShopifyException {
+        String shopname = wrap.getShopname();
         Product product = toProduct(goods);
+        if(StrUtil.isNotBlank(wrap.getCollectionId())){
+            product.setCollection_id(wrap.getCollectionId());
+        }
+        if(StrUtil.isNotBlank(wrap.getProductType())){
+            product.setProduct_type(wrap.getProductType());
+        }
+        if(StrUtil.isNotBlank(wrap.getProductTags())){
+            JSONArray jsonArray = new JSONArray();
+            jsonArray.addAll(Arrays.asList(wrap.getProductTags().split(",")));
+            product.setTags(jsonArray.toJSONString());
+        }
+
         XmsShopifyPidInfo  shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(goods.getPid());
