@@ -142,8 +142,8 @@ public class ShopifyUtils {
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
         String url = String.format(shopifyConfig.SHOPIFY_URI_CUSTOM_COLLECTIONS, shopName);
         this.getSingleCollection(shopName, url, accessToken, "custom_collections");
-        url = String.format(shopifyConfig.SHOPIFY_URI_SMART_COLLECTIONS, shopName);
-        this.getSingleCollection(shopName, url, accessToken, "smart_collections");
+        //url = String.format(shopifyConfig.SHOPIFY_URI_SMART_COLLECTIONS, shopName);
+        //this.getSingleCollection(shopName, url, accessToken, "smart_collections");
         return 2;
     }
 

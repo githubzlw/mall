@@ -375,6 +375,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         productWraper = addProduct(shopname, productWraper);
 
         if (productWraper != null && productWraper.getProduct() != null) {
+
+            // 如果有collectionId则绑定数据
+            this.dealShopifyCollections(wrap, productWraper);
+
             // 铺货完成后，绑定店铺数据信息，方便下单后对应ID获取我们产 品ID
             shopifyBean.setShopifyPid(String.valueOf(productWraper.getProduct().getId()));
             shopifyBean.setShopifyInfo(JSONObject.toJSONString(productWraper));
@@ -435,7 +439,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
                         //请求数据
 
-                        String returnJson = shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_CUSTOM_COLLECTIONS, wrap.getShopname()), token, jsonObject);
+                        String returnJson = shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_CUSTOM_COLLECTIONS, wrap.getShopname(), wrap.getCollectionId()), token, jsonObject);
                         //返回结果
                         /**
                          * {
@@ -469,6 +473,12 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                          *PUT /admin/api/2021-07/smart_collections/482865238/order.json?products[]=921728736&products[]=632910392
                          *
                          */
+                        Map<String, Object> map = new HashMap<>();
+                        String url = String.format(config.SHOPIFY_URI_PUT_SMART_COLLECTIONS, wrap.getShopname(), wrap.getCollectionId()) + "?products[]=" + productWraper.getProduct().getId();
+                        String returnJson = shopifyRestTemplate.put(url, token, map);
+                        if (null == returnJson) {
+                            System.err.println("-----------smart_collections put error:[" + returnJson + "]");
+                        }
                     }
                 }
             }

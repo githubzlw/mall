@@ -903,17 +903,38 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/updateShopifyOrderAddress")
     @ApiOperation("更新客户的shopify地址信息")
-    public CommonResult updateShopifyOrderAddress(XmsShopifyOrderAddress shopifyOrderAddress) {
+    public CommonResult updateShopifyOrderAddress(XmsShopifyOrderAddressParam shopifyOrderAddress) {
 
         Assert.isTrue(null != shopifyOrderAddress, "shopifyOrderAddress null");
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
-        try {
+        Assert.isTrue(null != currentMember && currentMember.getId() > 0, "currentMember null");
 
+        Assert.isTrue(null != shopifyOrderAddress.getId() && shopifyOrderAddress.getId() > 0, "id null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getFirstName()), "FirstName null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getCountry()), "Country null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getProvince()), "Province null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getLastName()), "LastName null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getCity()), "City null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getZip()), "Zip null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress1()), "Address1 null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress2()), "Address2 null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getPhone()), "Phone null");
+
+
+        try {
             UpdateWrapper<XmsShopifyOrderAddress> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().set(XmsShopifyOrderAddress::getAddress1, shopifyOrderAddress.getAddress1())
-                    .eq(XmsShopifyOrderAddress::getId, shopifyOrderAddress.getId());
-            boolean save = this.xmsShopifyOrderAddressService.update(null, updateWrapper);
-            return CommonResult.success(save);
+            updateWrapper.lambda().eq(XmsShopifyOrderAddress::getId, shopifyOrderAddress.getId())
+                    .set(XmsShopifyOrderAddress::getFirstName, shopifyOrderAddress.getFirstName())
+                    .set(XmsShopifyOrderAddress::getCountry, shopifyOrderAddress.getCountry())
+                    .set(XmsShopifyOrderAddress::getProvince, shopifyOrderAddress.getProvince())
+                    .set(XmsShopifyOrderAddress::getLastName, shopifyOrderAddress.getLastName())
+                    .set(XmsShopifyOrderAddress::getCity, shopifyOrderAddress.getCity())
+                    .set(XmsShopifyOrderAddress::getZip, shopifyOrderAddress.getZip())
+                    .set(XmsShopifyOrderAddress::getAddress1, shopifyOrderAddress.getAddress1())
+                    .set(XmsShopifyOrderAddress::getAddress2, shopifyOrderAddress.getAddress2())
+                    .set(XmsShopifyOrderAddress::getPhone, shopifyOrderAddress.getPhone());
+            boolean b = this.xmsShopifyOrderAddressService.update(null, updateWrapper);
+            return CommonResult.success(b);
         } catch (Exception e) {
             log.error("updateShopifyOrderAddress,shopifyOrderAddress[{}],error", shopifyOrderAddress, e);
             return CommonResult.failed(e.getMessage());
