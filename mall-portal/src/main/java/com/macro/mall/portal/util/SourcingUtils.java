@@ -74,6 +74,8 @@ public class SourcingUtils {
 
     public static final String USER_NAME_ADD_PRODUCT_BY_URL ="userName-addProductByUrl";
 
+    public static final String SHOPIFY_PRODUCT_URL = "https://%s.myshopify.com/admin/products/%s";
+
     private UrlUtil instance = UrlUtil.getInstance();
 
     @Autowired

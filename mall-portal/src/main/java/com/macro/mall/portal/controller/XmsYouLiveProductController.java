@@ -2,12 +2,10 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.BeanCopyUtil;
 import com.macro.mall.common.util.UrlUtil;
@@ -76,17 +74,19 @@ public class XmsYouLiveProductController {
                              @RequestParam(value = "title", defaultValue = "") String title) {
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
             productParam.setPageNum(pageNum);
             productParam.setPageSize(pageSize);
             productParam.setTitle(title);
-            productParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
-            productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
+            productParam.setMemberId(currentMember.getId());
+            productParam.setUsername(currentMember.getUsername());
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
             if(CollectionUtil.isNotEmpty(productPage.getRecords())){
                 productPage.getRecords().forEach(e-> {
                     e.setShopifyJson(null);
+                    e.setShopifyProductUrl(String.format(SourcingUtils.SHOPIFY_PRODUCT_URL, currentMember.getShopifyName(), e.getShopifyProductId()));
                     if(StrUtil.isEmpty(e.getAddress())){
                         e.setAddress("");
                     }

@@ -62,6 +62,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private final ShopifyConfig config;
     @Autowired
     private XmsShopifyCollectionsMapper xmsShopifyCollectionsMapper;
+    @Autowired
+    private XmsCustomerProductMapper customerProductMapper;
 
     public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
@@ -386,6 +388,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
+            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct().getId());
 
         }
         return productWraper;
@@ -510,6 +513,23 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             result = shopifyPidInfoMapper.insert(shopifyBean);
         }
         return result;
+    }
+
+    /**
+     * 更新YouLiveProduct表关联shopify的productId
+     * @param productId
+     * @param shopifyProductId
+     */
+    public void updateYouLiveProduct(Long productId, Long shopifyProductId) {
+        QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId);
+        XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
+        if (null != customerProduct) {
+            UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
+                    .eq(XmsCustomerProduct::getId, customerProduct.getId());
+            this.customerProductMapper.update(null, updateWrapper);
+        }
     }
 
 
