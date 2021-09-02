@@ -19,13 +19,8 @@ public class PayConfig {
     @Value("${PAYPAL.CANCEL_URL_TYPE}")
     private Integer cancelUrlType;
     @ApiModelProperty(value = "支付成功后调用链接")
-    @Value("${PAYPAL.SUCCESS_URL1}")
-    private String successUrl1;
-    @Value("${PAYPAL.SUCCESS_URL2}")
-    private String successUrl2;
-
-    @Value("${PAYPAL.SUCCESS_URL3}")
-    private String successUrl3;
+    @Value("${PAYPAL.SUCCESS_URL}")
+    private String successUrl;
 
     @ApiModelProperty(value = "取消后调用链接")
     @Value("${PAYPAL.CANCEL_URL}")

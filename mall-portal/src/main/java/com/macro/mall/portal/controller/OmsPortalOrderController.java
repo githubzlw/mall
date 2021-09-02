@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.model.OmsOrder;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.domain.*;
@@ -219,6 +220,16 @@ public class OmsPortalOrderController {
         }
 
 
+    }
+
+
+
+    @ApiOperation("获取订单信息")
+    @RequestMapping(value = "/getOrderInfo/{orderNo}", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult getOrderInfoByOrderNo(@PathVariable("orderNo") String orderNo) {
+        OmsOrder omsOrder = this.portalOrderService.queryByOrderNo(orderNo);
+        return CommonResult.success(omsOrder);
     }
 
 

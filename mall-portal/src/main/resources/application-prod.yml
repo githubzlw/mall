@@ -70,9 +70,7 @@ PAYPAL:
   CLIENT_ID: AThgVASXxfMFwUBJ4AkzT904jBiUVv3x-24uhd9-Pvtv1B4f-lpWzdLbVVrdZceZ4t3xu4Hhi_3OrgLg
   CLIENT_SECRET: EMEITkagpydY3InoI73i_fati6Qz4pWMwmP1jZTVxqlxksr8w6uh4WsVTAw6owBhnS5GP516BNH_M3r_
   CANCEL_URL_TYPE: 1
-  SUCCESS_URL1: https://app.busysell.com/#/PaymentResult
-  SUCCESS_URL2: https://app.busysell.com/#/PayResult
-  SUCCESS_URL3: https://app.busysell.com/#/purchaseOrders
+  SUCCESS_URL: https://app.busysell.com/#/SuccessPay
   CANCEL_URL: https://app.busysell.com/
   BUSINESS_ID: 584JZVFU6PPVU
 

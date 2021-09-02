@@ -771,6 +771,18 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
     }
 
+
+    @Override
+    public OmsOrder queryByOrderNo(String orderNo){
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andOrderSnEqualTo(orderNo);
+        List<OmsOrder> omsOrders = this.orderMapper.selectByExample(example);
+        if(CollectionUtil.isNotEmpty(omsOrders)){
+            return omsOrders.get(0);
+        }
+        return null;
+    }
+
     /**
      * 删除下单商品的购物车信息
      */
