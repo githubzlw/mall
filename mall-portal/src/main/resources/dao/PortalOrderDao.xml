@@ -134,9 +134,11 @@
         FROM
         oms_order o
         LEFT JOIN oms_order_item ot ON o.id = ot.order_id
-        WHERE
-        ot.product_name like concat('%',#{productName},'%')
-        AND o.member_id = #{memberId}
+        WHERE o.member_id = #{memberId}
+        <if test="productName != null">
+            AND  ot.product_name like concat('%',#{productName},'%')
+        </if>
+
         <if test="status != null ">
             <if test="status == 5">
                 AND o.status in(1, 2, 3, 5)
@@ -152,16 +154,16 @@
             </if>
         </if>
         <if test="orderType != null">
-            o.order_type = #{orderType}
+            and o.order_type = #{orderType}
         </if>
         <if test="countryName != null">
-            o.receiver_country = #{countryName}
+            and o.receiver_country = #{countryName}
         </if>
         <if test="beginTime != null">
-            o.create_time >= #{beginTime}
+            and o.create_time >= #{beginTime}
         </if>
         <if test="beginTime != null">
-            #{endTime} > o.create_time
+            and #{endTime} > o.create_time
         </if>
     </select>
 
