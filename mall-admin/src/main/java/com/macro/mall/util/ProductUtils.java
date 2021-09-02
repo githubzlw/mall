@@ -8,10 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.util.StringUtil;
 import com.macro.mall.dto.PmsProductAttributeParam;
 import com.macro.mall.dto.PmsProductParam;
-import com.macro.mall.entity.XmsChromeUpload;
-import com.macro.mall.entity.XmsCustomerProduct;
-import com.macro.mall.entity.XmsListOfCountries;
-import com.macro.mall.entity.XmsSourcingList;
+import com.macro.mall.entity.*;
 import com.macro.mall.mapper.*;
 import com.macro.mall.model.PmsProductAttributeValue;
 import com.macro.mall.model.PmsProductCategory;
@@ -57,6 +54,8 @@ public class ProductUtils {
     private XmsListOfCountriesMapper listOfCountriesMapper;
     @Autowired
     private XmsCustomerProductMapper xmsCustomerProductMapper;
+    @Autowired
+    private XmsShopifyPidInfoMapper xmsShopifyPidInfoMapper;
     @Autowired
     public ProductUtils(XmsChromeUploadMapper xmsChromeUploadMapper, XmsSourcingListMapper xmsSourcingListMapper) {
         this.xmsChromeUploadMapper = xmsChromeUploadMapper;
@@ -287,6 +286,20 @@ public class ProductUtils {
             customerProduct.setProductId((long)productMaxId);
             customerProduct.setSourcingId(xmsSourcingList.getId().intValue());
             this.xmsCustomerProductMapper.updateById(customerProduct);
+
+            QueryWrapper<XmsShopifyPidInfo> pidInfoWrapper = new QueryWrapper<>();
+            pidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, customerProduct.getShopifyName())
+            .eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId());
+            XmsShopifyPidInfo xmsShopifyPidInfo = this.xmsShopifyPidInfoMapper.selectOne(pidInfoWrapper);
+            if(null == xmsShopifyPidInfo){
+                xmsShopifyPidInfo = new XmsShopifyPidInfo();
+                xmsShopifyPidInfo.setCreateTime(new Date());
+                xmsShopifyPidInfo.setPid(String.valueOf(productMaxId));
+                xmsShopifyPidInfo.setPublish(0);
+                xmsShopifyPidInfo.setShopifyInfo("shopify product to sourcing");
+                xmsShopifyPidInfo.setShopifyName(customerProduct.getShopifyName());
+                this.xmsShopifyPidInfoMapper.insert(xmsShopifyPidInfo);
+            }
             return true;
         }catch (Exception e){
             e.printStackTrace();

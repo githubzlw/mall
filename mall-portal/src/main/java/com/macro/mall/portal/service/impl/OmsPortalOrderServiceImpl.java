@@ -204,10 +204,10 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         //支付方式：0->未支付；1->支付宝；2->微信
         order.setPayType(orderParam.getPayType());
         //订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)
-        order.setSourceType(1);
+        order.setSourceType(0);
         //订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
         order.setStatus(0);
-        //订单类型：0->正常订单；1->秒杀订单
+        //订单类型：0->正常订单；1->充值订单
         order.setOrderType(0);
         //收货人信息：姓名、电话、邮编、地址
         UmsMemberReceiveAddress address = memberReceiveAddressService.getItem(orderParam.getMemberReceiveAddressId());
@@ -573,12 +573,13 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             status = null;
         }
         Integer orderType = 0;
+        Integer sourceType = 0;
         UmsMember member = memberService.getCurrentMember();
         PageHelper.startPage(pageNum, pageSize);
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
         criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType);// 只获取正常支付的订单
+                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType).andSourceTypeEqualTo(sourceType);
                /* .andReceiverCountryIsNotNull();*/
         if (status != null) {
             if (1 == status) {
@@ -598,7 +599,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             orderList = orderMapper.selectByExample(orderExample);
 
         } else {
-            orderList = portalOrderDao.getOrderListByProductName(productName, status, member.getId(), orderType);
+            orderList = portalOrderDao.getOrderListByProductName(productName, status, member.getId(), orderType, sourceType);
         }
 
 
@@ -635,13 +636,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         if (status == -2) {
             status = null;
         }
-        Integer orderType = 2;
+        Integer orderType = 0;
+        Integer sourceType = 1;
         UmsMember member = memberService.getCurrentMember();
         PageHelper.startPage(orderInfoParam.getPageNum(), orderInfoParam.getPageSize());
         OmsOrderExample orderExample = new OmsOrderExample();
         OmsOrderExample.Criteria criteria = orderExample.createCriteria();
-        criteria.andDeleteStatusEqualTo(0)
-                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType);
+        criteria.andDeleteStatusEqualTo(0).andMemberIdEqualTo(member.getId())
+                .andOrderTypeEqualTo(orderType).andSourceTypeEqualTo(sourceType);
         if (status != null) {
             if (5 == status) {
                 criteria.andStatusIn(Arrays.asList(1, 2, 3, 5));
@@ -680,7 +682,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         if (StringUtils.isEmpty(orderInfoParam.getUrl())) {
             orderList = orderMapper.selectByExample(orderExample);
         } else {
-            orderList = portalOrderDao.getDeliverOrderList(orderInfoParam.getUrl(), status, member.getId(), orderType, orderInfoParam.getCountryName(), orderInfoParam.getBeginTime(), orderInfoParam.getEndTime());
+            orderList = portalOrderDao.getDeliverOrderList(orderInfoParam.getUrl(), status, member.getId(), orderType, orderInfoParam.getCountryName(), orderInfoParam.getBeginTime(), orderInfoParam.getEndTime(), sourceType);
         }
 
 

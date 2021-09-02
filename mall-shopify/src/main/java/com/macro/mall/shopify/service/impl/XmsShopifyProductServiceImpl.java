@@ -300,23 +300,23 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     private static List<String> image(XmsPmsProductEdit goods) {
         List<String> imgList = Lists.newArrayList();
-        String imgMain = goods.getPic();
-        if (StringUtils.isNotBlank(imgMain)) {
-            imgList.add(imgMain.replaceAll("http://", "https://"));
-        }
         String img = goods.getAlbumPics();
         if (StringUtils.isNotBlank(img)) {
             img = img.replace("[", "")
                     .replace("]", "")
                     .replaceAll("http://", "https://").trim();
             String[] imgs = img.split(",\\s*");
-            for (int i = 0; i < imgs.length; i++) {
-                if (imgs[i].indexOf("http://") > -1 || imgs[i].indexOf("https://") > -1) {
+            for (int i = imgs.length - 1; i >= 0; i--) {
+                if (imgs[i].contains("http://") || imgs[i].contains("https://")) {
                     imgList.add(imgs[i].replaceAll("http://", "https://"));
                 } else {
                     imgList.add(imgs[i]);
                 }
             }
+        }
+        String imgMain = goods.getPic();
+        if (StringUtils.isNotBlank(imgMain)) {
+            imgList.add(imgMain.replaceAll("http://", "https://"));
         }
         return imgList;
     }
@@ -388,7 +388,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
-            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct().getId());
+            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct().getId(), goods.getPrice());
 
         }
         return productWraper;
@@ -520,13 +520,14 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
      * @param productId
      * @param shopifyProductId
      */
-    public void updateYouLiveProduct(Long productId, Long shopifyProductId) {
+    public void updateYouLiveProduct(Long productId, Long shopifyProductId, String price) {
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId);
         XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
         if (null != customerProduct) {
             UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
             updateWrapper.lambda().set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
+                    .set(XmsCustomerProduct::getShopifyPrice, price)
                     .eq(XmsCustomerProduct::getId, customerProduct.getId());
             this.customerProductMapper.update(null, updateWrapper);
         }

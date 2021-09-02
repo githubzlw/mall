@@ -16,7 +16,7 @@ public class Refund_line_items {
     private long line_item_id;
     private long location_id;
     private String restock_type;
-    private int subtotal;
+    private double subtotal;
     private double total_tax;
     private Subtotal_set subtotal_set;
     private Total_tax_set total_tax_set;
@@ -56,10 +56,10 @@ public class Refund_line_items {
          return restock_type;
      }
 
-    public void setSubtotal(int subtotal) {
+    public void setSubtotal(double subtotal) {
          this.subtotal = subtotal;
      }
-     public int getSubtotal() {
+     public double getSubtotal() {
          return subtotal;
      }
 

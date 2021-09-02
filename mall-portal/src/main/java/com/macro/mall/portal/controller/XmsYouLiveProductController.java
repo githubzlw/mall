@@ -71,7 +71,8 @@ public class XmsYouLiveProductController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                              @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                             @RequestParam(value = "title", defaultValue = "") String title) {
+                             @RequestParam(value = "title", defaultValue = "") String title,
+                             @RequestParam(value = "shopifyPids", defaultValue = "") String shopifyPids) {
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -82,6 +83,9 @@ public class XmsYouLiveProductController {
             productParam.setTitle(title);
             productParam.setMemberId(currentMember.getId());
             productParam.setUsername(currentMember.getUsername());
+            if(StrUtil.isNotBlank(shopifyPids)){
+                productParam.setShopifyPidList(new ArrayList<>(Arrays.asList(shopifyPids.split(","))));
+            }
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
             if(CollectionUtil.isNotEmpty(productPage.getRecords())){
                 productPage.getRecords().forEach(e-> {

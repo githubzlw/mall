@@ -774,9 +774,13 @@ public class XmsShopifyController {
                 OrderPayParam orderPayParam = new OrderPayParam();
                 BeanUtil.copyProperties(purchaseShopifyOrderParam, orderPayParam);
                 GenerateOrderParam generateParam = GenerateOrderParam.builder().currentMember(currentMember)
-                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).build();
+                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).shopifyOrderNo(byId.getOrderNo()).build();
                 // 确认库存数据，生成订单,然后扣库存
                 GenerateOrderResult orderResult = this.orderUtils.generateDeliveryOrder(generateParam);
+                // 生成订单成功后，更新shopify的order信息
+                byId.setOurOrderId(orderResult.getOrderNoId());
+                byId.setUpdateTime(new Date());
+                this.shopifyOrderinfoService.saveOrUpdate(byId);
                 return CommonResult.success(orderResult);
 
             } else {

@@ -119,6 +119,9 @@
         <if test="orderType != null">
             o.order_type = #{orderType}
         </if>
+        <if test="sourceType != null">
+            o.source_type = #{sourceType}
+        </if>
     </select>
 
     <select id="getDeliverOrderList" resultMap="orderDetailMap">
@@ -155,6 +158,9 @@
         </if>
         <if test="orderType != null">
             and o.order_type = #{orderType}
+        </if>
+        <if test="sourceType != null">
+            o.source_type = #{sourceType}
         </if>
         <if test="countryName != null">
             and o.receiver_country = #{countryName}

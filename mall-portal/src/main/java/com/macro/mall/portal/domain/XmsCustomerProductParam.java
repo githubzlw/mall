@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class XmsCustomerProductParam implements Serializable {
@@ -21,4 +22,6 @@ public class XmsCustomerProductParam implements Serializable {
     private Integer pageSize;
 
     private String title;
+
+    private List<String> shopifyPidList;
 }

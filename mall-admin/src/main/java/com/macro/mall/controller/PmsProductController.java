@@ -82,7 +82,7 @@ public class PmsProductController {
     @ApiOperation("根据id获得产品数据")
     @ResponseBody
     public CommonResult getCustomProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
-        PmsProductResult productResult = productService.getUpdateInfo(id);
+        PmsProductResult productResult = productService.getCustomUpdateInfo(id);
         return CommonResult.success(productResult);
     }
 
