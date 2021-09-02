@@ -298,6 +298,7 @@ public class ProductUtils {
                 xmsShopifyPidInfo.setPublish(0);
                 xmsShopifyPidInfo.setShopifyInfo("shopify product to sourcing");
                 xmsShopifyPidInfo.setShopifyName(customerProduct.getShopifyName());
+                xmsShopifyPidInfo.setShopifyPid(String.valueOf(customerProduct.getShopifyProductId()));
                 this.xmsShopifyPidInfoMapper.insert(xmsShopifyPidInfo);
             }
             return true;
