@@ -14,16 +14,16 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * shopify的collections
+ * 客户的shopify商品的types
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-31
+ * @since 2021-08-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsShopifyCollections对象", description="shopify的collections")
-public class XmsShopifyCollections implements Serializable {
+@ApiModel(value="XmsShopifyProductType对象", description="客户的shopify商品的types")
+public class XmsShopifyProductType implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,21 +32,11 @@ public class XmsShopifyCollections implements Serializable {
 
     private String shopName;
 
-    private Long collectionsId;
-
-    private String title;
-
-    private String image;
-
-    private String rules;
-
-    private String collectionJson;
+    private String typeName;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
-
-    private String collKey;
 
 }

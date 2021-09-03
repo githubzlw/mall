@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.BeanCopyUtil;
+import com.macro.mall.common.util.BigDecimalUtil;
 import com.macro.mall.entity.*;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.util.*;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;

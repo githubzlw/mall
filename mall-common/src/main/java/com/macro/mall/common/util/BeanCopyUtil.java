@@ -1,4 +1,4 @@
-package com.macro.mall.portal.util;
+package com.macro.mall.common.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import lombok.SneakyThrows;

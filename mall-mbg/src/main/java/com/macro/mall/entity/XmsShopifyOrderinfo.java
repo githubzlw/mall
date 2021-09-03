@@ -146,5 +146,8 @@ public class XmsShopifyOrderinfo implements Serializable {
     @ApiModelProperty(value = "运费")
     private String totalShippingPrice;
 
+    @ApiModelProperty(value = "生成的我司订单号ID")
+    private Long ourOrderId;
+
 
 }

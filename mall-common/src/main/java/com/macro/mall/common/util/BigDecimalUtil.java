@@ -1,4 +1,4 @@
-package com.macro.mall.portal.util;
+package com.macro.mall.common.util;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;

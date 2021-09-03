@@ -97,4 +97,7 @@ public class XmsCustomerProduct implements Serializable {
     private String address;
 
 
+    @ApiModelProperty(value = "shopify商品url")
+    private String shopifyProductUrl;
+
 }

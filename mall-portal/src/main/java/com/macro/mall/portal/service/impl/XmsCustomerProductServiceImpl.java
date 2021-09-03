@@ -1,5 +1,6 @@
 package com.macro.mall.portal.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -38,6 +39,9 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         lambdaQuery.eq(XmsCustomerProduct::getUsername, productParam.getUsername());
         if (!StringUtils.isEmpty(productParam.getTitle())) {
             lambdaQuery.like(XmsCustomerProduct::getTitle, productParam.getTitle());
+        }
+        if(CollectionUtil.isNotEmpty(productParam.getShopifyPidList())){
+            lambdaQuery.in(XmsCustomerProduct::getShopifyProductId, productParam.getShopifyPidList());
         }
         lambdaQuery.orderByDesc(XmsCustomerProduct::getCreateTime);
         return this.xmsCustomerProductMapper.selectPage(page, lambdaQuery);

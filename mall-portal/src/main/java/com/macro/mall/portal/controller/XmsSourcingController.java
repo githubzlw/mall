@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.BeanCopyUtil;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsPmsProductEdit;
@@ -23,7 +23,6 @@ import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
-import com.macro.mall.portal.util.BeanCopyUtil;
 import com.macro.mall.portal.util.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
@@ -74,8 +73,6 @@ public class XmsSourcingController {
     @Autowired
     private MicroServiceConfig microServiceConfig;
     private UrlUtil urlUtil = UrlUtil.getInstance();
-    @Autowired
-    private PmsPortalProductService pmsPortalProductService;
 
     @InitBinder
     protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
@@ -283,7 +280,11 @@ public class XmsSourcingController {
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
-            stockEditList.forEach(e-> e.setMemberId(currentMember.getId()));
+            StringBuffer skuSb = new StringBuffer();
+            stockEditList.forEach(e-> {
+                e.setMemberId(currentMember.getId());
+                skuSb.append("," + e.getSkuCode());
+            });
 
             Long productId;
             // 判断是否存在编辑表数据
@@ -352,7 +353,11 @@ public class XmsSourcingController {
             Map<String, String> param = new HashMap<>();
             param.put("pid", String.valueOf(productId));
             param.put("published", "0");
-            param.put("shopname", byId.getShopifyName());
+            param.put("shopName", byId.getShopifyName());
+            param.put("skuCodes", skuSb.toString().substring(1));
+            param.put("collectionId", sourcingProductParam.getCollectionId());
+            param.put("productType", sourcingProductParam.getProductType());
+            param.put("productTags", sourcingProductParam.getProductTags());
 
             JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
 

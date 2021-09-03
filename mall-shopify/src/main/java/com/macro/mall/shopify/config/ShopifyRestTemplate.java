@@ -194,6 +194,10 @@ public class ShopifyRestTemplate {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Shopify-Access-Token", token);
 
+        System.err.println("---------------------put-----------------");
+        System.err.println(uri);
+        System.err.println(token);
+        System.err.println(JSONObject.toJSONString(param));
 
         ResponseEntity<String> result = null;
 

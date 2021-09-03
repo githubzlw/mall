@@ -226,6 +226,14 @@ public class OrderUtils {
         order.setPromotionAmount(BigDecimal.ZERO);
         // 标识余额支付
         order.setOrderType(1);
+        order.setSourceType(2);
+        order.setPayType(1);
+        order.setBalanceAmount(0D);
+        order.setFreightAmount(BigDecimal.ZERO);
+        order.setPromotionAmount(BigDecimal.ZERO);
+        order.setIntegrationAmount(BigDecimal.ZERO);
+        order.setCouponAmount(BigDecimal.ZERO);
+        order.setDiscountAmount(BigDecimal.ZERO);
         // 地址相关信息
         Map<String, String> addressMap = new HashMap<>();
         addressMap.put("modeOfTransportation", "modeOfTransportation");
@@ -267,7 +275,7 @@ public class OrderUtils {
 
             order.setSourceType(1);
             order.setPayType(1);
-            order.setOrderType(2);
+            order.setOrderType(0);
 
             order.setDeleteStatus(0);
             order.setStatus(0);// 待付款
@@ -277,6 +285,7 @@ public class OrderUtils {
             order.setIntegrationAmount(BigDecimal.ZERO);
             order.setCouponAmount(BigDecimal.ZERO);
             order.setDiscountAmount(BigDecimal.ZERO);
+            order.setShopifyOrderNo(String.valueOf(generateParam.getShopifyOrderNo()));
 
             // 地址相关信息
             Map<String, String> addressMap = new HashMap<>();
@@ -303,7 +312,7 @@ public class OrderUtils {
                 orderItemList.add(orderItem);
 
                 XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
-                tempSkuStock.setId(pmsSkuStock.getId().intValue());
+                tempSkuStock.setId(pmsSkuStock.getId());
                 tempSkuStock.setStock(pmsSkuStock.getStock());
                 skuStockInsertList.add(tempSkuStock);
             }
@@ -343,6 +352,7 @@ public class OrderUtils {
                 order.setStatus(2);
             }
             this.orderMapper.insert(order);
+            orderResult.setOrderNoId(order.getId());
             orderItemList.forEach(e-> e.setOrderId(order.getId()));
             this.orderItemDao.insertList(orderItemList);
 

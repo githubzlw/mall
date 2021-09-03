@@ -34,5 +34,6 @@ public class Product {
     private List<Variants> variants;
     private List<Options> options;
     private List<Images> images;
+    private String collection_id;
 
 }

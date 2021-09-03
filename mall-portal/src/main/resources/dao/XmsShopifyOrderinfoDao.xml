@@ -73,7 +73,7 @@
             and date(#{endTime}) > date(a.created_at)
         </if>
         <if test="url != null">
-            and (b.title like concat('%',url,'%') or b.name like concat('%',url,'%'))
+            and (b.title like concat('%',#{url},'%') or b.name like concat('%',#{url},'%'))
         </if>
         <if test="countryName != null">
             and c.country = #{countryName}
@@ -95,7 +95,7 @@
             and date(#{endTime}) > date(a.created_at)
         </if>
         <if test="url != null">
-            and (b.title like concat('%',url,'%') or b.name like concat('%',url,'%'))
+            and (b.title like concat('%',#{url},'%') or b.name like concat('%',#{url},'%'))
         </if>
         <if test="countryName != null">
             and c.country = #{countryName}

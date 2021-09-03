@@ -2,17 +2,18 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
+import com.macro.mall.common.util.BeanCopyUtil;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.entity.XmsSourcingList;
-import com.macro.mall.model.OmsCartItem;
-import com.macro.mall.model.PmsProduct;
-import com.macro.mall.model.PmsSkuStock;
-import com.macro.mall.model.UmsMember;
+import com.macro.mall.model.*;
+import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
@@ -28,10 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,25 +62,35 @@ public class XmsYouLiveProductController {
     private PmsPortalProductService portalProductService;
     @Autowired
     private IXmsSourcingListService xmsSourcingListService;
+    @Autowired
+    private MicroServiceConfig microServiceConfig;
+
+    private UrlUtil urlUtil = UrlUtil.getInstance();
 
     @ApiOperation("获取客户产品列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                              @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                             @RequestParam(value = "title", defaultValue = "") String title) {
+                             @RequestParam(value = "title", defaultValue = "") String title,
+                             @RequestParam(value = "shopifyPids", defaultValue = "") String shopifyPids) {
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
             productParam.setPageNum(pageNum);
             productParam.setPageSize(pageSize);
             productParam.setTitle(title);
-            productParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
-            productParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
+            productParam.setMemberId(currentMember.getId());
+            productParam.setUsername(currentMember.getUsername());
+            if(StrUtil.isNotBlank(shopifyPids)){
+                productParam.setShopifyPidList(new ArrayList<>(Arrays.asList(shopifyPids.split(","))));
+            }
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
             if(CollectionUtil.isNotEmpty(productPage.getRecords())){
                 productPage.getRecords().forEach(e-> {
                     e.setShopifyJson(null);
+                    e.setShopifyProductUrl(String.format(SourcingUtils.SHOPIFY_PRODUCT_URL, currentMember.getShopifyName(), e.getShopifyProductId()));
                     if(StrUtil.isEmpty(e.getAddress())){
                         e.setAddress("");
                     }
@@ -243,6 +251,35 @@ public class XmsYouLiveProductController {
             return CommonResult.failed("delete failed");
         }
     }
+
+    @ApiOperation("shopify的商品添加到sourcing中去")
+    @RequestMapping(value = "/shopfiyToSourcing", method = RequestMethod.POST)
+    public CommonResult shopfiyToSourcing(Long customerProductId) {
+
+        Assert.isTrue(null != customerProductId && customerProductId > 0, "customerProductId null");
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            XmsCustomerProduct byId = this.xmsCustomerProductService.getById(customerProductId);
+            if (null == byId) {
+                return CommonResult.failed("no this customerProduct");
+            }
+            Map<String, String> param = new HashMap<>();
+            param.put("customerProductId", String.valueOf(customerProductId));
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getProductUrl() + "/saveShopifyProduct", param);
+            if (null == jsonObject || jsonObject.size() == 0) {
+                return CommonResult.failed("shopfiyToSourcing failed");
+            }
+            return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("shopfiyToSourcing,customerProductId[{}],error:", customerProductId, e);
+            return CommonResult.failed("shopfiyToSourcing failed");
+        }
+    }
+
+
+
 
 
 

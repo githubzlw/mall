@@ -25,7 +25,7 @@ public class Refunds {
     private String admin_graphql_api_id;
     private List<Refund_line_items> refund_line_items;
     private List<Transactions> transactions;
-    private List<String> order_adjustments;
+    private List<Object> order_adjustments;
     public void setId(long id) {
          this.id = id;
      }
@@ -96,10 +96,10 @@ public class Refunds {
          return transactions;
      }
 
-    public void setOrder_adjustments(List<String> order_adjustments) {
+    public void setOrder_adjustments(List<Object> order_adjustments) {
          this.order_adjustments = order_adjustments;
      }
-     public List<String> getOrder_adjustments() {
+     public List<Object> getOrder_adjustments() {
          return order_adjustments;
      }
 

@@ -69,5 +69,11 @@ public class ShopifyConfig {
     @Value("${shopify.uri_countries_list}")
     public String SHOPIFY_URI_COUNTRIES_LIST;
 
+    @Value("${shopify.uri_put_custom_collections}")
+    public String SHOPIFY_URI_PUT_CUSTOM_COLLECTIONS;
+
+    @Value("${shopify.uri_put_smart_collections}")
+    public String SHOPIFY_URI_PUT_SMART_COLLECTIONS;
+
 
 }

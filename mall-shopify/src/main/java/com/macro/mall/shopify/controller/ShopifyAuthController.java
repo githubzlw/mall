@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsShopifyAuth;
+import com.macro.mall.shopify.cache.RedisUtil;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.service.IXmsShopifyAuthService;
 import com.macro.mall.shopify.util.UrlUtil;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author jack.luo
@@ -32,6 +34,9 @@ public class ShopifyAuthController {
     @Autowired
     private IXmsShopifyAuthService xmsShopifyAuthService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
 
     @PostMapping(value = "/authGetToken")
     @ApiOperation("授权回调")
@@ -42,7 +47,15 @@ public class ShopifyAuthController {
             @ApiParam(name = "userName", value = "客户名称", required = true) String userName) {
 
         log.info("code:{},shop:{}", code, shop);
+        Map<String, String> map = new HashMap<>();
+        String key = userId + "_" + shop;
         try {
+
+            Object val = this.redisUtil.hmgetObj(RedisUtil.AUTH_GET_TOKEN, key);
+            if (null != val && "success".equalsIgnoreCase(val.toString())) {
+                return CommonResult.success("this shop is execute!!");
+            }
+
             HashMap<String, String> result = this.xmsShopifyAuthService.getAccessToken(shop, code);
             String accessToken = result.get("access_token");
             String scope = result.get("scope");
@@ -53,8 +66,12 @@ public class ShopifyAuthController {
             shopifyAuth.setShopName(shop);
             shopifyAuth.setScope(scope);
             shopifyAuth.setAccessToken(accessToken);
+
+            map.put(key, "success");
+            this.redisUtil.hmset(RedisUtil.AUTH_GET_TOKEN, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
             this.xmsShopifyAuthService.save(shopifyAuth);
             return CommonResult.success(result);
+
         } catch (Exception e) {
             log.error("auth", e);
             return CommonResult.failed(e.getMessage());
@@ -64,7 +81,13 @@ public class ShopifyAuthController {
     @GetMapping(value = "/authuri")
     @ApiOperation("请求授权接口")
     public CommonResult authUri(String shop) {
+        Map<String, String> map = new HashMap<>();
         try {
+            Object val = this.redisUtil.hmgetObj(RedisUtil.AUTH_URI, shop);
+            if (null != val && "success".equalsIgnoreCase(val.toString())) {
+                return CommonResult.success("this shop is execute!!");
+            }
+
             //请求授权
             String shopUrl = shop;
             if (!StringUtils.startsWithIgnoreCase(shop, "https://")
@@ -76,6 +99,8 @@ public class ShopifyAuthController {
                         + shopifyConfig.SHOPIFY_CLIENT_ID + "&scope=" + shopifyConfig.SHOPIFY_SCOPE + "&redirect_uri="
                         + shopifyConfig.SHOPIFY_REDIRECT_URI;
 
+                map.put(shop, "success");
+                this.redisUtil.hmset(RedisUtil.AUTH_URI, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
                 return CommonResult.success(new Gson().toJson(
                         ImmutableMap.of("id", shopifyConfig.SHOPIFY_CLIENT_SECRET, "uri", authUri)), "AUTH URI");
             } else {

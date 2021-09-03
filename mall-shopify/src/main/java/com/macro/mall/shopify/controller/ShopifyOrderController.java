@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
+import com.macro.mall.shopify.cache.RedisUtil;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -39,12 +42,23 @@ public class ShopifyOrderController {
     @Autowired
     private ShopifyUtils shopifyUtils;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     @PostMapping("/getCountryByShopifyName")
     @ApiOperation("根据shopifyName获取国家数据")
     public CommonResult getCountryByShopifyName(String shopifyName) {
         Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
+
+        Map<String, String> map = new HashMap<>();
         try {
+            Object val = this.redisUtil.hmgetObj(RedisUtil.GET_COUNTRY_BY_SHOPIFY_NAME, shopifyName);
+        if (null != val && "success".equalsIgnoreCase(val.toString())) {
+            return CommonResult.success("this shop is execute!!");
+        }
             int total = this.shopifyUtils.getCountryByShopifyName(shopifyName);
+            map.put(shopifyName, "success");
+            this.redisUtil.hmset(RedisUtil.GET_COUNTRY_BY_SHOPIFY_NAME, map, 60);
             return CommonResult.success(total);
         } catch (Exception e) {
             e.printStackTrace();

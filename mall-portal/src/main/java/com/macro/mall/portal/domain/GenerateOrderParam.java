@@ -37,4 +37,6 @@ public class GenerateOrderParam {
 
     @ApiModelProperty("已经购买的库存数据")
     private List<XmsCustomerSkuStock> customerSkuStockList;
+
+    private Long shopifyOrderNo;
 }

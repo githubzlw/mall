@@ -28,4 +28,8 @@ public class ProductRequestWrap {
     @ApiModelProperty(value = "是否详情", required = true)
     private boolean bodyHtml = false;
 
+    private String collectionId;
+    private String productType;
+    private String productTags;
+
 }

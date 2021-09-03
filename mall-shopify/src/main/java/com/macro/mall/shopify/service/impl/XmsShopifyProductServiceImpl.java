@@ -1,8 +1,9 @@
 package com.macro.mall.shopify.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -14,17 +15,12 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
-import com.macro.mall.entity.XmsPmsProductEdit;
-import com.macro.mall.entity.XmsPmsSkuStockEdit;
-import com.macro.mall.entity.XmsShopifyAuth;
-import com.macro.mall.entity.XmsShopifyPidInfo;
-import com.macro.mall.mapper.XmsPmsProductEditMapper;
-import com.macro.mall.mapper.XmsPmsSkuStockEditMapper;
-import com.macro.mall.mapper.XmsShopifyAuthMapper;
-import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
+import com.macro.mall.entity.*;
+import com.macro.mall.mapper.*;
 import com.macro.mall.shopify.config.ShopifyConfig;
 import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.exception.ShopifyException;
+import com.macro.mall.shopify.pojo.AddProductBean;
 import com.macro.mall.shopify.pojo.ProductRequestWrap;
 import com.macro.mall.shopify.pojo.ShopifyData;
 import com.macro.mall.shopify.pojo.SkuVal;
@@ -64,11 +60,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private final ShopifyRestTemplate shopifyRestTemplate;
 
     private final ShopifyConfig config;
-
     @Autowired
-    private XmsPmsProductEditMapper xmsPmsProductEditMapper;
+    private XmsShopifyCollectionsMapper xmsShopifyCollectionsMapper;
     @Autowired
-    private XmsPmsSkuStockEditMapper xmsPmsSkuStockEditMapper;
+    private XmsCustomerProductMapper customerProductMapper;
 
     public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
@@ -77,14 +72,27 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
     @Override
-    public CommonResult pushProduct(String pid, String shopName, boolean published) {
+    public CommonResult pushProduct(AddProductBean addProductBean) {
         try {
 
-            LOGGER.info("begin push product[{}] to shopify[{}]", pid, shopName);
+            LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
             ProductRequestWrap wrap = new ProductRequestWrap();
-            wrap.setPid(pid);
-            wrap.setPublished(published);
-            wrap.setShopname(shopName);
+            wrap.setPid(addProductBean.getPid());
+            wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
+            wrap.setShopname(addProductBean.getShopName());
+            List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
+            wrap.setSkus(skuList);
+
+            if(StrUtil.isNotBlank(addProductBean.getCollectionId())){
+                wrap.setCollectionId(addProductBean.getCollectionId());
+            }
+            if(StrUtil.isNotBlank(addProductBean.getProductTags())){
+                wrap.setProductTags(addProductBean.getProductTags());
+            }
+            if(StrUtil.isNotBlank(addProductBean.getProductType())){
+                wrap.setProductType(addProductBean.getProductType());
+            }
+
 
             ProductWraper wraper = pushProductWFW(wrap);
             if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
@@ -112,14 +120,16 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, Long.valueOf(pmsProduct.getProductId()));
+        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId());
         List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
-        goods.setSkuList(skuList);
+
+        List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
+        goods.setSkuList(collect);
 
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
         goods.setBodyHtml(wrap.isBodyHtml());
-        return onlineProduct(wrap.getShopname(),goods);
+        return onlineProduct(wrap,goods);
     }
 
     /**
@@ -290,23 +300,23 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     private static List<String> image(XmsPmsProductEdit goods) {
         List<String> imgList = Lists.newArrayList();
-        String imgMain = goods.getPic();
-        if (StringUtils.isNotBlank(imgMain)) {
-            imgList.add(imgMain.replaceAll("http://", "https://"));
-        }
         String img = goods.getAlbumPics();
         if (StringUtils.isNotBlank(img)) {
             img = img.replace("[", "")
                     .replace("]", "")
                     .replaceAll("http://", "https://").trim();
             String[] imgs = img.split(",\\s*");
-            for (int i = 0; i < imgs.length; i++) {
-                if (imgs[i].indexOf("http://") > -1 || imgs[i].indexOf("https://") > -1) {
+            for (int i = imgs.length - 1; i >= 0; i--) {
+                if (imgs[i].contains("http://") || imgs[i].contains("https://")) {
                     imgList.add(imgs[i].replaceAll("http://", "https://"));
                 } else {
                     imgList.add(imgs[i]);
                 }
             }
+        }
+        String imgMain = goods.getPic();
+        if (StringUtils.isNotBlank(imgMain)) {
+            imgList.add(imgMain.replaceAll("http://", "https://"));
         }
         return imgList;
     }
@@ -340,8 +350,21 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return shopifyPidInfoMapper.selectOne(lambdaQuery);
     }
 
-    public ProductWraper onlineProduct(String shopname, ShopifyData goods) throws ShopifyException {
+    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods) throws ShopifyException {
+        String shopname = wrap.getShopname();
         Product product = toProduct(goods);
+        if(StrUtil.isNotBlank(wrap.getCollectionId())){
+            product.setCollection_id(wrap.getCollectionId());
+        }
+        if(StrUtil.isNotBlank(wrap.getProductType())){
+            product.setProduct_type(wrap.getProductType());
+        }
+        if(StrUtil.isNotBlank(wrap.getProductTags())){
+            JSONArray jsonArray = new JSONArray();
+            jsonArray.addAll(Arrays.asList(wrap.getProductTags().split(",")));
+            product.setTags(jsonArray.toJSONString());
+        }
+
         XmsShopifyPidInfo  shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(goods.getPid());
@@ -354,6 +377,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         productWraper = addProduct(shopname, productWraper);
 
         if (productWraper != null && productWraper.getProduct() != null) {
+
+            // 如果有collectionId则绑定数据
+            this.dealShopifyCollections(wrap, productWraper);
+
             // 铺货完成后，绑定店铺数据信息，方便下单后对应ID获取我们产 品ID
             shopifyBean.setShopifyPid(String.valueOf(productWraper.getProduct().getId()));
             shopifyBean.setShopifyInfo(JSONObject.toJSONString(productWraper));
@@ -361,9 +388,109 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
+            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct().getId(), goods.getPrice());
+
         }
         return productWraper;
     }
+
+
+
+    private void dealShopifyCollections(ProductRequestWrap wrap, ProductWraper productWraper) {
+        try {
+            // 如果有collectionId则绑定数据
+            QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
+            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname());
+            XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(authQueryWrapper);
+            String token = shopifyAuth.getAccessToken();
+
+            if (StrUtil.isNotBlank(wrap.getCollectionId())) {
+                QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyCollections::getCollectionsId, Long.parseLong(wrap.getCollectionId()));
+                XmsShopifyCollections shopifyCollections = this.xmsShopifyCollectionsMapper.selectOne(queryWrapper);
+                if (null != shopifyCollections) {
+                    String collKey = shopifyCollections.getCollKey();
+                    if ("custom_collections".equalsIgnoreCase(collKey)) {
+                        /**
+                         * PUT /admin/api/2021-07/custom_collections/841564295.json
+                         * {
+                         *   "custom_collection": {
+                         *     "id": 841564295,
+                         *     "collects": [
+                         *       {
+                         *         "product_id": 921728736,
+                         *         "position": 1
+                         *       },
+                         *       {
+                         *         "id": 455204334,
+                         *         "position": 2
+                         *       }
+                         *     ]
+                         *   }
+                         * }
+                         */
+                        JSONObject jsonObject = new JSONObject();
+                        JSONObject custom_collectionJson = new JSONObject();
+                        custom_collectionJson.put("id", wrap.getCollectionId());
+                        JSONArray collectsArr = new JSONArray();
+                        JSONObject product_json = new JSONObject();
+                        product_json.put("product_id", productWraper.getProduct().getId());
+                        product_json.put("position", "1");
+                        collectsArr.add(product_json);
+                        custom_collectionJson.put("collects", collectsArr);
+                        jsonObject.put("custom_collection", custom_collectionJson);
+
+                        //请求数据
+
+                        String returnJson = shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_CUSTOM_COLLECTIONS, wrap.getShopname(), wrap.getCollectionId()), token, jsonObject);
+                        //返回结果
+                        /**
+                         * {
+                         *   "custom_collection": {
+                         *     "handle": "ipods",
+                         *     "id": 841564295,
+                         *     "updated_at": "2021-07-01T15:10:06-04:00",
+                         *     "published_at": "2008-02-01T19:00:00-05:00",
+                         *     "sort_order": "manual",
+                         *     "template_suffix": null,
+                         *     "published_scope": "web",
+                         *     "title": "IPods",
+                         *     "body_html": "<p>The best selling ipod ever</p>",
+                         *     "admin_graphql_api_id": "gid://shopify/Collection/841564295",
+                         *     "image": {
+                         *       "created_at": "2021-07-01T14:49:47-04:00",
+                         *       "alt": "iPod Nano 8gb",
+                         *       "width": 123,
+                         *       "height": 456,
+                         *       "src": "https://cdn.shopify.com/s/files/1/0006/9093/3842/collections/ipod_nano_8gb.jpg?v=1625165387"
+                         *     }
+                         *   }
+                         * }
+                         */
+                        JSONObject rsJson = JSONObject.parseObject(returnJson);
+                        if (null == rsJson || !rsJson.containsKey("custom_collection")) {
+                            System.err.println("-----------custom_collection put error:[" + returnJson + "]");
+                        }
+                    } else {
+                        /**
+                         *PUT /admin/api/2021-07/smart_collections/482865238/order.json?products[]=921728736&products[]=632910392
+                         *
+                         */
+                        Map<String, Object> map = new HashMap<>();
+                        String url = String.format(config.SHOPIFY_URI_PUT_SMART_COLLECTIONS, wrap.getShopname(), wrap.getCollectionId()) + "?products[]=" + productWraper.getProduct().getId();
+                        String returnJson = shopifyRestTemplate.put(url, token, map);
+                        if (null == returnJson) {
+                            System.err.println("-----------smart_collections put error:[" + returnJson + "]");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     /**
      * insertShopifyIdWithPid
@@ -386,6 +513,24 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             result = shopifyPidInfoMapper.insert(shopifyBean);
         }
         return result;
+    }
+
+    /**
+     * 更新YouLiveProduct表关联shopify的productId
+     * @param productId
+     * @param shopifyProductId
+     */
+    public void updateYouLiveProduct(Long productId, Long shopifyProductId, String price) {
+        QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId);
+        XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
+        if (null != customerProduct) {
+            UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
+                    .set(XmsCustomerProduct::getShopifyPrice, price)
+                    .eq(XmsCustomerProduct::getId, customerProduct.getId());
+            this.customerProductMapper.update(null, updateWrapper);
+        }
     }
 
 

@@ -85,4 +85,6 @@ public interface OmsPortalOrderService {
     int updateBalanceRecode(OmsOrderDetail detail);
 
     String generateOrderSn(OmsOrder order);
+
+    OmsOrder queryByOrderNo(String orderNo);
 }
