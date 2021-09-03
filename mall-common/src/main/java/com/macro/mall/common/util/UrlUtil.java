@@ -36,12 +36,12 @@ public class UrlUtil {
      * The singleton HTTP client.
      */
     private final OkHttpClient client = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .build();
 
     private final OkHttpClient clientLongTime = new OkHttpClient.Builder()
-            .connectTimeout(300, TimeUnit.SECONDS)
+            .connectTimeout(600, TimeUnit.SECONDS)
             .readTimeout(300, TimeUnit.SECONDS)
             .build();
 

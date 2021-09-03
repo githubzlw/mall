@@ -298,6 +298,7 @@ public class XmsSourcingController {
                 XmsPmsProductEdit pmsProductEdit = list.get(0);
                 pmsProductEdit.setAlbumPics(sourcingProductParam.getAlbumPics());
                 productId = pmsProductEdit.getId();
+                pmsProductEdit.setName(sourcingProductParam.getName());
                 // 处理sku数据
                 QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
                 skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
@@ -329,7 +330,7 @@ public class XmsSourcingController {
                     this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                     stockEditList.clear();
                 }
-                this.xmsPmsProductEditService.saveOrUpdate(pmsProductEdit);
+                this.xmsPmsProductEditService.updateById(pmsProductEdit);
             } else {
                 // 如果不存在，则进行插入处理
                 // 插入product数据
