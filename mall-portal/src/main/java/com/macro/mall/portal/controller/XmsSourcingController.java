@@ -431,6 +431,7 @@ public class XmsSourcingController {
             product.setMemberId(this.umsMemberService.getCurrentMember().getId());
             product.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             product.setSourcingId(sourcingId.intValue());
+            product.setProductId(xmsSourcingList.getProductId());
             boolean isCheck = this.xmsSourcingListService.checkHasXmsCustomerProduct(product);
 
             if (isCheck) {
