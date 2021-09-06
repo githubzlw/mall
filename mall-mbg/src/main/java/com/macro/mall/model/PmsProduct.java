@@ -87,9 +87,6 @@ public class PmsProduct implements Serializable {
 
     private String note;
 
-    @ApiModelProperty(value = "画册图片，连产品图片限制为5张，以逗号分割")
-    private String albumPics;
-
     private String detailTitle;
 
     @ApiModelProperty(value = "促销开始时间")
@@ -143,8 +140,14 @@ public class PmsProduct implements Serializable {
     @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
     private Integer freeStatus;
 
+    @ApiModelProperty(value = "是否是公用标识 0非公用 1公用")
+    private Integer publicFlag;
+
     @ApiModelProperty(value = "商品描述")
     private String description;
+
+    @ApiModelProperty(value = "画册图片，连产品图片限制为5张，以逗号分割")
+    private String albumPics;
 
     private String detailDesc;
 
@@ -396,14 +399,6 @@ public class PmsProduct implements Serializable {
         this.note = note;
     }
 
-    public String getAlbumPics() {
-        return albumPics;
-    }
-
-    public void setAlbumPics(String albumPics) {
-        this.albumPics = albumPics;
-    }
-
     public String getDetailTitle() {
         return detailTitle;
     }
@@ -540,12 +535,28 @@ public class PmsProduct implements Serializable {
         this.freeStatus = freeStatus;
     }
 
+    public Integer getPublicFlag() {
+        return publicFlag;
+    }
+
+    public void setPublicFlag(Integer publicFlag) {
+        this.publicFlag = publicFlag;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getAlbumPics() {
+        return albumPics;
+    }
+
+    public void setAlbumPics(String albumPics) {
+        this.albumPics = albumPics;
     }
 
     public String getDetailDesc() {
@@ -608,7 +619,6 @@ public class PmsProduct implements Serializable {
         sb.append(", serviceIds=").append(serviceIds);
         sb.append(", keywords=").append(keywords);
         sb.append(", note=").append(note);
-        sb.append(", albumPics=").append(albumPics);
         sb.append(", detailTitle=").append(detailTitle);
         sb.append(", promotionStartTime=").append(promotionStartTime);
         sb.append(", promotionEndTime=").append(promotionEndTime);
@@ -626,7 +636,9 @@ public class PmsProduct implements Serializable {
         sb.append(", productStatus=").append(productStatus);
         sb.append(", createTime=").append(createTime);
         sb.append(", freeStatus=").append(freeStatus);
+        sb.append(", publicFlag=").append(publicFlag);
         sb.append(", description=").append(description);
+        sb.append(", albumPics=").append(albumPics);
         sb.append(", detailDesc=").append(detailDesc);
         sb.append(", detailHtml=").append(detailHtml);
         sb.append(", detailMobileHtml=").append(detailMobileHtml);

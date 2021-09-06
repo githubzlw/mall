@@ -160,12 +160,15 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         Product product = new Product();
         product.setId(Long.parseLong(goods.getPid()));
         product.setTitle(goods.getName());
-        product.setPublished(goods.isPublished());
+        // product.setPublished(goods.isPublished());
+        product.setPublished(true);
         if(goods.isBodyHtml()){
             String info_ori = goods.getInfoHtml();
             StringBuilder details = details(goods.getInfo());
             details.append(info_ori);
             product.setBody_html(details.toString());
+        } else{
+            product.setBody_html("");
         }
 
         product.setVendor(goods.getVendor());
@@ -173,6 +176,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         product.setTags(goods.getTags());
         product.setProduct_type(goods.getProductType());
         product.setWeight_value(goods.getPerWeight());
+        product.setPublished_scope("web");
+        //product.setPublished_at();
+        //product.setTemplate_suffix("");
         OptionWrap wrap;
         try {
             wrap = optionVariant(goods.getSkuList());

@@ -359,6 +359,16 @@ public class PmsProductServiceImpl implements PmsProductService {
         return productMapper.selectByExample(productExample);
     }
 
+    @Override
+    public int updateProductPublicFlag(List<Long> ids, Integer status) {
+
+        PmsProduct record = new PmsProduct();
+        record.setPublicFlag(status);
+        PmsProductExample example = new PmsProductExample();
+        example.createCriteria().andIdIn(ids);
+        return productMapper.updateByExampleSelective(record, example);
+    }
+
     /**
      * 建立和插入关系表操作
      *

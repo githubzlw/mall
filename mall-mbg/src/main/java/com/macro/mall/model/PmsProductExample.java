@@ -1986,76 +1986,6 @@ public class PmsProductExample {
             return (Criteria) this;
         }
 
-        public Criteria andAlbumPicsIsNull() {
-            addCriterion("album_pics is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsIsNotNull() {
-            addCriterion("album_pics is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsEqualTo(String value) {
-            addCriterion("album_pics =", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsNotEqualTo(String value) {
-            addCriterion("album_pics <>", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsGreaterThan(String value) {
-            addCriterion("album_pics >", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsGreaterThanOrEqualTo(String value) {
-            addCriterion("album_pics >=", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsLessThan(String value) {
-            addCriterion("album_pics <", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsLessThanOrEqualTo(String value) {
-            addCriterion("album_pics <=", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsLike(String value) {
-            addCriterion("album_pics like", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsNotLike(String value) {
-            addCriterion("album_pics not like", value, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsIn(List<String> values) {
-            addCriterion("album_pics in", values, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsNotIn(List<String> values) {
-            addCriterion("album_pics not in", values, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsBetween(String value1, String value2) {
-            addCriterion("album_pics between", value1, value2, "albumPics");
-            return (Criteria) this;
-        }
-
-        public Criteria andAlbumPicsNotBetween(String value1, String value2) {
-            addCriterion("album_pics not between", value1, value2, "albumPics");
-            return (Criteria) this;
-        }
-
         public Criteria andDetailTitleIsNull() {
             addCriterion("detail_title is null");
             return (Criteria) this;
@@ -3163,6 +3093,66 @@ public class PmsProductExample {
 
         public Criteria andFreeStatusNotBetween(Integer value1, Integer value2) {
             addCriterion("free_status not between", value1, value2, "freeStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagIsNull() {
+            addCriterion("public_flag is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagIsNotNull() {
+            addCriterion("public_flag is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagEqualTo(Integer value) {
+            addCriterion("public_flag =", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagNotEqualTo(Integer value) {
+            addCriterion("public_flag <>", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagGreaterThan(Integer value) {
+            addCriterion("public_flag >", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagGreaterThanOrEqualTo(Integer value) {
+            addCriterion("public_flag >=", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagLessThan(Integer value) {
+            addCriterion("public_flag <", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagLessThanOrEqualTo(Integer value) {
+            addCriterion("public_flag <=", value, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagIn(List<Integer> values) {
+            addCriterion("public_flag in", values, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagNotIn(List<Integer> values) {
+            addCriterion("public_flag not in", values, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagBetween(Integer value1, Integer value2) {
+            addCriterion("public_flag between", value1, value2, "publicFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublicFlagNotBetween(Integer value1, Integer value2) {
+            addCriterion("public_flag not between", value1, value2, "publicFlag");
             return (Criteria) this;
         }
     }

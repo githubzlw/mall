@@ -72,6 +72,8 @@ public class XmsSourcingController {
     private IXmsPmsSkuStockEditService xmsPmsSkuStockEditService;
     @Autowired
     private MicroServiceConfig microServiceConfig;
+    @Autowired
+    private PmsPortalProductService pmsPortalProductService;
     private UrlUtil urlUtil = UrlUtil.getInstance();
 
     @InitBinder
@@ -431,6 +433,7 @@ public class XmsSourcingController {
             product.setMemberId(this.umsMemberService.getCurrentMember().getId());
             product.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             product.setSourcingId(sourcingId.intValue());
+            product.setProductId(xmsSourcingList.getProductId());
             boolean isCheck = this.xmsSourcingListService.checkHasXmsCustomerProduct(product);
 
             if (isCheck) {
@@ -631,4 +634,105 @@ public class XmsSourcingController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+
+    @ApiOperation("公用的商品进行发布前的处理")
+    @RequestMapping(value = "/beforeSyncPublicProduct", method = RequestMethod.POST)
+    public CommonResult beforeSyncPublicProduct(Long productId) {
+        Assert.isTrue(null != productId && productId > 0, "productId null");
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+
+            // 检查原始数据
+            PmsPortalProductDetail detail = this.pmsPortalProductService.detail(productId);
+            if (null == detail) {
+                return CommonResult.failed("no this product");
+            }
+
+            QueryWrapper<XmsSourcingList> sourcingWrapper = new QueryWrapper<>();
+            sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId).eq(XmsSourcingList::getMemberId, currentMember.getId());
+            XmsSourcingList sourcingOne = this.xmsSourcingListService.getOne(sourcingWrapper);
+            if(null != sourcingOne && sourcingOne.getId() > 0){
+                // 说明有数据直接返回
+                return CommonResult.success(sourcingOne);
+            }
+            sourcingWrapper = new QueryWrapper<>();
+
+
+            sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId);
+            sourcingOne = this.xmsSourcingListService.getOne(sourcingWrapper);
+            if(null == sourcingOne){
+                return CommonResult.failed("no this sourcing");
+            }
+
+            /*// 直接删除sku数据
+
+            QueryWrapper<XmsPmsSkuStockEdit> stockEditQueryWrapper = new QueryWrapper<>();
+            stockEditQueryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, productId).eq(XmsPmsSkuStockEdit::getMemberId, currentMember.getId());
+            this.xmsPmsSkuStockEditService.remove(stockEditQueryWrapper);
+
+            QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
+            productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, productId).eq(XmsPmsProductEdit::getMemberId, currentMember.getId());
+            XmsPmsProductEdit one = this.xmsPmsProductEditService.getOne(productEditWrapper);
+
+            if (null != one) {
+                Long id = one.getId();
+                BeanUtil.copyProperties(detail.getProduct(), one);
+                one.setId(id);
+            } else {
+                one = new XmsPmsProductEdit();
+                BeanUtil.copyProperties(detail.getProduct(), one);
+                one.setId(null);
+                one.setCreateTime(new Date());
+
+            }
+            one.setProductId(productId);
+            one.setMemberId(currentMember.getId());
+            this.xmsPmsProductEditService.save(one);
+
+            if (CollectionUtil.isNotEmpty(detail.getSkuStockList())) {
+                List<XmsPmsSkuStockEdit> stockEditList = new ArrayList<>();
+
+                detail.getSkuStockList().forEach(e -> {
+                    XmsPmsSkuStockEdit temp = new XmsPmsSkuStockEdit();
+                    BeanUtil.copyProperties(e, temp);
+                    temp.setId(null);
+                    temp.setMemberId(currentMember.getId());
+                    temp.setProductId(productId);
+                    temp.setCreateTime(new Date());
+                    stockEditList.add(temp);
+                });
+                this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+            }*/
+
+            // 优先插入sourcingList数据
+            XmsSourcingList sourcingList = new XmsSourcingList();
+
+
+            sourcingList.setUsername(currentMember.getUsername());
+            sourcingList.setMemberId(currentMember.getId());
+            sourcingList.setCreateTime(new Date());
+            sourcingList.setUpdateTime(new Date());
+            sourcingList.setProductId(productId);
+            sourcingList.setUrl(detail.getProduct().getUrl());
+
+            sourcingList.setUpdateTime(new Date());
+            sourcingList.setImages(detail.getProduct().getAlbumPics());
+            sourcingList.setTitle(detail.getProduct().getName());
+            sourcingList.setStatus(2);
+            sourcingList.setSiteType(sourcingOne.getSiteType());
+            sourcingList.setRemark("public to sourcing");
+            sourcingList.setOrderQuantity(detail.getProduct().getStock());
+            sourcingList.setPrice(detail.getProduct().getPriceXj());
+            this.xmsSourcingListService.save(sourcingList);
+            return CommonResult.success(sourcingList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("beforeSyncPublicProduct,productId[{}],error:", productId, e);
+            return CommonResult.failed("beforeSyncPublicProduct failed");
+        }
+    }
+
 }
+

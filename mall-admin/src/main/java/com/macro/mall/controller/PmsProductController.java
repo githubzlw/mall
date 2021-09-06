@@ -5,6 +5,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.domain.SiteSourcingParam;
@@ -251,6 +253,23 @@ public class PmsProductController {
         } catch (Exception e) {
             e.printStackTrace();
             return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @ApiOperation("商品是否是公用")
+    @ResponseBody
+    @RequestMapping(value = "/update/publicFlag", method = RequestMethod.POST)
+    public CommonResult updatePublicFlag(@RequestParam("ids") List<Long> ids, @RequestParam("publicFlag") Integer publicFlag) {
+        Assert.isTrue(CollectionUtil.isNotEmpty(ids), "ids null");
+        Assert.isTrue(null != publicFlag && publicFlag >= 0, "publicFlag null");
+        try {
+            int i = this.productService.updateProductPublicFlag(ids, publicFlag);
+            return CommonResult.success(i);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed("updatePublicFlag error:" + e.getMessage());
         }
     }
 
