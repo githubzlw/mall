@@ -1,5 +1,6 @@
 package com.macro.mall.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -89,9 +90,11 @@ public class PmsProduct implements Serializable {
     private String detailTitle;
 
     @ApiModelProperty(value = "促销开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date promotionStartTime;
 
     @ApiModelProperty(value = "促销结束时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date promotionEndTime;
 
     @ApiModelProperty(value = "活动限购数量")
@@ -131,6 +134,7 @@ public class PmsProduct implements Serializable {
     private Integer productStatus;
 
     @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date createTime;
 
     @ApiModelProperty(value = "免邮状态：0->非免邮；1->免邮")
