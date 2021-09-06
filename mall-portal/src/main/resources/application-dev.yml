@@ -65,8 +65,8 @@ PAYPAL:
   CLIENT_SECRET: EJpfYpI3Ym3iuFgG8yK8JwUVdkhiU0DrxUMcQ8h62dS96pZ8V3_ws8yL4r6QnBCuKQJ_PjUXDh8HE2mp
   CANCEL_URL_TYPE: 1
   #SUCCESS_URL: http://127.0.0.1:8085/payment/paypalApiCalAndConfirm
-  SUCCESS_URL: http://192.168.1.153:8080/#/SuccessPay
-  CANCEL_URL: http://192.168.1.153:8080
+  SUCCESS_URL: http://lovelypetsupply.com/#/SuccessPay
+  CANCEL_URL: http://lovelypetsupply.com
   BUSINESS_ID: 584JZVFU6PPVU
 
 #stripe

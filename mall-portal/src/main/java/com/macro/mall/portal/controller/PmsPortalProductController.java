@@ -57,4 +57,15 @@ public class PmsPortalProductController {
         PmsPortalProductDetail productDetail = portalProductService.detail(id);
         return CommonResult.success(productDetail);
     }
+
+
+    @ApiOperation("获取公用的商品数据")
+    @RequestMapping(value = "/getPublicProduct", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<CommonPage<PmsProduct>> getPublicProduct(@RequestParam(required = false, defaultValue = "0") Integer pageNum,
+                                                       @RequestParam(required = false, defaultValue = "20") Integer pageSize) {
+        List<PmsProduct> productList  = portalProductService.getPublicProduct(pageNum, pageSize);
+        return CommonResult.success(CommonPage.restPage(productList));
+    }
+
 }

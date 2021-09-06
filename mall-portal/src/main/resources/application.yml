@@ -52,6 +52,7 @@ secure:
       - /sourcingSearchLog/**
       - /buyForMe/**
       - /sourcing/**
+      - /shopifyWebhook/**
 
 # 自定义redis key
 redis:

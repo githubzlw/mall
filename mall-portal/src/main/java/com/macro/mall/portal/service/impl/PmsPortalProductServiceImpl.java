@@ -144,6 +144,16 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         return skuStockMapper.selectByExample(skuExample);
     }
 
+    @Override
+    public List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        PmsProductExample example = new PmsProductExample();
+        PmsProductExample.Criteria criteria = example.createCriteria();
+        criteria.andDeleteStatusEqualTo(0);
+        criteria.andPublicFlagEqualTo(1);
+        return productMapper.selectByExample(example);
+    }
+
 
     /**
      * 初始对象转化为节点对象

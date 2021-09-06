@@ -32,7 +32,6 @@
     <result column="service_ids" jdbcType="VARCHAR" property="serviceIds" />
     <result column="keywords" jdbcType="VARCHAR" property="keywords" />
     <result column="note" jdbcType="VARCHAR" property="note" />
-    <result column="album_pics" jdbcType="VARCHAR" property="albumPics" />
     <result column="detail_title" jdbcType="VARCHAR" property="detailTitle" />
     <result column="promotion_start_time" jdbcType="TIMESTAMP" property="promotionStartTime" />
     <result column="promotion_end_time" jdbcType="TIMESTAMP" property="promotionEndTime" />
@@ -50,9 +49,11 @@
     <result column="product_status" jdbcType="INTEGER" property="productStatus" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="free_status" jdbcType="INTEGER" property="freeStatus" />
+    <result column="public_flag" jdbcType="INTEGER" property="publicFlag" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.macro.mall.model.PmsProduct">
     <result column="description" jdbcType="LONGVARCHAR" property="description" />
+    <result column="album_pics" jdbcType="LONGVARCHAR" property="albumPics" />
     <result column="detail_desc" jdbcType="LONGVARCHAR" property="detailDesc" />
     <result column="detail_html" jdbcType="LONGVARCHAR" property="detailHtml" />
     <result column="detail_mobile_html" jdbcType="LONGVARCHAR" property="detailMobileHtml" />
@@ -120,13 +121,13 @@
     name, pic, product_sn, delete_status, publish_status, new_status, recommand_status, 
     verify_status, sort, sale, price, promotion_price, gift_growth, gift_point, use_point_limit, 
     sub_title, original_price, stock, low_stock, unit, weight, preview_status, service_ids, 
-    keywords, note, album_pics, detail_title, promotion_start_time, promotion_end_time, 
-    promotion_per_limit, promotion_type, brand_name, product_category_name, lead_time, 
-    price_xj, url, moq, source_price, shipping_fee, shipping_by, product_status, create_time, 
-    free_status
+    keywords, note, detail_title, promotion_start_time, promotion_end_time, promotion_per_limit, 
+    promotion_type, brand_name, product_category_name, lead_time, price_xj, url, moq, 
+    source_price, shipping_fee, shipping_by, product_status, create_time, free_status, 
+    public_flag
   </sql>
   <sql id="Blob_Column_List">
-    description, detail_desc, detail_html, detail_mobile_html
+    description, album_pics, detail_desc, detail_html, detail_mobile_html
   </sql>
   <select id="selectByExampleWithBLOBs" parameterType="com.macro.mall.model.PmsProductExample" resultMap="ResultMapWithBLOBs">
     select
@@ -189,15 +190,15 @@
       use_point_limit, sub_title, original_price, 
       stock, low_stock, unit, 
       weight, preview_status, service_ids, 
-      keywords, note, album_pics, 
-      detail_title, promotion_start_time, promotion_end_time, 
+      keywords, note, detail_title, 
+      promotion_start_time, promotion_end_time, 
       promotion_per_limit, promotion_type, brand_name, 
       product_category_name, lead_time, price_xj, 
       url, moq, source_price, 
       shipping_fee, shipping_by, product_status, 
-      create_time, free_status, description, 
-      detail_desc, detail_html, detail_mobile_html
-      )
+      create_time, free_status, public_flag, 
+      description, album_pics, detail_desc, 
+      detail_html, detail_mobile_html)
     values (#{brandId,jdbcType=BIGINT}, #{productCategoryId,jdbcType=BIGINT}, #{feightTemplateId,jdbcType=BIGINT}, 
       #{productAttributeCategoryId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{pic,jdbcType=VARCHAR}, 
       #{productSn,jdbcType=VARCHAR}, #{deleteStatus,jdbcType=INTEGER}, #{publishStatus,jdbcType=INTEGER}, 
@@ -207,15 +208,15 @@
       #{usePointLimit,jdbcType=INTEGER}, #{subTitle,jdbcType=VARCHAR}, #{originalPrice,jdbcType=DECIMAL}, 
       #{stock,jdbcType=INTEGER}, #{lowStock,jdbcType=INTEGER}, #{unit,jdbcType=VARCHAR}, 
       #{weight,jdbcType=DECIMAL}, #{previewStatus,jdbcType=INTEGER}, #{serviceIds,jdbcType=VARCHAR}, 
-      #{keywords,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}, #{albumPics,jdbcType=VARCHAR}, 
-      #{detailTitle,jdbcType=VARCHAR}, #{promotionStartTime,jdbcType=TIMESTAMP}, #{promotionEndTime,jdbcType=TIMESTAMP}, 
+      #{keywords,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}, #{detailTitle,jdbcType=VARCHAR}, 
+      #{promotionStartTime,jdbcType=TIMESTAMP}, #{promotionEndTime,jdbcType=TIMESTAMP}, 
       #{promotionPerLimit,jdbcType=INTEGER}, #{promotionType,jdbcType=INTEGER}, #{brandName,jdbcType=VARCHAR}, 
       #{productCategoryName,jdbcType=VARCHAR}, #{leadTime,jdbcType=VARCHAR}, #{priceXj,jdbcType=VARCHAR}, 
       #{url,jdbcType=VARCHAR}, #{moq,jdbcType=VARCHAR}, #{sourcePrice,jdbcType=DECIMAL}, 
       #{shippingFee,jdbcType=VARCHAR}, #{shippingBy,jdbcType=VARCHAR}, #{productStatus,jdbcType=INTEGER}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{freeStatus,jdbcType=INTEGER}, #{description,jdbcType=LONGVARCHAR}, 
-      #{detailDesc,jdbcType=LONGVARCHAR}, #{detailHtml,jdbcType=LONGVARCHAR}, #{detailMobileHtml,jdbcType=LONGVARCHAR}
-      )
+      #{createTime,jdbcType=TIMESTAMP}, #{freeStatus,jdbcType=INTEGER}, #{publicFlag,jdbcType=INTEGER}, 
+      #{description,jdbcType=LONGVARCHAR}, #{albumPics,jdbcType=LONGVARCHAR}, #{detailDesc,jdbcType=LONGVARCHAR}, 
+      #{detailHtml,jdbcType=LONGVARCHAR}, #{detailMobileHtml,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.PmsProduct">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -310,9 +311,6 @@
       <if test="note != null">
         note,
       </if>
-      <if test="albumPics != null">
-        album_pics,
-      </if>
       <if test="detailTitle != null">
         detail_title,
       </if>
@@ -364,8 +362,14 @@
       <if test="freeStatus != null">
         free_status,
       </if>
+      <if test="publicFlag != null">
+        public_flag,
+      </if>
       <if test="description != null">
         description,
+      </if>
+      <if test="albumPics != null">
+        album_pics,
       </if>
       <if test="detailDesc != null">
         detail_desc,
@@ -465,9 +469,6 @@
       <if test="note != null">
         #{note,jdbcType=VARCHAR},
       </if>
-      <if test="albumPics != null">
-        #{albumPics,jdbcType=VARCHAR},
-      </if>
       <if test="detailTitle != null">
         #{detailTitle,jdbcType=VARCHAR},
       </if>
@@ -519,8 +520,14 @@
       <if test="freeStatus != null">
         #{freeStatus,jdbcType=INTEGER},
       </if>
+      <if test="publicFlag != null">
+        #{publicFlag,jdbcType=INTEGER},
+      </if>
       <if test="description != null">
         #{description,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="albumPics != null">
+        #{albumPics,jdbcType=LONGVARCHAR},
       </if>
       <if test="detailDesc != null">
         #{detailDesc,jdbcType=LONGVARCHAR},
@@ -632,9 +639,6 @@
       <if test="record.note != null">
         note = #{record.note,jdbcType=VARCHAR},
       </if>
-      <if test="record.albumPics != null">
-        album_pics = #{record.albumPics,jdbcType=VARCHAR},
-      </if>
       <if test="record.detailTitle != null">
         detail_title = #{record.detailTitle,jdbcType=VARCHAR},
       </if>
@@ -686,8 +690,14 @@
       <if test="record.freeStatus != null">
         free_status = #{record.freeStatus,jdbcType=INTEGER},
       </if>
+      <if test="record.publicFlag != null">
+        public_flag = #{record.publicFlag,jdbcType=INTEGER},
+      </if>
       <if test="record.description != null">
         description = #{record.description,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="record.albumPics != null">
+        album_pics = #{record.albumPics,jdbcType=LONGVARCHAR},
       </if>
       <if test="record.detailDesc != null">
         detail_desc = #{record.detailDesc,jdbcType=LONGVARCHAR},
@@ -735,7 +745,6 @@
       service_ids = #{record.serviceIds,jdbcType=VARCHAR},
       keywords = #{record.keywords,jdbcType=VARCHAR},
       note = #{record.note,jdbcType=VARCHAR},
-      album_pics = #{record.albumPics,jdbcType=VARCHAR},
       detail_title = #{record.detailTitle,jdbcType=VARCHAR},
       promotion_start_time = #{record.promotionStartTime,jdbcType=TIMESTAMP},
       promotion_end_time = #{record.promotionEndTime,jdbcType=TIMESTAMP},
@@ -753,7 +762,9 @@
       product_status = #{record.productStatus,jdbcType=INTEGER},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
       free_status = #{record.freeStatus,jdbcType=INTEGER},
+      public_flag = #{record.publicFlag,jdbcType=INTEGER},
       description = #{record.description,jdbcType=LONGVARCHAR},
+      album_pics = #{record.albumPics,jdbcType=LONGVARCHAR},
       detail_desc = #{record.detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{record.detailHtml,jdbcType=LONGVARCHAR},
       detail_mobile_html = #{record.detailMobileHtml,jdbcType=LONGVARCHAR}
@@ -793,7 +804,6 @@
       service_ids = #{record.serviceIds,jdbcType=VARCHAR},
       keywords = #{record.keywords,jdbcType=VARCHAR},
       note = #{record.note,jdbcType=VARCHAR},
-      album_pics = #{record.albumPics,jdbcType=VARCHAR},
       detail_title = #{record.detailTitle,jdbcType=VARCHAR},
       promotion_start_time = #{record.promotionStartTime,jdbcType=TIMESTAMP},
       promotion_end_time = #{record.promotionEndTime,jdbcType=TIMESTAMP},
@@ -810,7 +820,8 @@
       shipping_by = #{record.shippingBy,jdbcType=VARCHAR},
       product_status = #{record.productStatus,jdbcType=INTEGER},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      free_status = #{record.freeStatus,jdbcType=INTEGER}
+      free_status = #{record.freeStatus,jdbcType=INTEGER},
+      public_flag = #{record.publicFlag,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -905,9 +916,6 @@
       <if test="note != null">
         note = #{note,jdbcType=VARCHAR},
       </if>
-      <if test="albumPics != null">
-        album_pics = #{albumPics,jdbcType=VARCHAR},
-      </if>
       <if test="detailTitle != null">
         detail_title = #{detailTitle,jdbcType=VARCHAR},
       </if>
@@ -959,8 +967,14 @@
       <if test="freeStatus != null">
         free_status = #{freeStatus,jdbcType=INTEGER},
       </if>
+      <if test="publicFlag != null">
+        public_flag = #{publicFlag,jdbcType=INTEGER},
+      </if>
       <if test="description != null">
         description = #{description,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="albumPics != null">
+        album_pics = #{albumPics,jdbcType=LONGVARCHAR},
       </if>
       <if test="detailDesc != null">
         detail_desc = #{detailDesc,jdbcType=LONGVARCHAR},
@@ -1005,7 +1019,6 @@
       service_ids = #{serviceIds,jdbcType=VARCHAR},
       keywords = #{keywords,jdbcType=VARCHAR},
       note = #{note,jdbcType=VARCHAR},
-      album_pics = #{albumPics,jdbcType=VARCHAR},
       detail_title = #{detailTitle,jdbcType=VARCHAR},
       promotion_start_time = #{promotionStartTime,jdbcType=TIMESTAMP},
       promotion_end_time = #{promotionEndTime,jdbcType=TIMESTAMP},
@@ -1023,7 +1036,9 @@
       product_status = #{productStatus,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       free_status = #{freeStatus,jdbcType=INTEGER},
+      public_flag = #{publicFlag,jdbcType=INTEGER},
       description = #{description,jdbcType=LONGVARCHAR},
+      album_pics = #{albumPics,jdbcType=LONGVARCHAR},
       detail_desc = #{detailDesc,jdbcType=LONGVARCHAR},
       detail_html = #{detailHtml,jdbcType=LONGVARCHAR},
       detail_mobile_html = #{detailMobileHtml,jdbcType=LONGVARCHAR}
@@ -1060,7 +1075,6 @@
       service_ids = #{serviceIds,jdbcType=VARCHAR},
       keywords = #{keywords,jdbcType=VARCHAR},
       note = #{note,jdbcType=VARCHAR},
-      album_pics = #{albumPics,jdbcType=VARCHAR},
       detail_title = #{detailTitle,jdbcType=VARCHAR},
       promotion_start_time = #{promotionStartTime,jdbcType=TIMESTAMP},
       promotion_end_time = #{promotionEndTime,jdbcType=TIMESTAMP},
@@ -1077,7 +1091,8 @@
       shipping_by = #{shippingBy,jdbcType=VARCHAR},
       product_status = #{productStatus,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
-      free_status = #{freeStatus,jdbcType=INTEGER}
+      free_status = #{freeStatus,jdbcType=INTEGER},
+      public_flag = #{publicFlag,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

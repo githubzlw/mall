@@ -30,4 +30,7 @@ public interface PmsPortalProductService {
     List<PmsProduct> queryByIds(List<Long> ids);
 
     List<PmsSkuStock> queryByProductAndIds(List<Long> productIdLis, List<Long> skuIdList);
+
+
+    List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize);
 }
