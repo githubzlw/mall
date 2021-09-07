@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-13
+ * @since 2021-09-07
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -30,8 +30,10 @@ public class XmsShopifyPidInfo implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @ApiModelProperty(value = "店铺名称")
     private String shopifyName;
 
+    @ApiModelProperty(value = "商品的id")
     private String shopifyPid;
 
     private String pid;

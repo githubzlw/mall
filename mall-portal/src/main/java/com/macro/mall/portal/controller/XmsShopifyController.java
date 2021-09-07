@@ -366,6 +366,7 @@ public class XmsShopifyController {
             param.put("collectionId", collectionId);
             param.put("productType", productType);
             param.put("productTags", productTags);
+            param.put("memberId", String.valueOf(currentMember.getId()));
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);

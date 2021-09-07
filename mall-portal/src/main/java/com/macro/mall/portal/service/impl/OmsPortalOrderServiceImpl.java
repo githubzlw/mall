@@ -444,7 +444,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                     tmProduct.setStatus(0);
 
                     if(sourcingListMap.containsKey(e.getId())){
-                        tmProduct.setSourcingId(sourcingListMap.get(e.getId()).getId().intValue());
+                        tmProduct.setSourcingId(sourcingListMap.get(e.getId()).getId());
                         tmProduct.setSiteType(sourcingListMap.get(e.getId()).getSiteType());
                         tmProduct.setProductId(sourcingListMap.get(e.getId()).getProductId());
                     } else{

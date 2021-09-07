@@ -72,7 +72,8 @@ public class XmsYouLiveProductController {
     public CommonResult list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                              @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
                              @RequestParam(value = "title", defaultValue = "") String title,
-                             @RequestParam(value = "shopifyPids", defaultValue = "") String shopifyPids) {
+                             @RequestParam(value = "shopifyPids", defaultValue = "") String shopifyPids,
+                             @RequestParam(value = "importFlag", defaultValue = "-1") Integer importFlag) {
 
         XmsCustomerProductParam productParam = new XmsCustomerProductParam();
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
@@ -83,6 +84,7 @@ public class XmsYouLiveProductController {
             productParam.setTitle(title);
             productParam.setMemberId(currentMember.getId());
             productParam.setUsername(currentMember.getUsername());
+            productParam.setImportFlag(importFlag);
             if(StrUtil.isNotBlank(shopifyPids)){
                 productParam.setShopifyPidList(new ArrayList<>(Arrays.asList(shopifyPids.split(","))));
             }

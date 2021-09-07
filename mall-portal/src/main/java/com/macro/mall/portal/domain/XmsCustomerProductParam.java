@@ -24,4 +24,7 @@ public class XmsCustomerProductParam implements Serializable {
     private String title;
 
     private List<String> shopifyPidList;
+
+    @ApiModelProperty(value = "是否导入shopify标识")
+    private Integer importFlag;
 }

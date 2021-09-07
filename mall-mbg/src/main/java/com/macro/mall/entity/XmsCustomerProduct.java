@@ -41,7 +41,7 @@ public class XmsCustomerProduct implements Serializable {
     private Long productId;
 
     @ApiModelProperty(value = "sourcing list表ID")
-    private Integer sourcingId;
+    private Long sourcingId;
 
     @ApiModelProperty(value = "货源链接")
     private String sourceLink;

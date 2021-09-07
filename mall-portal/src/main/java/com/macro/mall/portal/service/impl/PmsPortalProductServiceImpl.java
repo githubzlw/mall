@@ -152,7 +152,7 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         criteria.andDeleteStatusEqualTo(0);
         criteria.andPublicFlagEqualTo(1);
         if(StrUtil.isNotBlank(title)){
-            criteria.andNameLike(title);
+            criteria.andNameLike("%" + title + "%");
         }
         return productMapper.selectByExample(example);
     }

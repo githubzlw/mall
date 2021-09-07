@@ -238,14 +238,14 @@ public class ShopifyUtils {
                     if (CollectionUtil.isNotEmpty(sourcingLists)) {
                         XmsSourcingList xmsSourcingList = sourcingLists.get(0);
                         customerProduct.setProductId(xmsSourcingList.getProductId());
-                        customerProduct.setSourcingId(xmsSourcingList.getId().intValue());
+                        customerProduct.setSourcingId(xmsSourcingList.getId());
                         xmsSourcingList.setAddProductFlag(1);
                         xmsSourcingList.setUpdateTime(new Date());
                         this.xmsSourcingListMapper.updateById(xmsSourcingList);
                     }
                 }
                 if(null == customerProduct.getSourcingId()){
-                    customerProduct.setSourcingId(0);
+                    customerProduct.setSourcingId(0L);
                 }
                 if(null == customerProduct.getProductId()){
                     customerProduct.setProductId(0L);
