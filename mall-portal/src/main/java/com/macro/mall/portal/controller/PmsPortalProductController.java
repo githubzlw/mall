@@ -63,8 +63,9 @@ public class PmsPortalProductController {
     @RequestMapping(value = "/getPublicProduct", method = RequestMethod.GET)
     @ResponseBody
     public CommonResult<CommonPage<PmsProduct>> getPublicProduct(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                                       @RequestParam(required = false, defaultValue = "20") Integer pageSize) {
-        List<PmsProduct> productList  = portalProductService.getPublicProduct(pageNum, pageSize);
+                                                                 @RequestParam(required = false, defaultValue = "20") Integer pageSize,
+                                                                 @RequestParam(required = false) String title) {
+        List<PmsProduct> productList = portalProductService.getPublicProduct(pageNum, pageSize, title);
         return CommonResult.success(CommonPage.restPage(productList));
     }
 
