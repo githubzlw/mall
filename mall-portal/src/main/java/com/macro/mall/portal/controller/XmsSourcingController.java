@@ -347,10 +347,34 @@ public class XmsSourcingController {
                 this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                 stockEditList.clear();
             }
+
+
             // 调用shopify铺货
             UmsMember byId = this.umsMemberService.getById(currentMember.getId());
             if (StrUtil.isEmpty(byId.getShopifyName())) {
                 return CommonResult.validateFailed("Please bind the store first");
+            }
+
+
+            QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId).eq(XmsCustomerProduct::getMemberId, currentMember.getId());
+            int count = this.xmsCustomerProductService.count(queryWrapper);
+            if(count == 0){
+                XmsCustomerProduct customerProduct = new XmsCustomerProduct();
+                customerProduct.setShopifyProductId(0L);
+                customerProduct.setCreateTime(new Date());
+                customerProduct.setSourcingId(sourcingProductParam.getSourcingId());
+                customerProduct.setProductId(sourcingProductParam.getProductId());
+                customerProduct.setSiteType(xmsSourcingList.getSiteType());
+                customerProduct.setCostPrice(sourcingProductParam.getPriceXj());
+                customerProduct.setSourceLink(xmsSourcingList.getSourceLink());
+                customerProduct.setStatus(1);
+                customerProduct.setShopifyName(byId.getShopifyName());
+                customerProduct.setTitle(sourcingProductParam.getName());
+                customerProduct.setImg(sourcingProductParam.getPic());
+                customerProduct.setMemberId(currentMember.getId());
+                customerProduct.setUsername(currentMember.getUsername());
+                this.xmsCustomerProductService.save(customerProduct);
             }
 
             Map<String, String> param = new HashMap<>();
@@ -361,6 +385,7 @@ public class XmsSourcingController {
             param.put("collectionId", sourcingProductParam.getCollectionId());
             param.put("productType", sourcingProductParam.getProductType());
             param.put("productTags", sourcingProductParam.getProductTags());
+            param.put("memberId", String.valueOf(currentMember.getId()));
 
             JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
 
@@ -432,7 +457,7 @@ public class XmsSourcingController {
             XmsCustomerProduct product = new XmsCustomerProduct();
             product.setMemberId(this.umsMemberService.getCurrentMember().getId());
             product.setUsername(this.umsMemberService.getCurrentMember().getUsername());
-            product.setSourcingId(sourcingId.intValue());
+            product.setSourcingId(sourcingId);
             product.setProductId(xmsSourcingList.getProductId());
             boolean isCheck = this.xmsSourcingListService.checkHasXmsCustomerProduct(product);
 

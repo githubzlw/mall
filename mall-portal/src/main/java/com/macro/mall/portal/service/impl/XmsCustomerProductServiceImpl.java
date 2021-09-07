@@ -1,6 +1,7 @@
 package com.macro.mall.portal.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -36,12 +37,22 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
 
         Page<XmsCustomerProduct> page = new Page<>(productParam.getPageNum(), productParam.getPageSize());
         LambdaQueryWrapper<XmsCustomerProduct> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.eq(XmsCustomerProduct::getUsername, productParam.getUsername());
-        if (!StringUtils.isEmpty(productParam.getTitle())) {
+        lambdaQuery.eq(XmsCustomerProduct::getMemberId, productParam.getMemberId());
+        if (StrUtil.isNotBlank(productParam.getTitle())) {
             lambdaQuery.like(XmsCustomerProduct::getTitle, productParam.getTitle());
         }
         if(CollectionUtil.isNotEmpty(productParam.getShopifyPidList())){
             lambdaQuery.in(XmsCustomerProduct::getShopifyProductId, productParam.getShopifyPidList());
+        }
+        if(null != productParam.getImportFlag()){
+            if(1 == productParam.getImportFlag()){
+                lambdaQuery.gt(XmsCustomerProduct::getProductId, 0);
+                lambdaQuery.gt(XmsCustomerProduct::getSourcingId, 0);
+                lambdaQuery.gt(XmsCustomerProduct::getShopifyProductId, 0);
+            } else if(0 == productParam.getImportFlag()){
+                lambdaQuery.eq(XmsCustomerProduct::getSourcingId, 0);
+            }
+
         }
         lambdaQuery.orderByDesc(XmsCustomerProduct::getCreateTime);
         return this.xmsCustomerProductMapper.selectPage(page, lambdaQuery);

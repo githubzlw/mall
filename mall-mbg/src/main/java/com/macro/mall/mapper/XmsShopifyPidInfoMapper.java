@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author jack.luo
- * @since 2021-05-13
+ * @since 2021-09-07
  */
 public interface XmsShopifyPidInfoMapper extends BaseMapper<XmsShopifyPidInfo> {
 

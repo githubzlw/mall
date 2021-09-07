@@ -32,5 +32,5 @@ public interface PmsPortalProductService {
     List<PmsSkuStock> queryByProductAndIds(List<Long> productIdLis, List<Long> skuIdList);
 
 
-    List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize);
+    List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize, String title);
 }

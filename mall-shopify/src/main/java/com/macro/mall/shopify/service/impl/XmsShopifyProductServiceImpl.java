@@ -64,6 +64,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     private XmsShopifyCollectionsMapper xmsShopifyCollectionsMapper;
     @Autowired
     private XmsCustomerProductMapper customerProductMapper;
+    @Autowired
+    private XmsSourcingListMapper sourcingListMapper;
 
     public XmsShopifyProductServiceImpl(XmsShopifyPidInfoMapper shopifyPidInfoMapper, ShopifyConfig config, ShopifyRestTemplate shopifyRestTemplate) {
         this.shopifyPidInfoMapper = shopifyPidInfoMapper;
@@ -94,7 +96,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             }
 
 
-            ProductWraper wraper = pushProductWFW(wrap);
+            ProductWraper wraper = pushProductWFW(wrap, addProductBean.getMemberId());
             if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
                 return CommonResult.success("PUSH SUCCESSED");
             } else if (wraper != null && wraper.isPush()) {
@@ -109,7 +111,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         }
     }
 
-    public ProductWraper pushProductWFW(ProductRequestWrap wrap) throws ShopifyException {
+    public ProductWraper pushProductWFW(ProductRequestWrap wrap, Long memberId) throws ShopifyException {
         //验证是否已经铺货过
         ProductWraper productWraper = checkPush(wrap.getShopname(), wrap.getPid());
         if (productWraper != null) {
@@ -129,7 +131,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
         goods.setBodyHtml(wrap.isBodyHtml());
-        return onlineProduct(wrap,goods);
+        return onlineProduct(wrap,goods, memberId);
     }
 
     /**
@@ -356,7 +358,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return shopifyPidInfoMapper.selectOne(lambdaQuery);
     }
 
-    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods) throws ShopifyException {
+    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods, Long memberId) throws ShopifyException {
         String shopname = wrap.getShopname();
         Product product = toProduct(goods);
         if(StrUtil.isNotBlank(wrap.getCollectionId())){
@@ -394,7 +396,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             insertShopifyIdWithPid(shopifyBean);
 
-            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct().getId(), goods.getPrice());
+            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct(), goods.getPrice(), memberId);
 
         }
         return productWraper;
@@ -524,18 +526,28 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     /**
      * 更新YouLiveProduct表关联shopify的productId
      * @param productId
-     * @param shopifyProductId
+     * @param product
      */
-    public void updateYouLiveProduct(Long productId, Long shopifyProductId, String price) {
+    public void updateYouLiveProduct(Long productId, Product product, String price, Long memberId) {
+        Long shopifyProductId = product.getId();
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId);
+        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId).eq(XmsCustomerProduct::getMemberId, memberId);
         XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
         if (null != customerProduct) {
             UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
+            updateWrapper.lambda()
+                    .set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
                     .set(XmsCustomerProduct::getShopifyPrice, price)
+                    .set(XmsCustomerProduct::getUpdateTime, new Date())
+                    .set(XmsCustomerProduct::getSyncTime, new Date())
                     .eq(XmsCustomerProduct::getId, customerProduct.getId());
             this.customerProductMapper.update(null, updateWrapper);
+
+            // 铺货成功后，设置sourcing的状态
+            UpdateWrapper<XmsSourcingList> sourcingWrapper = new UpdateWrapper<>();
+            sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId).eq(XmsSourcingList::getMemberId, memberId)
+                    .set(XmsSourcingList::getAddProductFlag, 1);
+            this.sourcingListMapper.update(null, sourcingWrapper);
         }
     }
 

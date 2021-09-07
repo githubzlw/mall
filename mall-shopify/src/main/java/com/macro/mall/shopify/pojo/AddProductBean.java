@@ -19,4 +19,5 @@ public class AddProductBean {
     private String collectionId;
     private String productType;
     private String productTags;
+    private Long memberId;
 }

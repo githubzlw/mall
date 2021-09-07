@@ -107,20 +107,20 @@
         AND o.member_id = #{memberId}
         <if test="status != null ">
             <if test="status == 1">
-                AND o.status in(1, 5)
+                and o.status in(1, 5)
             </if>
             <if test="status == 3">
-                AND o.status in(2, 3, 4)
+                and o.status in(2, 3, 4)
             </if>
             <if test="status == 6">
-                AND o.status in(-1, 6)
+                and o.status in(-1, 6)
             </if>
         </if>
         <if test="orderType != null">
-            o.order_type = #{orderType}
+            and o.order_type = #{orderType}
         </if>
         <if test="sourceType != null">
-            o.source_type = #{sourceType}
+            and o.source_type = #{sourceType}
         </if>
     </select>
 
@@ -160,7 +160,7 @@
             and o.order_type = #{orderType}
         </if>
         <if test="sourceType != null">
-            o.source_type = #{sourceType}
+            and o.source_type = #{sourceType}
         </if>
         <if test="countryName != null">
             and o.receiver_country = #{countryName}

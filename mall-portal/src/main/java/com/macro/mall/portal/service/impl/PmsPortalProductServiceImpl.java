@@ -145,12 +145,15 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
     }
 
     @Override
-    public List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize) {
+    public List<PmsProduct> getPublicProduct(Integer pageNum, Integer pageSize, String title) {
         PageHelper.startPage(pageNum, pageSize);
         PmsProductExample example = new PmsProductExample();
         PmsProductExample.Criteria criteria = example.createCriteria();
         criteria.andDeleteStatusEqualTo(0);
         criteria.andPublicFlagEqualTo(1);
+        if(StrUtil.isNotBlank(title)){
+            criteria.andNameLike("%" + title + "%");
+        }
         return productMapper.selectByExample(example);
     }
 
