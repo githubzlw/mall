@@ -154,6 +154,7 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         if(StrUtil.isNotBlank(title)){
             criteria.andNameLike("%" + title + "%");
         }
+        example.setOrderByClause("id desc");
         return productMapper.selectByExample(example);
     }
 
