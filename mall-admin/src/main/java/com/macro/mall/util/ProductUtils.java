@@ -284,7 +284,7 @@ public class ProductUtils {
             this.xmsSourcingListMapper.insert(xmsSourcingList);
             // 更新shopify
             customerProduct.setProductId((long)productMaxId);
-            customerProduct.setSourcingId(xmsSourcingList.getId().intValue());
+            customerProduct.setSourcingId(xmsSourcingList.getId());
             this.xmsCustomerProductMapper.updateById(customerProduct);
 
             QueryWrapper<XmsShopifyPidInfo> pidInfoWrapper = new QueryWrapper<>();
