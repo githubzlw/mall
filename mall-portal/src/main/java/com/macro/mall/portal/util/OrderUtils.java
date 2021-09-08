@@ -36,7 +36,7 @@ public class OrderUtils {
     private static final String SOURCING_ORDER_NO = "sourcing:order";
     private static final String PAYMENT_ID = "payment:id:";
     private static final String PAY_ORDER_NO = "pay:order:";
-    public static final String PAY_USER_ID = "pay:user";
+    public static final String PAY_USER_ID = "pay:user:";
 
 
     @Autowired

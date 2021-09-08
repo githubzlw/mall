@@ -82,7 +82,7 @@ public class PayUtil {
      */
     public CommonResult getPayPalRedirectUtlByPayInfo(PayPalParam payPalParam, RedisUtil redisUtil) {
 
-        Object val = redisUtil.hmgetObj(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()));
+        Object val = redisUtil.hget(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()));
         if (null != val) {
             return CommonResult.failed("There is an order to be paid. Please try again later");
         }
@@ -99,7 +99,7 @@ public class PayUtil {
             JSONObject jsonObject = instance.postURL(resUrl, requestMap);
             CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
             if (commonResult.getCode() == 200) {
-                redisUtil.hmsetObj(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()), payPalParam.getOrderNo(), RedisUtil.EXPIRATION_TIME_5_MINUTES);
+                redisUtil.hset(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()), payPalParam.getOrderNo(), RedisUtil.EXPIRATION_TIME_5_MINUTES);
                 Map<String, String> param = new HashMap<>();
                 param.put("balanceFlag", "0");
                 param.put("payUrl", commonResult.getData().toString());
