@@ -19,6 +19,7 @@ import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.PmsSkuStock;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.enums.PayFromEnum;
@@ -74,6 +75,8 @@ public class XmsSourcingController {
     private MicroServiceConfig microServiceConfig;
     @Autowired
     private PmsPortalProductService pmsPortalProductService;
+    @Autowired
+    private RedisUtil redisUtil;
     private UrlUtil urlUtil = UrlUtil.getInstance();
 
     @InitBinder
@@ -569,7 +572,7 @@ public class XmsSourcingController {
             pmsSkuStockList.clear();
             orderNumMap.clear();
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER, this.redisUtil);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("payBySourcingProduct,sourcingPayParam[{}],error:", sourcingPayParam, e);

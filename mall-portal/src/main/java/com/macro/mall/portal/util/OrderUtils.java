@@ -2,9 +2,12 @@ package com.macro.mall.portal.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.entity.XmsCustomerSkuStock;
+import com.macro.mall.entity.XmsPayment;
 import com.macro.mall.mapper.OmsOrderMapper;
 import com.macro.mall.mapper.UmsMemberMapper;
+import com.macro.mall.mapper.XmsPaymentMapper;
 import com.macro.mall.model.*;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
@@ -12,7 +15,6 @@ import com.macro.mall.portal.domain.GenerateOrderParam;
 import com.macro.mall.portal.domain.GenerateOrderResult;
 import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.service.IXmsCustomerSkuStockService;
-import com.macro.mall.portal.service.OmsCartItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author: JiangXW
@@ -35,6 +36,7 @@ public class OrderUtils {
     private static final String SOURCING_ORDER_NO = "sourcing:order";
     private static final String PAYMENT_ID = "payment:id:";
     private static final String PAY_ORDER_NO = "pay:order:";
+    public static final String PAY_USER_ID = "pay:user";
 
 
     @Autowired
@@ -47,13 +49,12 @@ public class OrderUtils {
     private PortalOrderItemDao orderItemDao;
 
     @Autowired
-    private OmsCartItemService cartItemService;
-
-    @Autowired
     private IXmsCustomerSkuStockService iXmsCustomerSkuStockService;
 
     @Autowired
     private UmsMemberMapper memberMapper;
+    @Autowired
+    private XmsPaymentMapper xmsPaymentMapper;
 
 
 
@@ -101,6 +102,11 @@ public class OrderUtils {
                 this.iXmsCustomerSkuStockService.updateStateByOrderNo(orderNo, flag > 0 ? 2 : 3);
             }*/
             this.iXmsCustomerSkuStockService.updateStateByOrderNo(orderNo, flag > 0 ? 1 : -1);
+            if (flag > 0) {
+                UpdateWrapper<XmsPayment> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().set(XmsPayment::getPayStatus, 1).eq(XmsPayment::getOrderNo, orderNo);
+                this.xmsPaymentMapper.update(null, updateWrapper);
+            }
         }
     }
 

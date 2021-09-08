@@ -9,19 +9,24 @@ import com.google.gson.JsonParser;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.entity.XmsPayment;
+import com.macro.mall.entity.XmsPaymentLog;
 import com.macro.mall.entity.XmsRecordOfChangeInBalance;
 import com.macro.mall.mapper.OmsOrderMapper;
 import com.macro.mall.mapper.UmsMemberMapper;
+import com.macro.mall.mapper.XmsPaymentLogMapper;
 import com.macro.mall.mapper.XmsRecordOfChangeInBalanceMapper;
 import com.macro.mall.model.OmsOrder;
 import com.macro.mall.model.OmsOrderExample;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.PayConfig;
 import com.macro.mall.portal.domain.GenerateOrderResult;
 import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.common.enums.SiteEnum;
 import com.macro.mall.portal.enums.PayFromEnum;
+import com.macro.mall.portal.enums.PayStatusEnum;
+import com.macro.mall.portal.enums.PayTypeEnum;
 import com.macro.mall.portal.service.IXmsPaymentService;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.RelatedResources;
@@ -31,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.json.Json;
@@ -52,41 +58,48 @@ public class PayUtil {
 
     @Autowired
     private UmsMemberMapper memberMapper;
-
     @Autowired
     private MicroServiceConfig microServiceConfig;
-
     @Autowired
     private IXmsPaymentService xmsPaymentService;
-
     @Autowired
     private PayConfig payConfig;
-
     @Autowired
     private XmsRecordOfChangeInBalanceMapper xmsRecordOfChangeInBalanceMapper;
     @Autowired
     private OrderUtils orderUtils;
     @Autowired
     private OmsOrderMapper orderMapper;
+    @Autowired
+    private XmsPaymentLogMapper xmsPaymentLogMapper;
+    @Autowired
+    private ExchangeRateUtils exchangeRateUtils;
 
     /**
      * getPayPalRedirectUtlByPayInfo
      *
      * @param payPalParam
      */
-    public CommonResult getPayPalRedirectUtlByPayInfo(PayPalParam payPalParam) {
+    public CommonResult getPayPalRedirectUtlByPayInfo(PayPalParam payPalParam, RedisUtil redisUtil) {
+
+        Object val = redisUtil.hmgetObj(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()));
+        if (null != val) {
+            return CommonResult.failed("There is an order to be paid. Please try again later");
+        }
+
         Map<String, String> requestMap = new HashMap<>();
-        requestMap.put("cancelUrlType", String.valueOf(payConfig.getCancelUrlType()));
+        requestMap.put("cancelUrlType", String.valueOf(this.payConfig.getCancelUrlType()));
         requestMap.put("total", String.valueOf(payPalParam.getTotalAmount()));
         requestMap.put("orderNo", payPalParam.getOrderNo());
         requestMap.put("customMsg", payPalParam.getCustomMsg());
-        requestMap.put("successUrl", payConfig.getSuccessUrl());
+        requestMap.put("successUrl", this.payConfig.getSuccessUrl());
         requestMap.put("cancelUrl", payConfig.getCancelUrl());
         try {
-            String resUrl = microServiceConfig.getPayUrl() + "/" + payPalParam.getSiteName() + "/create/";
+            String resUrl = this.microServiceConfig.getPayUrl() + "/" + payPalParam.getSiteName() + "/create/";
             JSONObject jsonObject = instance.postURL(resUrl, requestMap);
             CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
             if (commonResult.getCode() == 200) {
+                redisUtil.hmsetObj(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()), payPalParam.getOrderNo(), RedisUtil.EXPIRATION_TIME_5_MINUTES);
                 Map<String, String> param = new HashMap<>();
                 param.put("balanceFlag", "0");
                 param.put("payUrl", commonResult.getData().toString());
@@ -95,6 +108,7 @@ public class PayUtil {
             return commonResult;
         } catch (IOException e) {
             log.error("getPayPalRedirectUtlByPayInfo,payPalParam:[{}],error:", payPalParam, e);
+            redisUtil.hdel(OrderUtils.PAY_USER_ID, String.valueOf(payPalParam.getMemberId()));
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -109,7 +123,7 @@ public class PayUtil {
         requestMap.put("paymentId", paymentId);
         requestMap.put("payerId", payerId);
         try {
-            JSONObject jsonObject = instance.postURL(microServiceConfig.getPayUrl() + "/" + siteName + "/execute/", requestMap);
+            JSONObject jsonObject = instance.postURL(this.microServiceConfig.getPayUrl() + "/" + siteName + "/execute/", requestMap);
             commonResult = new Gson().fromJson(jsonObject.toJSONString(), CommonResult.class);
             if (commonResult.getCode() == 200) {
                 CommonResult.success(new Gson().fromJson(commonResult.getData().toString(), CommonResult.class));
@@ -485,33 +499,41 @@ public class PayUtil {
      * @param request
      * @return
      */
-    public CommonResult beforePayAndPay(GenerateOrderResult orderResult, UmsMember currentMember, HttpServletRequest request, PayFromEnum payFromEnum) {
+    public CommonResult beforePayAndPay(GenerateOrderResult orderResult, UmsMember currentMember, HttpServletRequest request, PayFromEnum payFromEnum, RedisUtil redisUtil) {
         // 针对订单结果，发起支付流程
+        OmsOrder omsOrder = new OmsOrder();
+        omsOrder.setOrderSn(orderResult.getOrderNo());
 
         // 1. 仅PayPal的支付 2. PayPal和余额混合支付 3. 仅余额支付
-        String remark = "";
+        String paymentId = "";
         double payAmount = orderResult.getPayAmount();
         if (orderResult.getPayAmount() > 0) {
-            remark = "paypal支付前日志";
-            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 0, payFromEnum);
+            omsOrder.setNote(JSONObject.toJSONString(orderResult) + "||paypal支付前日志");
+            omsOrder.setTotalAmount(new BigDecimal(payAmount));
+            omsOrder.setPayType(0);
+            omsOrder.setStatus(0);
+            this.insertPaymentLog(currentMember, paymentId, payFromEnum, omsOrder);
         }
         if (orderResult.getBalanceAmount() > 0) {
-            remark = "余额支付前日志";
-            this.insertPayment(currentMember, orderResult.getOrderNo(), payAmount, 0, "", remark, 1, payFromEnum);
-            // 扣除客户余额
-            if(orderResult.getPayAmount() == 0){
-                this.payBalance(orderResult.getBalanceAmount(), currentMember, 0);
-            }
+            omsOrder.setNote(JSONObject.toJSONString(orderResult) + "||余额支付前日志");
+            omsOrder.setTotalAmount(new BigDecimal(orderResult.getBalanceAmount()));
+            omsOrder.setPayType(1);
+            omsOrder.setStatus(0);
+            this.insertPaymentLog(currentMember, paymentId, payFromEnum, omsOrder);
 
         }
         if (orderResult.getPayAmount() > 0) {
             PayPalParam payPalParam = this.getPayPalParam(request, currentMember.getId(), orderResult.getOrderNo(), orderResult.getPayAmount());
             payPalParam.setSuccessUrlType("1");
-            return this.getPayPalRedirectUtlByPayInfo(payPalParam);
+            payPalParam.setMemberId(currentMember.getId());
+            return this.getPayPalRedirectUtlByPayInfo(payPalParam, redisUtil);
         } else {
             orderResult.setBalanceFlag(1);
             // 更新订单状态
             this.orderUtils.paySuccessUpdate(orderResult.getOrderNo(), 1);
+
+            // 扣除客户余额
+            this.payBalance(orderResult.getBalanceAmount(), currentMember, 0, orderResult.getOrderNo(), "", payFromEnum);
             return CommonResult.success(orderResult, "Balance paid successfully");
         }
     }
@@ -524,14 +546,15 @@ public class PayUtil {
      * @param operatingType 操作类型 0:扣除余额 1:增加余额
      * @return
      */
-    public int payBalance(Double amount, UmsMember currentMember, Integer operatingType) {
+    @Transactional
+    public int payBalance(Double amount, UmsMember currentMember, Integer operatingType, String orderNo, String paymentId, PayFromEnum payFromEnum) {
         synchronized (currentMember.getId()) {
             UmsMember umsMember = this.memberMapper.selectByPrimaryKey(currentMember.getId());
 
             UmsMember tempMember = new UmsMember();
             tempMember.setId(umsMember.getId());
             Double balance = umsMember.getBalance();
-            if(null == balance){
+            if (null == balance) {
                 balance = 0D;
             }
             if (operatingType > 0) {
@@ -541,6 +564,11 @@ public class PayUtil {
             }
 
             this.memberMapper.updateByPrimaryKeySelective(tempMember);
+            // 插入支付记录
+            if (operatingType == 0) {
+                this.insertPayment(currentMember, orderNo, amount, PayStatusEnum.SUCCESS, paymentId, "balance pay", PayTypeEnum.BALANCE, payFromEnum);
+            }
+
             // 执行插入记录
             XmsRecordOfChangeInBalance changeInBalance = new XmsRecordOfChangeInBalance();
             changeInBalance.setCreateTime(new Date());
@@ -557,17 +585,18 @@ public class PayUtil {
 
     /**
      * 根据订单支付的扣除余额
+     *
      * @param orderNo
      */
-    public void payBalanceByOrderNo(String orderNo, Long memberId){
+    public void payBalanceByOrderNo(String orderNo, Long memberId, PayFromEnum payFromEnum) {
         OmsOrderExample example = new OmsOrderExample();
         example.createCriteria().andOrderSnEqualTo(orderNo);
         List<OmsOrder> omsOrders = this.orderMapper.selectByExample(example);
-        if(CollectionUtil.isNotEmpty(omsOrders)){
+        if (CollectionUtil.isNotEmpty(omsOrders)) {
             Double balanceAmount = omsOrders.get(0).getBalanceAmount();
-            if(null != balanceAmount && balanceAmount > 0){
+            if (null != balanceAmount && balanceAmount > 0) {
                 UmsMember umsMember = this.memberMapper.selectByPrimaryKey(memberId);
-                this.payBalance(balanceAmount, umsMember, 0);
+                this.payBalance(balanceAmount, umsMember, 1, orderNo, "", payFromEnum);
             }
         }
     }
@@ -606,25 +635,51 @@ public class PayUtil {
      * @param currentMember
      * @param orderNo
      * @param paymentAmount
-     * @param payStatus     : 付款状态 0 失败(Failed) 1 成功(Success) 2进行中(Pending)
+     * @param payStatusEnum : 付款状态 0 失败(Failed) 1 成功(Success) 2进行中(Pending)
      * @param paymentId
      * @param remark
-     * @param payType       : 0是paypal支付，1 余额支付
+     * @param payTypeEnum   : 0是paypal支付，1 余额支付
      */
     public void insertPayment(UmsMember currentMember, String orderNo, Double paymentAmount,
-                              Integer payStatus, String paymentId, String remark, Integer payType, PayFromEnum payFromEnum) {
+                              PayStatusEnum payStatusEnum, String paymentId, String remark, PayTypeEnum payTypeEnum, PayFromEnum payFromEnum) {
         XmsPayment xmsPayment = new XmsPayment();
         xmsPayment.setUsername(currentMember.getUsername());
         xmsPayment.setMemberId(currentMember.getId());
         xmsPayment.setOrderNo(orderNo);
         xmsPayment.setPaymentAmount(paymentAmount.floatValue());
-        xmsPayment.setPayStatus(payStatus);
-        xmsPayment.setPayType(0);
+        xmsPayment.setPayStatus(payStatusEnum.getCode());
         xmsPayment.setPaymentId(paymentId);
         xmsPayment.setRemark(remark);
-        xmsPayment.setPayType(payType);
+        xmsPayment.setPayType(payTypeEnum.getCode());
         xmsPayment.setPayFrom(payFromEnum.getCode());
-        xmsPaymentService.save(xmsPayment);
+        this.xmsPaymentService.save(xmsPayment);
+    }
+
+    /**
+     * 支付日志
+     *
+     * @param currentMember
+     * @param paymentId
+     * @param payFromEnum
+     * @param omsOrder
+     */
+    public void insertPaymentLog(UmsMember currentMember, String paymentId, PayFromEnum payFromEnum, OmsOrder omsOrder) {
+
+        XmsPaymentLog paymentLog = new XmsPaymentLog();
+        paymentLog.setCreateTime(new Date());
+        paymentLog.setExchangeRate(exchangeRateUtils.getUsdToCnyRate());
+        paymentLog.setMemberId(currentMember.getId());
+        paymentLog.setOrderInfo(JSONObject.toJSONString(omsOrder));
+        paymentLog.setOrderNo(omsOrder.getOrderSn());
+        paymentLog.setPayFrom(payFromEnum.getCode());
+        paymentLog.setPaymentAmount(omsOrder.getTotalAmount().floatValue());
+        paymentLog.setPayType(omsOrder.getPayType());
+        paymentLog.setPayStatus(omsOrder.getStatus());
+        paymentLog.setPaySid(paymentId);
+        paymentLog.setRemark(omsOrder.getNote());
+        paymentLog.setPaymentNo(omsOrder.getOrderSn());
+        paymentLog.setUsername("");
+        this.xmsPaymentLogMapper.insert(paymentLog);
     }
 
 }
