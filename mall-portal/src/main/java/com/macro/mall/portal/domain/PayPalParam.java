@@ -25,4 +25,7 @@ public class PayPalParam {
 
     @ApiModelProperty(value = "回调页面地址")
     private String successUrlType;
+
+    @ApiModelProperty(value = "客户ID")
+    private Long memberId;
 }

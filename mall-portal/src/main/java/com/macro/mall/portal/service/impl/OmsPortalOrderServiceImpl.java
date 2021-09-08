@@ -19,7 +19,7 @@ import com.macro.mall.portal.dao.PortalOrderDao;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
 import com.macro.mall.portal.dao.SmsCouponHistoryDao;
 import com.macro.mall.portal.domain.*;
-import com.macro.mall.portal.enums.OrderTypeEnum;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -750,26 +750,30 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
      */
     @Override
     public String generateOrderSn(OmsOrder order) {
-        StringBuilder sb = new StringBuilder();
-        String date = new SimpleDateFormat("yyyyMMdd").format(new Date()).substring(2);
-        String key = REDIS_DATABASE+":"+ REDIS_KEY_ORDER_ID + date;
-        Long increment = redisService.incr(key, 1);
-        sb.append(date);
-        sb.append(String.format("%02d", order.getSourceType()));
-        //sb.append(String.format("%02d", order.getPayType()));
-        String incrementStr = increment.toString();
-        if (incrementStr.length() <= 4) {
-            sb.append(String.format("%04d", increment));
-        } else {
-            sb.append(incrementStr);
+        synchronized (Object.class) {
+            StringBuilder sb = new StringBuilder();
+            String date = new SimpleDateFormat("yyyyMMdd").format(new Date()).substring(2);
+            String key = REDIS_DATABASE + ":" + REDIS_KEY_ORDER_ID + date;
+            Long increment = redisService.incr(key, 1);
+            sb.append(date);
+            //sb.append(String.format("%02d", order.getSourceType()));
+            sb.append(order.getSourceType());
+            //sb.append(String.format("%02d", order.getPayType()));
+            String incrementStr = increment.toString();
+            if (incrementStr.length() <= 5) {
+                sb.append(String.format("%05d", increment));
+            } else {
+                sb.append(incrementStr);
+            }
+            if (1 == order.getSourceType()) {
+                // 出货订单
+                return OrderPrefixEnum.SHOPIFY_DELIVER_ORDER.getCode() + sb.toString();
+            } else {
+                // sourcing库存订单
+                return OrderPrefixEnum.PURCHASE_STOCK_ORDER.getCode() + sb.toString();
+            }
         }
-        if(1 == order.getSourceType()){
-            // 出货订单
-            return OrderTypeEnum.DELIVER_GOODS.getCode() + sb.toString();
-        } else{
-            // sourcing库存订单
-            return OrderTypeEnum.SOURCING_ORDER.getCode() + sb.toString();
-        }
+
 
     }
 

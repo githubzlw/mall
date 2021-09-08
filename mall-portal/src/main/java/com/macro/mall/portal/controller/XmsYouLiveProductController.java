@@ -13,8 +13,10 @@ import com.macro.mall.entity.XmsCustomerProduct;
 import com.macro.mall.entity.XmsCustomerSkuStock;
 import com.macro.mall.entity.XmsSourcingList;
 import com.macro.mall.model.*;
+import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.util.*;
@@ -66,6 +68,8 @@ public class XmsYouLiveProductController {
     private MicroServiceConfig microServiceConfig;
 
     private UrlUtil urlUtil = UrlUtil.getInstance();
+    @Autowired
+    private RedisUtil redisUtil;
 
     @ApiOperation("获取客户产品列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -190,7 +194,7 @@ public class XmsYouLiveProductController {
 
             // 根据运输方式算运费
             double totalFreight = 0;
-            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.LiveProduct.getName());
+            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.PURCHASE_STOCK_ORDER.getCode());
             // 订单处理
             GenerateOrderParam generateParam = GenerateOrderParam.builder().totalFreight(totalFreight).orderNo(orderNo)
                     .currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
@@ -205,7 +209,7 @@ public class XmsYouLiveProductController {
 
             orderResult.setTotalFreight(orderPayParam.getShippingCostValue());
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.PURCHASE_INVENTORY);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.PURCHASE_INVENTORY, this.redisUtil);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("youLiveProducts,productParam[{}],error:", productParam, e);

@@ -1,6 +1,7 @@
 package com.macro.mall.portal.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
@@ -22,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -81,7 +84,8 @@ public class PmsPortalProductController {
     @ResponseBody
     public CommonResult<CommonPage<PmsProduct>> getPublicProduct(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                                                  @RequestParam(required = false, defaultValue = "20") Integer pageSize,
-                                                                 @RequestParam(required = false) String title) {
+                                                                 @RequestParam(required = false) String title,
+                                                                 @RequestParam(required = false, defaultValue = "001") String time) {
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
             List<PmsProduct> productList = this.portalProductService.getPublicProduct(pageNum, pageSize, title);
@@ -91,13 +95,33 @@ public class PmsPortalProductController {
                 queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, currentMember.getShopifyName()).in(XmsShopifyPidInfo::getPid, collect);
                 List<XmsShopifyPidInfo> list = this.xmsShopifyPidInfoService.list(queryWrapper);
                 List<String> pidList = list.stream().map(XmsShopifyPidInfo::getPid).collect(Collectors.toList());
+
+                queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().in(XmsShopifyPidInfo::getPid, collect);
+                list = this.xmsShopifyPidInfoService.list(queryWrapper);
+
+                Map<String, List<XmsShopifyPidInfo>> pidMap = new HashMap<>();
+                if(CollectionUtil.isNotEmpty(list)){
+                    pidMap = list.stream().collect(Collectors.groupingBy(XmsShopifyPidInfo::getPid));
+                }
+
+                Map<String, List<XmsShopifyPidInfo>> finalPidMap = pidMap;
                 productList.forEach(e -> {
                     if (pidList.contains(String.valueOf(e.getId()))) {
                         e.setNote("1");
                     } else {
                         e.setNote("0");
                     }
+                    if(StrUtil.isBlank(e.getMoq())){
+                        e.setMoq("1");
+                    }
+                    if(finalPidMap.containsKey(String.valueOf(e.getId()))){
+                        e.setLowStock(finalPidMap.get(String.valueOf(e.getId())).size());
+                    } else{
+                        e.setLowStock(0);
+                    }
                 });
+                pidMap.clear();
                 list.clear();
                 collect.clear();
                 pidList.clear();

@@ -28,6 +28,7 @@ public class RedisUtil {
 
     public static final long EXPIRATION_TIME_7_DAY = 3600 * 24 * 7;
     public static final long EXPIRATION_TIME_1_HOURS = 60 * 60;
+    public static final long EXPIRATION_TIME_5_MINUTES = 15;
     public static final long EXPIRATION_TIME_1_DAY = 3600 * 24;
 
     private final StringRedisTemplate stringRedisTemplate;

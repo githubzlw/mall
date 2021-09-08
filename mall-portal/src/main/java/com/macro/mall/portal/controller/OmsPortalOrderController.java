@@ -216,7 +216,7 @@ public class OmsPortalOrderController {
             orderResult.setProductCost(detail.getTotalAmount().floatValue());
             orderResult.setTotalFreight(detail.getFreightAmount().doubleValue());
 
-            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER);
+            return this.payUtil.beforePayAndPay(orderResult, currentMember, request, PayFromEnum.SOURCING_ORDER, this.redisUtil);
         }
 
 
