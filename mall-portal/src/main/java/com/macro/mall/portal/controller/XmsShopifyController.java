@@ -437,6 +437,7 @@ public class XmsShopifyController {
                 this.xmsShopifyAuthService.remove(queryWrapper);
                 this.umsMemberService.updateShopifyInfo(byId.getId(), "", 0);
             }
+            this.umsMemberService.updateSecurityContext();
             return CommonResult.success(0);
         } catch (Exception e) {
             e.printStackTrace();

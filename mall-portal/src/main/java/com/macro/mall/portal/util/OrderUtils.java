@@ -10,7 +10,7 @@ import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
 import com.macro.mall.portal.domain.GenerateOrderParam;
 import com.macro.mall.portal.domain.GenerateOrderResult;
-import com.macro.mall.portal.enums.OrderTypeEnum;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.service.IXmsCustomerSkuStockService;
 import com.macro.mall.portal.service.OmsCartItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class OrderUtils {
                 memberId = omsOrders.get(0).getMemberId();
                 OmsOrder tempOrder = new OmsOrder();
                 tempOrder.setId(omsOrders.get(0).getId());
-                if (orderNo.contains(OrderTypeEnum.DELIVER_GOODS.getCode())) {
+                if (orderNo.contains(OrderPrefixEnum.SHOPIFY_DELIVER_ORDER.getCode())) {
                     tempOrder.setStatus(2);
                 } else {
                     tempOrder.setStatus(flag > 0 ? 5 : -1);

@@ -1,6 +1,5 @@
 package com.macro.mall.portal.controller;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
@@ -9,7 +8,7 @@ import com.macro.mall.portal.domain.PayPalParam;
 import com.macro.mall.common.enums.SiteEnum;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.UmsMemberService;
-import com.macro.mall.portal.util.OrderPrefixEnum;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
 import com.paypal.api.payments.*;
@@ -94,7 +93,7 @@ public class XmsPaymentController {
             }
 
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
-            orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.Balance.getName());
+            orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.Balance.getCode());
             // 生成订单信息
             this.orderUtils.generateBalanceOrder(orderNo, totalAmount, currentMember.getId(), currentMember.getUsername());
             PayPalParam payPalParam = payUtil.getPayPalParam(request, currentMember.getId(), orderNo, totalAmount);
@@ -151,7 +150,7 @@ public class XmsPaymentController {
                     this.orderUtils.paySuccessUpdate(itemNumber, 1);
 
                     // BL开头的订单，更新客户余额
-                    if (itemNumber.indexOf(OrderPrefixEnum.Balance.getName()) == 0) {
+                    if (itemNumber.indexOf(OrderPrefixEnum.Balance.getCode()) == 0) {
                         synchronized (currentMember.getId()) {
                             this.payUtil.payBalance(Double.parseDouble(amount), currentMember, 1);
                         }

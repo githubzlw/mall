@@ -19,7 +19,7 @@ import com.macro.mall.portal.dao.PortalOrderDao;
 import com.macro.mall.portal.dao.PortalOrderItemDao;
 import com.macro.mall.portal.dao.SmsCouponHistoryDao;
 import com.macro.mall.portal.domain.*;
-import com.macro.mall.portal.enums.OrderTypeEnum;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -765,10 +765,10 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         }
         if(1 == order.getSourceType()){
             // 出货订单
-            return OrderTypeEnum.DELIVER_GOODS.getCode() + sb.toString();
+            return OrderPrefixEnum.SHOPIFY_DELIVER_ORDER.getCode() + sb.toString();
         } else{
             // sourcing库存订单
-            return OrderTypeEnum.SOURCING_ORDER.getCode() + sb.toString();
+            return OrderPrefixEnum.PURCHASE_STOCK_ORDER.getCode() + sb.toString();
         }
 
     }

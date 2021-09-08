@@ -23,7 +23,7 @@ import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.enums.PayFromEnum;
 import com.macro.mall.portal.service.*;
-import com.macro.mall.portal.util.OrderPrefixEnum;
+import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
 import io.swagger.annotations.Api;
@@ -540,7 +540,7 @@ public class XmsSourcingController {
             double totalFreight = 0;
 
             // 生成订单和订单详情信息
-            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.SourcingList.getName());
+            String orderNo = this.orderUtils.getOrderNoByRedis(OrderPrefixEnum.PURCHASE_STOCK_ORDER.getCode());
             OrderPayParam orderPayParam = new OrderPayParam();
             BeanUtil.copyProperties(sourcingPayParam, orderPayParam);
             // 生成订单并且计算总价格

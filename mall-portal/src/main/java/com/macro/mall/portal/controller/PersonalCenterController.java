@@ -1,5 +1,6 @@
 package com.macro.mall.portal.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsPayment;
@@ -48,6 +49,9 @@ public class PersonalCenterController {
             xmsPaymentParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
             xmsPaymentParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
             Page<XmsPayment> listPage = this.xmsPaymentService.list(xmsPaymentParam);
+            if(CollectionUtil.isNotEmpty(listPage.getRecords())){
+                listPage.getRecords().forEach(e-> e.setRemark(null));
+            }
             return CommonResult.success(listPage);
         } catch (Exception e) {
             e.printStackTrace();

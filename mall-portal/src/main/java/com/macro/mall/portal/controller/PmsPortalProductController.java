@@ -84,7 +84,8 @@ public class PmsPortalProductController {
     @ResponseBody
     public CommonResult<CommonPage<PmsProduct>> getPublicProduct(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                                                  @RequestParam(required = false, defaultValue = "20") Integer pageSize,
-                                                                 @RequestParam(required = false) String title) {
+                                                                 @RequestParam(required = false) String title,
+                                                                 @RequestParam(required = false, defaultValue = "001") String time) {
         try {
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
             List<PmsProduct> productList = this.portalProductService.getPublicProduct(pageNum, pageSize, title);
