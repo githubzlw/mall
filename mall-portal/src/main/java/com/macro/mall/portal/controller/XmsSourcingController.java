@@ -689,8 +689,8 @@ public class XmsSourcingController {
 
 
             sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId);
-            sourcingOne = this.xmsSourcingListService.getOne(sourcingWrapper);
-            if(null == sourcingOne){
+            List<XmsSourcingList> list = this.xmsSourcingListService.list(sourcingWrapper);
+            if(CollectionUtil.isEmpty(list)){
                 return CommonResult.failed("no this sourcing");
             }
 
@@ -749,7 +749,7 @@ public class XmsSourcingController {
             sourcingList.setImages(detail.getProduct().getAlbumPics());
             sourcingList.setTitle(detail.getProduct().getName());
             sourcingList.setStatus(2);
-            sourcingList.setSiteType(sourcingOne.getSiteType());
+            sourcingList.setSiteType(list.get(0).getSiteType());
             sourcingList.setRemark("public to sourcing");
             sourcingList.setOrderQuantity(detail.getProduct().getStock());
             sourcingList.setPrice(detail.getProduct().getPriceXj());
