@@ -596,7 +596,7 @@ public class PayUtil {
             Double balanceAmount = omsOrders.get(0).getBalanceAmount();
             if (null != balanceAmount && balanceAmount > 0) {
                 UmsMember umsMember = this.memberMapper.selectByPrimaryKey(memberId);
-                this.payBalance(balanceAmount, umsMember, 1, orderNo, "", payFromEnum);
+                this.payBalance(balanceAmount, umsMember, 0, orderNo, "", payFromEnum);
             }
         }
     }
@@ -653,6 +653,7 @@ public class PayUtil {
         xmsPayment.setPayType(payTypeEnum.getCode());
         xmsPayment.setPayFrom(payFromEnum.getCode());
         this.xmsPaymentService.save(xmsPayment);
+        System.err.println(Arrays.toString(Thread.currentThread().getStackTrace()));
     }
 
     /**

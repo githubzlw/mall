@@ -107,7 +107,8 @@ public class PmsPortalProductController {
 
                 Map<String, List<XmsShopifyPidInfo>> finalPidMap = pidMap;
                 productList.forEach(e -> {
-                    if (pidList.contains(String.valueOf(e.getId()))) {
+                    String tempId = String.valueOf(e.getId());
+                    if (pidList.contains(tempId)) {
                         e.setNote("1");
                     } else {
                         e.setNote("0");
@@ -115,8 +116,8 @@ public class PmsPortalProductController {
                     if(StrUtil.isBlank(e.getMoq())){
                         e.setMoq("1");
                     }
-                    if(finalPidMap.containsKey(String.valueOf(e.getId()))){
-                        e.setLowStock(finalPidMap.get(String.valueOf(e.getId())).size());
+                    if(finalPidMap.containsKey(tempId)){
+                        e.setLowStock(finalPidMap.get(tempId).size());
                     } else{
                         e.setLowStock(0);
                     }

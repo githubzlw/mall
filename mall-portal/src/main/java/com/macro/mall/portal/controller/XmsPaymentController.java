@@ -127,7 +127,7 @@ public class XmsPaymentController {
             omsOrder.setStatus(0);
             this.payUtil.insertPaymentLog(currentMember, "", payFromEnum, omsOrder);
 
-            this.payUtil.insertPayment(currentMember, orderNo, totalAmount, PayStatusEnum.PENDING, "", "余额支付", PayTypeEnum.PAYPAL, payFromEnum);
+            //this.payUtil.insertPayment(currentMember, orderNo, totalAmount, PayStatusEnum.PENDING, "", "余额支付", PayTypeEnum.PAYPAL, payFromEnum);
             payPalParam.setMemberId(currentMember.getId());
             CommonResult commonResult = this.payUtil.getPayPalRedirectUtlByPayInfo(payPalParam, this.redisUtil);
             return commonResult;
@@ -224,30 +224,31 @@ public class XmsPaymentController {
     public void insertPayInfo(Map<String, String> payerInfoMap, String itemNumber, String PayerID, String token, UmsMember currentMember, String paymentId, PayFromEnum payFromEnum) {
         // 将paymentId的数据和订单数据放入redis中，防止重复支付
 
-        //获取付款金额
-        String amount = payerInfoMap.get("totalAmount");
+        synchronized (currentMember.getId()) {
+            //获取付款金额
+            String amount = payerInfoMap.get("totalAmount");
 
-        //支付日志
-        OmsOrder omsOrder = new OmsOrder();
-        omsOrder.setOrderSn(itemNumber);
-        omsOrder.setTotalAmount(new BigDecimal(amount));
-        omsOrder.setNote("支付回调日志,PayerID:" + PayerID + ",token:" + token);
-        omsOrder.setPayType(0);
-        omsOrder.setStatus(0);
-        this.payUtil.insertPaymentLog(currentMember, paymentId, payFromEnum, omsOrder);
+            //支付日志
+            OmsOrder omsOrder = new OmsOrder();
+            omsOrder.setOrderSn(itemNumber);
+            omsOrder.setTotalAmount(new BigDecimal(amount));
+            omsOrder.setNote("支付回调日志,PayerID:" + PayerID + ",token:" + token);
+            omsOrder.setPayType(0);
+            omsOrder.setStatus(0);
+            this.payUtil.insertPaymentLog(currentMember, paymentId, payFromEnum, omsOrder);
 
-        // 插入支付表
-        this.payUtil.insertPayment(currentMember, itemNumber, Double.parseDouble(amount), PayStatusEnum.SUCCESS, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token, PayTypeEnum.PAYPAL, payFromEnum);
-        // 更新订单数据 更新库存状态
-        this.orderUtils.paySuccessUpdate(itemNumber, 1);
+            // 插入支付表
+            this.payUtil.insertPayment(currentMember, itemNumber, Double.parseDouble(amount), PayStatusEnum.SUCCESS, paymentId, "支付回调日志,PayerID:" + PayerID + ",token:" + token, PayTypeEnum.PAYPAL, payFromEnum);
+            // 更新订单数据 更新库存状态
+            this.orderUtils.paySuccessUpdate(itemNumber, 1);
 
-        // BL开头的订单，更新客户余额
-        if (itemNumber.indexOf(OrderPrefixEnum.Balance.getCode()) == 0) {
-            synchronized (currentMember.getId()) {
+            // BL开头的订单，更新客户余额
+            if (itemNumber.indexOf(OrderPrefixEnum.Balance.getCode()) == 0) {
                 this.payUtil.payBalance(Double.parseDouble(amount), currentMember, 1, itemNumber, paymentId, payFromEnum);
+            } else {
+                this.payUtil.payBalanceByOrderNo(itemNumber, currentMember.getId(), payFromEnum);
             }
         }
-        this.payUtil.payBalanceByOrderNo(itemNumber, currentMember.getId(), payFromEnum);
     }
 
 }

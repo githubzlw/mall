@@ -175,6 +175,9 @@ public class OmsPortalOrderController {
             if (null == detail || null == detail.getId() || detail.getId() == 0) {
                 return CommonResult.failed("no this order");
             }
+            if(0 != detail.getStatus()){
+                return CommonResult.failed("This order has been paid or cancelled");
+            }
 
             double totalAmount = 0; // 总金额
             double payAmount = 0; // PayPal支付

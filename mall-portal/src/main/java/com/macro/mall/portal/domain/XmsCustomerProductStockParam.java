@@ -29,4 +29,6 @@ public class XmsCustomerProductStockParam {
 
     private String title;
 
+    private Integer shippingFrom;
+
 }

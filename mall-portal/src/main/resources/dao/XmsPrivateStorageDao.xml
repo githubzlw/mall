@@ -6,14 +6,18 @@
     <select id="queryProductByParam" parameterType="com.macro.mall.portal.domain.XmsCustomerProductStockParam" resultType="com.macro.mall.portal.domain.XmsCustomerProductQuery">
 
         select * from (
-        select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time
+        select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time,
+        c.shipping_from as shippingFrom
         from xms_customer_sku_stock c, xms_customer_product a, pms_product b
         where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
         and c.status > 0
         <if test="title != null">
             and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')
         </if>
-        group by c.product_id,c.sku_code) rs
+        <if test="shippingFrom != null">
+            and c.shipping_from = #{shippingFrom,jdbcType=INTEGER}
+        </if>
+        group by c.product_id,c.sku_code,c.shipping_from) rs
         order by rs.create_time desc
         <if test="pageSize > 0">
             limit #{pageNum,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
@@ -23,14 +27,18 @@
     <select id="queryProductByParamCount" parameterType="com.macro.mall.portal.domain.XmsCustomerProductStockParam" resultType="java.lang.Integer">
 
         select count(0) from (
-        select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time
+        select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time,
+        c.shipping_from as shippingFrom
         from xms_customer_sku_stock c, xms_customer_product a, pms_product b
         where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
         and c.status > 0
         <if test="title != null">
             and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')
         </if>
-        group by c.product_id,c.sku_code) rs
+        <if test="shippingFrom != null">
+            and c.shipping_from = #{shippingFrom,jdbcType=INTEGER}
+        </if>
+        group by c.product_id,c.sku_code,c.shipping_from) rs
     </select>
 
 </mapper>
