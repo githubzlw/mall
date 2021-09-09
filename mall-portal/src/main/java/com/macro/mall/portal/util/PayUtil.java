@@ -653,6 +653,7 @@ public class PayUtil {
         xmsPayment.setPayType(payTypeEnum.getCode());
         xmsPayment.setPayFrom(payFromEnum.getCode());
         this.xmsPaymentService.save(xmsPayment);
+        System.err.println(Arrays.toString(Thread.currentThread().getStackTrace()));
     }
 
     /**

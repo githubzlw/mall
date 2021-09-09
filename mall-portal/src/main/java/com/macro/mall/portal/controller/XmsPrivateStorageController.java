@@ -87,7 +87,8 @@ public class XmsPrivateStorageController {
                         productResult.setSkuCode(e.getSkuCode());
                         productResult.setImg(e.getImg());
                         productResult.setTitle(e.getTitle());
-                        resultMap.put(e.getProductId() + "_" + e.getSkuCode(), productResult);
+                        productResult.setShippingFrom(e.getShippingFrom());
+                        resultMap.put(e.getProductId() + "_" + e.getSkuCode() + "_" + e.getShippingFrom(), productResult);
                     }
                 });
 
@@ -100,7 +101,7 @@ public class XmsPrivateStorageController {
                 List<XmsCustomerSkuStock> list = this.iXmsCustomerSkuStockService.list(stockQueryWrapper);
                 if (CollectionUtil.isNotEmpty(list)) {
                     list.forEach(e -> {
-                        String tempSek = e.getProductId() + "_" + e.getSkuCode();
+                        String tempSek = e.getProductId() + "_" + e.getSkuCode() + "_" + e.getShippingFrom();
                         if (resultMap.containsKey(tempSek)) {
                             XmsCustomerProductResult tempObj = resultMap.get(tempSek);
                             if(StrUtil.isEmpty(tempObj.getSkuData())){

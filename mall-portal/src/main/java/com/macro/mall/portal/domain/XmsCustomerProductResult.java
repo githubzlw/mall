@@ -21,6 +21,7 @@ public class XmsCustomerProductResult extends XmsCustomerProductQuery{
     private int reserved;
     private int awaitingShipment;
     private int fulfilled;
+    private Integer shippingFrom;
 
 
 }

@@ -19,6 +19,7 @@ public class XmsCustomerProductQuery {
     private String title;
     private String skuCode;
     private Integer status;
+    private Integer shippingFrom;
 
 
 }
