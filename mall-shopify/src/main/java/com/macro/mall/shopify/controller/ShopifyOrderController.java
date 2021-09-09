@@ -10,6 +10,7 @@ import com.macro.mall.shopify.cache.RedisUtil;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
+import com.macro.mall.shopify.pojo.ShopifyOrderParam;
 import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,9 +54,9 @@ public class ShopifyOrderController {
         Map<String, String> map = new HashMap<>();
         try {
             Object val = this.redisUtil.hmgetObj(RedisUtil.GET_COUNTRY_BY_SHOPIFY_NAME, shopifyName);
-        if (null != val && "success".equalsIgnoreCase(val.toString())) {
-            return CommonResult.success("this shop is execute!!");
-        }
+            if (null != val && "success".equalsIgnoreCase(val.toString())) {
+                return CommonResult.success("this shop is execute!!");
+            }
             int total = this.shopifyUtils.getCountryByShopifyName(shopifyName);
             map.put(shopifyName, "success");
             this.redisUtil.hmset(RedisUtil.GET_COUNTRY_BY_SHOPIFY_NAME, map, 60);
@@ -85,7 +86,7 @@ public class ShopifyOrderController {
 
     @PostMapping("/createFulfillment")
     @ApiOperation("创建履行订单")
-    public CommonResult createFulfillment(FulfillmentParam fulfillmentParam) {
+    public CommonResult createFulfillment(@RequestBody FulfillmentParam fulfillmentParam) {
 
         Assert.notNull(fulfillmentParam, "fulfillmentParam is null");
         Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getShopifyName()), "shopifyName is null");
@@ -96,24 +97,18 @@ public class ShopifyOrderController {
 
         try {
             // 获取订单fulfillmentservice的ID
-
-
             LogisticsCompanyEnum anElse = Arrays.stream(LogisticsCompanyEnum.values()).filter(e -> e.getName().equalsIgnoreCase(fulfillmentParam.getTrackingCompany())).findFirst().orElse(null);
             if (null == anElse) {
                 return CommonResult.failed("Cannot match company name");
             }
-
-
             List<XmsShopifyOrderinfo> xmsShopifyOrderinfos = this.shopifyUtils.queryListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(xmsShopifyOrderinfos)) {
                 return CommonResult.failed("Cannot match OrderNo");
             }
-
             List<XmsShopifyOrderDetails> detailsList = this.shopifyUtils.queryDetailsListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(detailsList)) {
                 return CommonResult.failed("Cannot match Details List");
             }
-
             String updateOrder = this.shopifyUtils.createFulfillmentOrders(xmsShopifyOrderinfos.get(0), detailsList, fulfillmentParam, anElse);
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
@@ -134,63 +129,66 @@ public class ShopifyOrderController {
     }
 
 
-    @PostMapping("/putOrders")
+    @PostMapping("/putOrdersStatus")
     @ApiOperation("根据shopifyName更新订单状态")
-    public CommonResult updateOrder(@ApiParam(name = "shopifyName", value = "shopify店铺名", required = true)
-                                    @RequestParam(value = "shopifyName") String shopifyName,
-                                    @ApiParam(name = "orderNo", value = "订单号", required = true)
-                                    @RequestParam(value = "orderNo") Long orderNo,
-                                    @ApiParam(name = "fulfillment_status", value = "订单状态", required = true)
-                                    @RequestParam(value = "fulfillment_status") String fulfillment_status) {
+    public CommonResult putOrdersStatus(@RequestBody ShopifyOrderParam orderParam) {
 
-        Assert.notNull(shopifyName, "shopifyName is null");
-        Assert.notNull(orderNo, "orderNo is null");
-        Assert.notNull(fulfillment_status, "fulfillment_status is null");
+        Assert.isTrue(StrUtil.isNotBlank(orderParam.getShopifyName()), "shopifyName is null");
+        Assert.isTrue(null != orderParam.getOrderNo() && orderParam.getOrderNo() > 0, "orderNo is null");
+        Assert.isTrue(StrUtil.isNotBlank(orderParam.getFulfillmentStatus()), "fulfillmentStatus is null");
 
-        FulfillmentStatusEnum anEnum = Arrays.stream(FulfillmentStatusEnum.values()).filter(e -> e.toString().toLowerCase().equalsIgnoreCase(fulfillment_status)).findFirst().orElse(null);
-
+        FulfillmentStatusEnum anEnum = Arrays.stream(FulfillmentStatusEnum.values()).filter(e -> e.toString().toLowerCase().equalsIgnoreCase(orderParam.getFulfillmentStatus())).findFirst().orElse(null);
         Assert.notNull(anEnum, "fulfillment_status is null");
-
         try {
-
-            String updateOrder = this.shopifyUtils.updateOrder(orderNo, shopifyName, anEnum);
+            String updateOrder = this.shopifyUtils.updateOrder(orderParam.getOrderNo(), orderParam.getShopifyName(), anEnum);
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
             return CommonResult.success(updateOrder);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("shopifyName:" + shopifyName + ",putOrders orderNo:" + orderNo + ",fulfillment_status:" + fulfillment_status + ",error:", e);
-            return CommonResult.failed("shopifyName:" + shopifyName + ",putOrders orderNo:" + orderNo + ",fulfillment_status:" + fulfillment_status + ",error:" + e.getMessage());
+            log.error("putOrdersStatus,orderParam[{}],error:", orderParam, e);
+            return CommonResult.failed("putOrdersStatus," + JSONObject.toJSONString(orderParam) + ",error:" + e.getMessage());
         }
     }
 
 
     @PostMapping("/updateFulfillmentOrders")
     @ApiOperation("更新履行订单的fulfill_at时间")
-    public CommonResult updateFulfillmentOrders(@ApiParam(name = "shopifyName", value = "shopify店铺名", required = true)
-                                                @RequestParam(value = "shopifyName") String shopifyName,
-                                                @ApiParam(name = "orderNo", value = "订单号", required = true)
-                                                @RequestParam(value = "orderNo") Long orderNo,
-                                                @ApiParam(name = "new_fulfill_at", value = "标记为准备履行的时间", required = true)
-                                                @RequestParam(value = "new_fulfill_at") String new_fulfill_at) {
+    public CommonResult updateFulfillmentOrders(@RequestBody ShopifyOrderParam orderParam) {
 
-        Assert.notNull(shopifyName, "shopifyName is null");
-        Assert.notNull(orderNo, "orderNo is null");
-        Assert.notNull(new_fulfill_at, "new_fulfill_at is null");
-
+        Assert.isTrue(StrUtil.isNotBlank(orderParam.getShopifyName()), "shopifyName is null");
+        Assert.isTrue(null != orderParam.getOrderNo() && orderParam.getOrderNo() > 0, "orderNo is null");
+        Assert.isTrue(StrUtil.isNotBlank(orderParam.getNewFulfillAt()), "fulfillmentStatus is null");
 
         try {
-
-            String updateOrder = this.shopifyUtils.updateFulfillmentOrders(orderNo, shopifyName, new_fulfill_at);
+            String updateOrder = this.shopifyUtils.updateFulfillmentOrders(orderParam.getOrderNo(), orderParam.getShopifyName(), orderParam.getNewFulfillAt());
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
             return CommonResult.success(updateOrder);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("shopifyName:" + shopifyName + ",updateFulfillmentOrders orderNo:" + orderNo + ",new_fulfill_at:" + new_fulfill_at + ",error:", e);
-            return CommonResult.failed("shopifyName:" + shopifyName + ",updateFulfillmentOrders orderNo:" + orderNo + ",new_fulfill_at:" + new_fulfill_at + ",error:" + e.getMessage());
+            log.error("updateFulfillmentOrders,orderParam[{}],error:", orderParam, e);
+            return CommonResult.failed("updateFulfillmentOrders," + JSONObject.toJSONString(orderParam) + ",error:" + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/getFulfillmentByShopifyName")
+    @ApiOperation("获取运单数据")
+    public CommonResult getFulfillmentByShopifyName(@RequestParam("shopifyName") String shopifyName, @RequestParam("orderNoList") List<Long> orderNoList) {
+
+        Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName is null");
+        Assert.isTrue(CollectionUtil.isNotEmpty(orderNoList), "orderNoList is null");
+
+        try {
+            int count = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList);
+            return CommonResult.success(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getFulfillmentByShopifyName,shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed("getFulfillmentByShopifyName,error:" + e.getMessage());
         }
     }
 
