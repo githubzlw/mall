@@ -134,18 +134,41 @@ public class AsyncTask {
         List<String> sucList = new ArrayList<>();
         List<String> errorList = new ArrayList<>();
         if (delaySet.size() > 0) {
-            delaySet.forEach(e -> {
-                boolean b = this.singleGetErrorImgInfo(e, accessToken, shopifyName);
-                if (b) {
-                    sucList.add(String.valueOf(e));
-                } else {
-                    errorList.add(String.valueOf(e));
+
+            Set<Long> filterSet = new HashSet<>();
+            QueryWrapper<XmsShopifyPidImgError> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyPidImgError::getShopifyName, shopifyName)
+                    .in(XmsShopifyPidImgError::getShopifyPid, Arrays.asList(delaySet.toArray()))
+                    .gt(XmsShopifyPidImgError::getTotal, 10);
+            List<XmsShopifyPidImgError> list = this.xmsShopifyPidImgErrorService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                // 大于10次的不再处理
+                Set<String> collect = list.stream().map(XmsShopifyPidImgError::getShopifyPid).collect(Collectors.toSet());
+                delaySet.forEach(e -> {
+                    if (!collect.contains(String.valueOf(e))) {
+                        filterSet.add(e);
+                    }
+                });
+                list.clear();
+                delaySet.clear();
+            }
+
+            if (filterSet.size() > 0) {
+
+                filterSet.forEach(e -> {
+                    boolean b = this.singleGetErrorImgInfo(e, accessToken, shopifyName);
+                    if (b) {
+                        sucList.add(String.valueOf(e));
+                    } else {
+                        errorList.add(String.valueOf(e));
+                    }
+                });
+                this.deleteSuccessImg(shopifyName, sucList);
+                if (CollectionUtil.isNotEmpty(errorList)) {
+                    this.saveErrorImg(shopifyName, errorList);
+                    errorList.clear();
                 }
-            });
-            this.deleteSuccessImg(shopifyName, sucList);
-            if (CollectionUtil.isNotEmpty(errorList)) {
-                this.saveErrorImg(shopifyName, errorList);
-                errorList.clear();
+
             }
         }
     }
@@ -231,7 +254,7 @@ public class AsyncTask {
 
                     list = list.stream().filter(e -> !errorList.contains(e)).collect(Collectors.toList());
                     if (CollectionUtil.isNotEmpty(list)) {
-                        list.forEach(e -> e.setTotal(null == e.getTotal() ? 1 : e.getTotal() + 1) );
+                        list.forEach(e -> e.setTotal(null == e.getTotal() ? 1 : e.getTotal() + 1));
 
                         this.xmsShopifyPidImgErrorService.updateBatchById(list);
                         list.clear();
