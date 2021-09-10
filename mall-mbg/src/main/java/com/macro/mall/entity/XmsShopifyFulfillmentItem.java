@@ -30,7 +30,11 @@ public class XmsShopifyFulfillmentItem implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    private String shopifyName;
+
     private Long fulfillmentId;
+
+    private Long orderId;
 
     private Long itemId;
 

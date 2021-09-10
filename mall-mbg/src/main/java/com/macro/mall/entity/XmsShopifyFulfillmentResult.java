@@ -11,9 +11,7 @@ import java.util.List;
  * @date:2021-09-09
  */
 @Data
-public class XmsShopifyFulfillmentResult {
-
-    private XmsShopifyFulfillment fulfillment;
+public class XmsShopifyFulfillmentResult extends XmsShopifyFulfillment{
 
     private List<XmsShopifyFulfillmentItem> itemList;
 }

@@ -789,6 +789,14 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         return null;
     }
 
+    @Override
+    public List<OmsOrder> queryByOrderIdList(List<Long> orderIdList) {
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andIdIn(orderIdList);
+        return this.orderMapper.selectByExample(example);
+
+    }
+
     /**
      * 删除下单商品的购物车信息
      */

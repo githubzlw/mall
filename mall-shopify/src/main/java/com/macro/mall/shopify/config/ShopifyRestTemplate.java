@@ -132,9 +132,23 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("exchange",e);
+            log.error("exchange,uri[{}],token[{}]", uri, token, e);
             throw new ShopifyException("1003", "exchange error");
         }
+    }
+
+    public String get(String uri, String token){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+        HttpEntity entity = new HttpEntity(headers);
+        String params = null;
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class, params);
+        if(response.getStatusCode().is2xxSuccessful()){
+            return response.getBody();
+        } else{
+            log.error("exchange,uri[{}],token[{}],error!!", uri, token);
+        }
+        return null;
     }
 
 

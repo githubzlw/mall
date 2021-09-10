@@ -87,4 +87,7 @@ public interface OmsPortalOrderService {
     String generateOrderSn(OmsOrder order);
 
     OmsOrder queryByOrderNo(String orderNo);
+
+    List<OmsOrder> queryByOrderIdList(List<Long> orderNoList);
+
 }

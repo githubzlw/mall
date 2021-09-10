@@ -46,7 +46,7 @@ public class OmsOrder implements Serializable {
     @ApiModelProperty(value = "管理员后台调整订单使用的折扣金额")
     private BigDecimal discountAmount;
 
-    @ApiModelProperty(value = "支付方式：0是paypal支付，1 余额支付 ")
+    @ApiModelProperty(value = "支付方式：0->未支付；1->支付宝；2->微信")
     private Integer payType;
 
     @ApiModelProperty(value = "订单来源：0->Sourcing购买库存订单(SC)；1->shopify发货订单(DG)")
@@ -144,6 +144,9 @@ public class OmsOrder implements Serializable {
 
     @ApiModelProperty(value = "shopify的订单号，目的时匹配客户下的发货订单")
     private String shopifyOrderNo;
+
+    @ApiModelProperty(value = "那里发货 0china 1usa")
+    private Integer shippingFrom;
 
     private static final long serialVersionUID = 1L;
 
@@ -523,6 +526,14 @@ public class OmsOrder implements Serializable {
         this.shopifyOrderNo = shopifyOrderNo;
     }
 
+    public Integer getShippingFrom() {
+        return shippingFrom;
+    }
+
+    public void setShippingFrom(Integer shippingFrom) {
+        this.shippingFrom = shippingFrom;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -576,6 +587,7 @@ public class OmsOrder implements Serializable {
         sb.append(", commentTime=").append(commentTime);
         sb.append(", modifyTime=").append(modifyTime);
         sb.append(", shopifyOrderNo=").append(shopifyOrderNo);
+        sb.append(", shippingFrom=").append(shippingFrom);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

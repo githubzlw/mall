@@ -39,4 +39,7 @@ public class GenerateOrderParam {
     private List<XmsCustomerSkuStock> customerSkuStockList;
 
     private Long shopifyOrderNo;
+
+    @ApiModelProperty(value = "下单的时候选择的国家 0china 1usa")
+    private Integer shippingFrom;
 }

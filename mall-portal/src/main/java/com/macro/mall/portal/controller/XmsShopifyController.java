@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
@@ -92,6 +93,10 @@ public class XmsShopifyController {
     private IXmsShopifyProductTagService xmsShopifyProductTagService;
     @Autowired
     private IXmsShopifyOrderAddressService xmsShopifyOrderAddressService;
+    @Autowired
+    private IXmsShopifyFulfillmentService xmsShopifyFulfillmentService;
+    @Autowired
+    private IXmsShopifyFulfillmentItemService xmsShopifyFulfillmentItemService;
 
 
     @PostMapping(value = "/authorization")
@@ -393,7 +398,7 @@ public class XmsShopifyController {
 
             Map<String, String> param = new HashMap<>();
 
-            param.put("shopifyNameList", byId.getShopifyName());
+            param.put("shopifyName", byId.getShopifyName());
 
 
             //请求数据
@@ -476,8 +481,8 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/getPurchaseInfoByShopifyOrder")
     @ApiOperation("获取客户shopify的订单对应的库存")
-    @ApiImplicitParams({@ApiImplicitParam(name = "shopifyOrderNoId",value = "shopify的订单ID",required = true),
-    @ApiImplicitParam(name = "transportType",value = "运输模式: 0 CHINA, 1 USA",required = true)})
+    @ApiImplicitParams({@ApiImplicitParam(name = "shopifyOrderNoId", value = "shopify的订单ID", required = true),
+            @ApiImplicitParam(name = "transportType", value = "运输模式: 0 CHINA, 1 USA", required = true)})
     public CommonResult getPurchaseInfoByShopifyOrder(Long shopifyOrderNoId, Integer transportType) {
 
         Assert.isTrue(null != shopifyOrderNoId && shopifyOrderNoId > 0, "shopifyOrderNo null");
@@ -510,7 +515,7 @@ public class XmsShopifyController {
                     List<Long> ids = new ArrayList<>();
                     pidInfoList.forEach(e -> {
                         ids.add(Long.parseLong(e.getPid()));
-                        shopifyPidMap.put(Long.parseLong(e.getShopifyPid()),Long.parseLong(e.getPid()));
+                        shopifyPidMap.put(Long.parseLong(e.getShopifyPid()), Long.parseLong(e.getPid()));
                     });
                     // 查询商品信息
                     List<PmsProduct> productList = this.pmsPortalProductService.queryByIds(ids);
@@ -522,7 +527,7 @@ public class XmsShopifyController {
                     List<XmsCustomerSkuStock> customerSkuStockList = this.xmsCustomerSkuStockService.queryByUserInfo(currentMember.getUsername(), currentMember.getId());
                     // 过滤库存无效信息
                     customerSkuStockList = customerSkuStockList.stream().filter(e -> null != e.getStatus() && e.getStatus() > 1 && null != e.getStock() && e.getStock() > 0 && transportType.equals(e.getShippingFrom())).collect(Collectors.toList());
-                    if(CollectionUtil.isNotEmpty(customerSkuStockList)){
+                    if (CollectionUtil.isNotEmpty(customerSkuStockList)) {
                         skuStockMap = customerSkuStockList.stream().collect(Collectors.groupingBy(XmsCustomerSkuStock::getProductId));
                         /*skuStockMap.forEach((k,v)->{
                             XmsCustomerSkuStock tempSkuStock = new XmsCustomerSkuStock();
@@ -547,7 +552,7 @@ public class XmsShopifyController {
                         preOrderItem.setProductId(pmsProduct.getId());
                         preOrderItem.setFreeStatus(pmsProduct.getFreeStatus());
 
-                    }else{
+                    } else {
                         preOrderItem.setImg("");
                         preOrderItem.setPrice("0");
                         preOrderItem.setProductId(0L);
@@ -555,9 +560,9 @@ public class XmsShopifyController {
                         preOrderItem.setWeight(0D);
                         preOrderItem.setVolume(0D);
                     }
-                    if(shopifyPidMap.containsKey(e.getProductId()) && finalSkuStockMap.containsKey(shopifyPidMap.get(e.getProductId()))){
+                    if (shopifyPidMap.containsKey(e.getProductId()) && finalSkuStockMap.containsKey(shopifyPidMap.get(e.getProductId()))) {
                         preOrderItem.setStockList(finalSkuStockMap.get(shopifyPidMap.get(e.getProductId())));
-                    } else{
+                    } else {
                         preOrderItem.setStockList(new ArrayList<>());
                     }
                     // 匹配购买库存信息
@@ -603,7 +608,7 @@ public class XmsShopifyController {
                 orderNumMap.put(tempPid + "_" + split[1].trim(), Integer.parseInt(split[2].trim()));
             });
 
-            if(CollectionUtil.isNotEmpty(productIdList)) {
+            if (CollectionUtil.isNotEmpty(productIdList)) {
 
                 QueryWrapper<XmsSourcingList> sourcingWrapper = new QueryWrapper<>();
                 sourcingWrapper.lambda().eq(XmsSourcingList::getMemberId, currentMember.getId()).in(XmsSourcingList::getProductId, productIdList);
@@ -619,38 +624,38 @@ public class XmsShopifyController {
 
                 List<PmsProduct> productList = this.pmsPortalProductService.queryByIds(productIdList);
                 Map<Long, PmsProduct> pmsProductMap = new HashMap<>();
-                productList.forEach(e-> pmsProductMap.put(e.getId(), e) );
+                productList.forEach(e -> pmsProductMap.put(e.getId(), e));
 
                 List<PmsSkuStock> pmsSkuStockList = new ArrayList<>();
                 // 过滤未包含的skuCode并且赋值参数给的数量
                 AtomicInteger total = new AtomicInteger();
                 skuStockList.forEach(e -> {
-                    if(!orderNumMap.containsKey(e.getProductId() + "_" + e.getSkuCode())){
+                    if (!orderNumMap.containsKey(e.getProductId() + "_" + e.getSkuCode())) {
                         total.getAndIncrement();
-                    } else{
+                    } else {
                         e.setStock(orderNumMap.get(e.getProductId() + "_" + e.getSkuCode()));
                         pmsSkuStockList.add(e);
                     }
                 });
                 // 如果大于0,说明存在没有匹配上的数据
-                if(total.get() > 0){
+                if (total.get() > 0) {
                     return CommonResult.failed("Parameter data does not match");
                 }
-                if(CollectionUtil.isEmpty(pmsSkuStockList)){
+                if (CollectionUtil.isEmpty(pmsSkuStockList)) {
                     return CommonResult.failed("Insufficient inventory");
                 }
 
                 // 开始添加到购物车
 
                 total.set(0);
-                pmsSkuStockList.forEach(e->{
+                pmsSkuStockList.forEach(e -> {
                     PmsProduct pmsProduct = pmsProductMap.get(e.getProductId());
                     OmsCartItem cartItem = new OmsCartItem();
-                    if(e.getStock() >= e.getMaxMoq()){
+                    if (e.getStock() >= e.getMaxMoq()) {
                         cartItem.setPrice(e.getMaxPrice());
-                    } else if(e.getStock() >= e.getMinMoq()){
+                    } else if (e.getStock() >= e.getMinMoq()) {
                         cartItem.setPrice(e.getMinPrice());
-                    } else{
+                    } else {
                         cartItem.setPrice(e.getPrice());
                     }
                     cartItem.setMemberId(currentMember.getId());
@@ -673,7 +678,7 @@ public class XmsShopifyController {
                 productList.clear();
                 pmsSkuStockList.clear();
                 return CommonResult.success(total.get());
-            }else{
+            } else {
                 return CommonResult.failed("no this shopify order");
             }
         } catch (Exception e) {
@@ -730,10 +735,10 @@ public class XmsShopifyController {
 
                 Map<String, XmsCustomerSkuStock> skuStockMap = new HashMap<>();
                 skuStockList.forEach(e -> {
-                    if(skuStockMap.containsKey(e.getProductId() + "_" + e.getSkuCode())){
+                    if (skuStockMap.containsKey(e.getProductId() + "_" + e.getSkuCode())) {
                         XmsCustomerSkuStock tempStock = skuStockMap.get(e.getProductId() + "_" + e.getSkuCode());
                         tempStock.setStock(e.getStock() + tempStock.getStock());
-                    } else{
+                    } else {
                         skuStockMap.put(e.getProductId() + "_" + e.getSkuCode(), e);
                     }
                 });
@@ -776,7 +781,7 @@ public class XmsShopifyController {
                 OrderPayParam orderPayParam = new OrderPayParam();
                 BeanUtil.copyProperties(purchaseShopifyOrderParam, orderPayParam);
                 GenerateOrderParam generateParam = GenerateOrderParam.builder().currentMember(currentMember)
-                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).shopifyOrderNo(byId.getOrderNo()).build();
+                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).shopifyOrderNo(byId.getOrderNo()).shippingFrom(purchaseShopifyOrderParam.getShippingFrom()).build();
                 // 确认库存数据，生成订单,然后扣库存
                 GenerateOrderResult orderResult = this.orderUtils.generateDeliveryOrder(generateParam);
                 // 生成订单成功后，更新shopify的order信息
@@ -943,6 +948,181 @@ public class XmsShopifyController {
             return CommonResult.success(b);
         } catch (Exception e) {
             log.error("updateShopifyOrderAddress,shopifyOrderAddress[{}],error", shopifyOrderAddress, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(value = "/getFulfillments")
+    @ApiOperation("获取运单信息")
+    public CommonResult getFulfillments(FulfillmentParam fulfillmentParam) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            if (null == fulfillmentParam.getPageNum() || fulfillmentParam.getPageNum() < 1) {
+                fulfillmentParam.setPageNum(1);
+            }
+            if (null == fulfillmentParam.getPageSize() || fulfillmentParam.getPageSize() < 1) {
+                fulfillmentParam.setPageSize(5);
+            }
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
+            fulfillmentParam.setShopifyName(currentMember.getShopifyName());
+            Page<XmsShopifyFulfillment> tempPage = this.xmsShopifyFulfillmentService.list(fulfillmentParam);
+            if (CollectionUtil.isNotEmpty(tempPage.getRecords())) {
+                Page<FulfillmentOrder> rsPage = this.genNeedFulfillmentOrderResult(tempPage, fulfillmentParam);
+                return CommonResult.success(rsPage);
+            }
+            return CommonResult.success(tempPage);
+        } catch (Exception e) {
+            log.error("getFulfillments,fulfillmentParam[{}],error", fulfillmentParam, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    private Page<FulfillmentOrder> genNeedFulfillmentOrderResult(Page<XmsShopifyFulfillment> tempPage, FulfillmentParam fulfillmentParam) {
+
+        // 1.整合全部的订单数据，获取订单地址和订单详情信息
+
+        List<Long> orderNoList = new ArrayList<>();
+        List<FulfillmentOrder> fulfillmentOrderList = new ArrayList<>();
+        tempPage.getRecords().forEach(e -> {
+            orderNoList.add(e.getOrderId());
+            FulfillmentOrder tempRs = new FulfillmentOrder();
+            BeanUtil.copyProperties(e, tempRs);
+            if(StrUtil.isBlank(tempRs.getShipmentStatus())){
+                tempRs.setShipmentStatus("");
+            }
+            fulfillmentOrderList.add(tempRs);
+        });
+
+        QueryWrapper<XmsShopifyOrderAddress> addressWrapper = new QueryWrapper<>();
+        addressWrapper.lambda().in(XmsShopifyOrderAddress::getOrderNo, orderNoList);
+        List<XmsShopifyOrderAddress> addressList = this.xmsShopifyOrderAddressService.list(addressWrapper);
+        Map<Long, XmsShopifyOrderAddress> addressMap = new HashMap<>();
+        addressList.forEach(e -> addressMap.put(e.getOrderNo(), e));
+
+
+        QueryWrapper<XmsShopifyOrderDetails> detailsWrapper = new QueryWrapper<>();
+        detailsWrapper.lambda().in(XmsShopifyOrderDetails::getOrderNo, orderNoList);
+        List<XmsShopifyOrderDetails> detailsList = this.xmsShopifyOrderDetailsService.list(detailsWrapper);
+        Map<Long, List<XmsShopifyOrderDetails>> dtMap = detailsList.stream().collect(Collectors.groupingBy(XmsShopifyOrderDetails::getOrderNo));
+
+        Map<Long, List<ShopifyOrderDetailsShort>> shortMap = new HashMap<>();
+        dtMap.forEach((k, v) -> {
+            if (CollectionUtil.isNotEmpty(v)) {
+                List<ShopifyOrderDetailsShort> tempList = new ArrayList<>();
+                v.forEach(cl -> {
+                    ShopifyOrderDetailsShort tempShort = new ShopifyOrderDetailsShort();
+                    BeanUtil.copyProperties(cl, tempShort);
+                    tempList.add(tempShort);
+                });
+                shortMap.put(k, tempList);
+            }
+        });
+
+
+        this.shopifyOrderinfoService.dealShopifyOrderDetailsMainImg(shortMap);
+
+        addressList.clear();
+        dtMap.clear();
+        detailsList.clear();
+
+        // 2.组合 运单，订单地址，订单详情  数据
+        fulfillmentOrderList.forEach(e -> {
+            e.setOrderAddress(addressMap.get(e.getOrderId()));
+            e.setItemList(shortMap.get(e.getOrderId()));
+        });
+
+        addressMap.clear();
+        shortMap.clear();
+
+        Page<FulfillmentOrder> rsPage = new Page<>(fulfillmentParam.getPageNum(), fulfillmentParam.getPageSize());
+        rsPage.setTotal(tempPage.getTotal());
+        rsPage.setSize(tempPage.getSize());
+        rsPage.setPages(tempPage.getPages());
+        rsPage.setRecords(fulfillmentOrderList);
+        return rsPage;
+    }
+
+
+    @GetMapping(value = "/getFulfillmentItems")
+    @ApiOperation("获取运单详情信息")
+    public CommonResult getFulfillmentItems(FulfillmentParam fulfillmentParam) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            if (null == fulfillmentParam.getPageNum() || fulfillmentParam.getPageNum() < 1) {
+                fulfillmentParam.setPageNum(1);
+            }
+            if (null == fulfillmentParam.getPageSize() || fulfillmentParam.getPageSize() < 1) {
+                fulfillmentParam.setPageSize(5);
+            }
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
+            fulfillmentParam.setShopifyName(currentMember.getShopifyName());
+            int count = this.xmsShopifyFulfillmentItemService.queryShopifyOrderItemsCount(fulfillmentParam);
+            Page<FulfillmentOrderItem> rsPage = new Page<>(fulfillmentParam.getPageNum(), fulfillmentParam.getPageSize());
+            if (count > 0) {
+                List<FulfillmentOrderItem> itemList = this.xmsShopifyFulfillmentItemService.queryShopifyOrderItems(fulfillmentParam);
+
+                List<Long> orderNoList = new ArrayList<>();
+                Map<Long, FulfillmentOrderItem> orderItemMap = new HashMap<>();
+                itemList.forEach(e -> {
+                    orderNoList.add(e.getOrderNo());
+                    orderItemMap.put(e.getOrderNo(), e);
+                });
+
+
+
+                if (CollectionUtil.isNotEmpty(orderNoList)) {
+                    QueryWrapper<XmsShopifyOrderinfo> orderinfoWrapper = new QueryWrapper<>();
+                    orderinfoWrapper.lambda().in(XmsShopifyOrderinfo::getOrderNo, orderNoList);
+                    List<XmsShopifyOrderinfo> shopifyOrderinfoList = this.shopifyOrderinfoService.list(orderinfoWrapper);
+
+
+
+                    Map<Long,Long> ourOrderIdAndOrderNoMap = new HashMap<>();
+                    List<Long> ourOrderIdList = new ArrayList<>();
+                    shopifyOrderinfoList.forEach(e-> {
+                        ourOrderIdList.add(e.getOurOrderId());
+                        ourOrderIdAndOrderNoMap.put(e.getOurOrderId(), e.getOrderNo());
+                    } );
+
+
+                    List<OmsOrder> omsOrders = this.omsPortalOrderService.queryByOrderIdList(ourOrderIdList);
+                    Map<Long,Integer> orderNoAndShipFromMap = new HashMap<>();
+                    omsOrders.forEach(e->  orderNoAndShipFromMap.put(ourOrderIdAndOrderNoMap.get(e.getId()), e.getShippingFrom()) );
+
+                    orderItemMap.forEach((k,v)->{
+                        if(orderNoAndShipFromMap.containsKey(k)){
+                            v.setShipFrom(orderNoAndShipFromMap.get(k));
+                        }
+                    });
+
+                    orderNoList.clear();
+                    ourOrderIdAndOrderNoMap.clear();
+                    orderNoAndShipFromMap.clear();
+                    omsOrders.clear();
+                    shopifyOrderinfoList.clear();
+
+                }
+
+                rsPage.setTotal(count);
+                rsPage.setSize(itemList.size());
+                int page = count / fulfillmentParam.getPageSize();
+                if (count % fulfillmentParam.getPageSize() > 0) {
+                    page++;
+                }
+                rsPage.setPages(page);
+                rsPage.setRecords(itemList);
+            }
+            return CommonResult.success(rsPage);
+        } catch (Exception e) {
+            log.error("getFulfillments,fulfillmentParam[{}],error", fulfillmentParam, e);
             return CommonResult.failed(e.getMessage());
         }
     }

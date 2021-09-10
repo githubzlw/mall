@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macro.mall.portal.dao.XmsShopifyFulfillmentItemDao">
+
+
+    <select id="queryShopifyOrderItems" parameterType="com.macro.mall.portal.domain.FulfillmentParam"
+            resultType="com.macro.mall.portal.domain.FulfillmentOrderItem">
+
+        select d.order_no as orderNo,d.Line_item_id as itemId,d.variant_title as variantTitle,d.sku,d.title,a.quantity,
+        c.country as shipTo, b.created_at as shippingDate
+        from xms_shopify_fulfillment_item a, xms_shopify_fulfillment b , xms_shopify_order_address c,
+        xms_shopify_order_details d
+        where a.shopify_name = b.shopify_name and a.order_id = b.order_id and b.order_id = c.order_no
+        and a.order_id = d.order_no and a.item_id = d.Line_item_id
+        and a.shopify_name = #{shopifyName,jdbcType=VARCHAR}
+        <if test="title != null">
+            and d.title = #{title,jdbcType=VARCHAR}
+        </if>
+        <if test="country != null">
+            and c.country = #{country,jdbcType=VARCHAR}
+        </if>
+        <if test="beginTime != null">
+            and date(#{beginTime,jdbcType=VARCHAR}) >= date(b.create_tm)
+        </if>
+        <if test="endTime != null">
+            and date(b.create_tm) > #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="pageSize > 0">
+            limit #{pageNum,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+        </if>
+
+    </select>
+
+    <select id="queryShopifyOrderItemsCount" parameterType="com.macro.mall.portal.domain.FulfillmentParam" resultType="java.lang.Integer">
+        select count(0)
+        from xms_shopify_fulfillment_item a, xms_shopify_fulfillment b , xms_shopify_order_address c,
+        xms_shopify_order_details d
+        where a.shopify_name = b.shopify_name and a.order_id = b.order_id and b.order_id = c.order_no
+        and a.order_id = d.order_no and a.item_id = d.Line_item_id
+        and a.shopify_name = #{shopifyName,jdbcType=VARCHAR}
+        <if test="title != null">
+            and d.title = #{title,jdbcType=VARCHAR}
+        </if>
+        <if test="country != null">
+            and c.country = #{country,jdbcType=VARCHAR}
+        </if>
+        <if test="beginTime != null">
+            and date(#{beginTime,jdbcType=VARCHAR}) >= date(b.create_tm)
+        </if>
+        <if test="endTime != null">
+            and date(b.create_tm) > #{endTime,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+
+</mapper>
