@@ -4,6 +4,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.macro.mall.entity.XmsShopifyPidImg;
 import com.macro.mall.entity.XmsShopifyPidImgError;
 import com.macro.mall.shopify.config.ShopifyConfig;
@@ -156,7 +160,8 @@ public class AsyncTask {
             if (filterSet.size() > 0) {
 
                 filterSet.forEach(e -> {
-                    boolean b = this.singleGetErrorImgInfo(e, accessToken, shopifyName);
+                    // boolean b = this.singleGetErrorImgInfo(e, accessToken, shopifyName);
+                    boolean b = this.reTryGainImg(e, accessToken, shopifyName);
                     if (b) {
                         sucList.add(String.valueOf(e));
                     } else {
@@ -196,6 +201,23 @@ public class AsyncTask {
         return b;
     }
 
+
+    private boolean reTryGainImg(Long pid, String accessToken, String shopifyName) {
+        Retryer<Boolean> reTryer = RetryerBuilder.<Boolean>newBuilder()
+                .retryIfResult(aBoolean -> Objects.equals(aBoolean, false))
+                .retryIfException()
+                .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+                .withStopStrategy(StopStrategies.stopAfterAttempt(2))
+                //.withRetryListener(new MyRetryListener<>())
+                .build();
+        Boolean call = false;
+        try {
+            call = reTryer.call(() -> this.loopGainImg(pid, accessToken, shopifyName));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return call;
+    }
 
     private boolean loopGainImg(Long pid, String accessToken, String shopifyName) {
         try {
@@ -252,7 +274,7 @@ public class AsyncTask {
                 if (CollectionUtil.isNotEmpty(list)) {
                     list.forEach(e -> collect.add(e.getShopifyPid()));
 
-                    list = list.stream().filter(e -> !errorList.contains(e)).collect(Collectors.toList());
+                    list = list.stream().filter(e -> !errorList.contains(e.getShopifyPid())).collect(Collectors.toList());
                     if (CollectionUtil.isNotEmpty(list)) {
                         list.forEach(e -> e.setTotal(null == e.getTotal() ? 1 : e.getTotal() + 1));
 

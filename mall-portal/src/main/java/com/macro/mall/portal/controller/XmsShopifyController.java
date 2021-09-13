@@ -1063,6 +1063,22 @@ public class XmsShopifyController {
             if (StrUtil.isBlank(currentMember.getShopifyName())) {
                 return CommonResult.failed("Please bind the store first");
             }
+            if(StrUtil.isBlank(fulfillmentParam.getTrackingNumber())){
+                fulfillmentParam.setTrackingNumber(null);
+            }
+            if(StrUtil.isBlank(fulfillmentParam.getBeginTime())){
+                fulfillmentParam.setBeginTime(null);
+            }
+            if(StrUtil.isBlank(fulfillmentParam.getEndTime())){
+                fulfillmentParam.setEndTime(null);
+            }
+            if(StrUtil.isBlank(fulfillmentParam.getCountry())){
+                fulfillmentParam.setCountry(null);
+            }
+            if(StrUtil.isBlank(fulfillmentParam.getTitle())){
+                fulfillmentParam.setTitle(null);
+            }
+
             fulfillmentParam.setShopifyName(currentMember.getShopifyName());
             int count = this.xmsShopifyFulfillmentItemService.queryShopifyOrderItemsCount(fulfillmentParam);
             Page<FulfillmentOrderItem> rsPage = new Page<>(fulfillmentParam.getPageNum(), fulfillmentParam.getPageSize());
