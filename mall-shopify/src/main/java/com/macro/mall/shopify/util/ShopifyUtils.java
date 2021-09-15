@@ -641,42 +641,49 @@ public class ShopifyUtils {
 
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(XmsCustomerProduct::getId, Arrays.asList(idsList));
-        List<XmsCustomerProduct> pidInfoList = this.customerProductService.list(queryWrapper);
-        if (CollectionUtil.isNotEmpty(pidInfoList)) {
+        List<XmsCustomerProduct> productList = this.customerProductService.list(queryWrapper);
+        if (CollectionUtil.isNotEmpty(productList)) {
             String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
 
-            List<Long> idList = pidInfoList.stream().map(XmsCustomerProduct::getId).collect(Collectors.toList());
+            List<Long> idList = productList.stream().map(XmsCustomerProduct::getId).collect(Collectors.toList());
 
+            List<Long> shopifyPidList = new ArrayList<>();
             // 设置sourcingList的标识
-            List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductMapper.selectBatchIds(idList);
-            if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
-                List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
-                UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
-                this.xmsSourcingListMapper.update(null, updateWrapper);
-                collect.clear();
+            List<Long> collect = productList.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
+            productList.forEach(e -> shopifyPidList.add(e.getShopifyProductId()));
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
+            this.xmsSourcingListMapper.update(null, updateWrapper);
+            collect.clear();
+
+            // 移除商品
+            this.xmsCustomerProductMapper.deleteBatchIds(idList);
+            // 移除库存
+            UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
+            deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, idList);
+            this.xmsCustomerSkuStockMapper.delete(deleteWrapper);
+
+            if (CollectionUtil.isNotEmpty(shopifyPidList)) {
+
+                QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
+                // 删除关联关系
+                pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                        .in(XmsShopifyPidInfo::getShopifyPid, shopifyPidList);
+                this.xmsShopifyPidInfoMapper.delete(pidInfoQueryWrapper);
+                shopifyPidList.clear();
             }
 
-            int count = this.xmsCustomerProductMapper.deleteBatchIds(idList);
-            if (count > 0) {
-                // 移除库存
-                UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
-                deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, idList);
-                this.xmsCustomerSkuStockMapper.delete(deleteWrapper);
-            }
-
-            // 删除关联关系
-            this.xmsShopifyPidInfoMapper.deleteBatchIds(idList);
 
             idList.clear();
-            pidInfoList.forEach(e -> {
-                if (StrUtil.isNotBlank(e.getShopifyName()) && null != e.getSourcingId() && e.getSourcingId() > 0) {
-                    boolean b = this.singleDeleteProduct(e.getShopifyName(), e.getShopifyProductId(), shopifyToken);
-                    if (b) {
-                        idList.add(e.getId());
-                    }
+            // 删除商品
+            productList.forEach(e -> {
+                boolean b = this.singleDeleteProduct(e.getShopifyName(), e.getShopifyProductId(), shopifyToken);
+                if (b) {
+                    idList.add(e.getId());
                 }
             });
+            productList.clear();
             return "success size:" + idList.size();
         }
         return null;

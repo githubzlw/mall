@@ -356,7 +356,7 @@ public class XmsShopifyController {
 
     @PostMapping(value = "/addProduct")
     @ApiOperation("铺货到shopify商品")
-    public CommonResult addToShopifyProducts(@RequestParam Long productId, @RequestParam String skuCodes, @RequestParam String collectionId, @RequestParam String productType, @RequestParam String productTags) {
+    public CommonResult addToShopifyProducts(@RequestParam Long productId, @RequestParam String skuCodes, @RequestParam String collectionId, @RequestParam String productType, @RequestParam String productTags, @RequestParam Long sourcingId) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
@@ -375,6 +375,7 @@ public class XmsShopifyController {
             param.put("productType", productType);
             param.put("productTags", productTags);
             param.put("memberId", String.valueOf(currentMember.getId()));
+            param.put("sourcingId", String.valueOf(sourcingId));
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl().replace("8086", "8091") + "/addProduct", param);

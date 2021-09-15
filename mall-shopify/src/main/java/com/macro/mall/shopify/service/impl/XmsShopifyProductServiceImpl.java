@@ -82,6 +82,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
             ProductRequestWrap wrap = new ProductRequestWrap();
             wrap.setPid(addProductBean.getPid());
+            wrap.setSourcingId(addProductBean.getSourcingId());
             wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
             wrap.setShopname(addProductBean.getShopName());
             List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
@@ -402,7 +403,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setCreateTime(new Date());
             this.insertShopifyIdWithPid(shopifyBean);
 
-            this.updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct(), goods.getPrice(), memberId);
+            this.updateYouLiveProduct(Long.parseLong(goods.getPid()), wrap.getSourcingId(), productWraper.getProduct(), goods.getPrice(), memberId);
 
             // 异步抓取商品信息
 
@@ -539,10 +540,12 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
      * @param productId
      * @param product
      */
-    public void updateYouLiveProduct(Long productId, Product product, String price, Long memberId) {
+    public void updateYouLiveProduct(Long productId, Long sourcingId, Product product, String price, Long memberId) {
         Long shopifyProductId = product.getId();
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId).eq(XmsCustomerProduct::getMemberId, memberId);
+        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId)
+                .eq(XmsCustomerProduct::getMemberId, memberId)
+                .eq(XmsCustomerProduct::getSourcingId, sourcingId);
         XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
         if (null != customerProduct) {
             UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
@@ -830,7 +833,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                 product.put("options", newOptions);
 
                 // 4.设置tags
-                if(StrUtil.isNotBlank(saveProduct.getTags())){
+                if (StrUtil.isNotBlank(saveProduct.getTags())) {
                     product.put("tags", JSONArray.parseArray(saveProduct.getTags()));
                 }
 

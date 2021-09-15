@@ -397,6 +397,7 @@ public class XmsSourcingController {
                 param.put("productType", sourcingProductParam.getProductType());
                 param.put("productTags", sourcingProductParam.getProductTags());
                 param.put("memberId", String.valueOf(currentMember.getId()));
+                param.put("sourcingId", String.valueOf(sourcingProductParam.getSourcingId()));
 
                 JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
 
