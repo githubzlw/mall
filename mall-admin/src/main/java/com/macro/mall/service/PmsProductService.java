@@ -31,7 +31,7 @@ public interface PmsProductService {
      * @param id
      * @return
      */
-    PmsProductResult getCustomUpdateInfo(Long id);
+    PmsProductResult getCustomUpdateInfo(Long id, Long memberId);
 
     /**
      * 更新商品

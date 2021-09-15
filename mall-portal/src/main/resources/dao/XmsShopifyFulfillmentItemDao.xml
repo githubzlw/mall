@@ -7,14 +7,14 @@
             resultType="com.macro.mall.portal.domain.FulfillmentOrderItem">
 
         select d.order_no as orderNo,d.Line_item_id as itemId,d.variant_title as variantTitle,d.sku,d.title,a.quantity,
-        c.country as shipTo, b.created_at as shippingDate
+        c.country as shipTo, b.created_at as shippingDate,d.product_id as productId
         from xms_shopify_fulfillment_item a, xms_shopify_fulfillment b , xms_shopify_order_address c,
         xms_shopify_order_details d
         where a.shopify_name = b.shopify_name and a.order_id = b.order_id and b.order_id = c.order_no
         and a.order_id = d.order_no and a.item_id = d.Line_item_id
         and a.shopify_name = #{shopifyName,jdbcType=VARCHAR}
         <if test="title != null">
-            and d.title = #{title,jdbcType=VARCHAR}
+            and d.title like concat('%',#{title,jdbcType=VARCHAR},'%')
         </if>
         <if test="country != null">
             and c.country = #{country,jdbcType=VARCHAR}
@@ -39,7 +39,7 @@
         and a.order_id = d.order_no and a.item_id = d.Line_item_id
         and a.shopify_name = #{shopifyName,jdbcType=VARCHAR}
         <if test="title != null">
-            and d.title = #{title,jdbcType=VARCHAR}
+            and d.title like concat('%',#{title,jdbcType=VARCHAR},'%')
         </if>
         <if test="country != null">
             and c.country = #{country,jdbcType=VARCHAR}

@@ -16,7 +16,9 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Slf4j
@@ -36,7 +38,7 @@ public class ShopifyProductController {
 
 
     @PostMapping("/getCollectionByShopifyName")
-    public CommonResult getCollectionByShopifyName(String shopifyName) {
+    public CommonResult getCollectionByShopifyName(@RequestParam("shopifyName") String shopifyName) {
         Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
         Map<String, String> map = new HashMap<>();
         try {
@@ -97,12 +99,28 @@ public class ShopifyProductController {
             return CommonResult.success("this shop is execute!!");
         }
 
-        CommonResult commonResult = shopifyService.pushProduct(addProductBean);
+        CommonResult commonResult = this.shopifyService.pushProduct(addProductBean);
         if (null != commonResult && commonResult.getCode() == 200) {
             map.put(shopname + "_" + pid, "success");
             this.redisUtil.hmset(RedisUtil.ADD_PRODUCT, map, 60);
         }
         return commonResult;
+    }
+
+    @ApiOperation("删除shopify商品")
+    @RequestMapping(value = "/deleteProduct", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult deleteProduct(@RequestParam("idList") String idList, @RequestParam("shopifyName") String shopifyName) {
+
+        try {
+
+            String s = this.shopifyUtils.deleteProduct(idList.split(","), shopifyName);
+            return CommonResult.success(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed(e.getMessage());
+        }
+
     }
 
 }

@@ -88,3 +88,5 @@ ali1688api:
   shop:
     minSales: 10 #店铺商品最小销量
 
+shopifyApi:
+    url: http://127.0.0.1:8086/shopify

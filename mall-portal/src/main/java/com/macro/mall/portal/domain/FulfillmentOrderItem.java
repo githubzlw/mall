@@ -20,6 +20,7 @@ public class FulfillmentOrderItem {
     private String sku;
     private String variantTitle;
     private String mainImg;
+    private Long productId;
 
     private Long ourOrderId;
 

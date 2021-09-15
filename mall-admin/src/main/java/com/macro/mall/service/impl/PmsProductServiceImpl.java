@@ -125,8 +125,8 @@ public class PmsProductServiceImpl implements PmsProductService {
     }
 
     @Override
-    public PmsProductResult getCustomUpdateInfo(Long id) {
-        return productDao.getCustomUpdateInfo(id);
+    public PmsProductResult getCustomUpdateInfo(Long id, Long memberId) {
+        return productDao.getCustomUpdateInfo(id, memberId);
     }
 
     @Override

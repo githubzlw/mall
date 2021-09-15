@@ -1,8 +1,5 @@
-package com.macro.mall.portal.domain;
+package com.macro.mall.entity;
 
-import com.macro.mall.entity.XmsShopifyOrderAddress;
-import com.macro.mall.entity.XmsShopifyOrderDetails;
-import com.macro.mall.entity.XmsShopifyOrderinfo;
 import lombok.Data;
 
 import java.util.List;
@@ -20,4 +17,5 @@ public class XmsShopifyOrderComb extends XmsShopifyOrderinfo {
     private XmsShopifyOrderAddress addressInfo;
 
     private Long totalQuantity;
+    private String userName;
 }

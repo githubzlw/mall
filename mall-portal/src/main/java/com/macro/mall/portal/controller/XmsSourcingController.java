@@ -286,116 +286,125 @@ public class XmsSourcingController {
                 return CommonResult.validateFailed("No sku available");
             }
             StringBuffer skuSb = new StringBuffer();
-            stockEditList.forEach(e-> {
+            stockEditList.forEach(e -> {
                 e.setMemberId(currentMember.getId());
-                skuSb.append("," + e.getSkuCode());
+                skuSb.append(",").append(e.getSkuCode());
             });
 
-            Long productId;
-            // 判断是否存在编辑表数据
-            QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, sourcingProductParam.getProductId());
+            synchronized (currentMember.getId()) {
 
-            List<XmsPmsProductEdit> list = this.xmsPmsProductEditService.list(productEditWrapper);
 
-            // 如果存在，则进行更新处理，sku查询是否重复处理
-            if (CollectionUtil.isNotEmpty(list)) {
-                XmsPmsProductEdit pmsProductEdit = list.get(0);
-                pmsProductEdit.setAlbumPics(sourcingProductParam.getAlbumPics());
-                productId = pmsProductEdit.getId();
-                pmsProductEdit.setName(sourcingProductParam.getName());
-                // 处理sku数据
-                QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
-                skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
-                List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
-                if (CollectionUtil.isNotEmpty(editList)) {
-                    Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();
-                    editList.forEach(e -> skuStockEditMap.put(e.getSkuCode(), e));
+                Long productId;
+                // 判断是否存在编辑表数据
+                QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
+                productEditWrapper.lambda().eq(XmsPmsProductEdit::getProductId, sourcingProductParam.getProductId())
+                        .eq(XmsPmsProductEdit::getMemberId, currentMember.getId());
 
-                    List<XmsPmsSkuStockEdit> updateList = stockEditList.stream().filter(e -> skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
-                    List<XmsPmsSkuStockEdit> insertList = stockEditList.stream().filter(e -> !skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+                List<XmsPmsProductEdit> list = this.xmsPmsProductEditService.list(productEditWrapper);
 
-                    if (CollectionUtil.isNotEmpty(updateList)) {
-                        updateList.forEach(e -> {
-                            e.setId(skuStockEditMap.get(e.getSkuCode()).getId());
-                            e.setSpData(skuStockEditMap.get(e.getSkuCode()).getSpData());
-                            e.setPrice(skuStockEditMap.get(e.getSkuCode()).getPrice());
-                        });
-                        this.xmsPmsSkuStockEditService.saveOrUpdateBatch(updateList);
-                        updateList.clear();
+                // 如果存在，则进行更新处理，sku查询是否重复处理
+                if (CollectionUtil.isNotEmpty(list)) {
+                    XmsPmsProductEdit pmsProductEdit = list.get(0);
+                    pmsProductEdit.setAlbumPics(sourcingProductParam.getAlbumPics());
+                    productId = pmsProductEdit.getId();
+                    pmsProductEdit.setName(sourcingProductParam.getName());
+                    // 处理sku数据
+                    QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
+                    skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
+                    List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
+                    if (CollectionUtil.isNotEmpty(editList)) {
+                        Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();
+                        editList.forEach(e -> skuStockEditMap.put(e.getSkuCode(), e));
+
+                        List<XmsPmsSkuStockEdit> updateList = stockEditList.stream().filter(e -> skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+                        List<XmsPmsSkuStockEdit> insertList = stockEditList.stream().filter(e -> !skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+
+                        if (CollectionUtil.isNotEmpty(updateList)) {
+                            updateList.forEach(e -> {
+                                e.setId(skuStockEditMap.get(e.getSkuCode()).getId());
+                                e.setSpData(skuStockEditMap.get(e.getSkuCode()).getSpData());
+                                e.setPrice(skuStockEditMap.get(e.getSkuCode()).getPrice());
+                            });
+                            this.xmsPmsSkuStockEditService.saveOrUpdateBatch(updateList);
+                            updateList.clear();
+                        }
+
+                        if (CollectionUtil.isNotEmpty(insertList)) {
+                            this.xmsPmsSkuStockEditService.saveBatch(insertList);
+                            insertList.clear();
+                        }
+
+                        editList.clear();
+                    } else {
+                        this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+                        stockEditList.clear();
                     }
-
-                    if (CollectionUtil.isNotEmpty(insertList)) {
-                        this.xmsPmsSkuStockEditService.saveBatch(insertList);
-                        insertList.clear();
-                    }
-
-                    editList.clear();
+                    pmsProductEdit.setUpdateTime(new Date());
+                    this.xmsPmsProductEditService.updateById(pmsProductEdit);
                 } else {
+                    // 如果不存在，则进行插入处理
+                    // 插入product数据
+                    XmsPmsProductEdit pmsProductEdit = new XmsPmsProductEdit();
+                    BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
+                    pmsProductEdit.setProductId(sourcingProductParam.getProductId());
+                    pmsProductEdit.setMemberId(currentMember.getId());
+                    pmsProductEdit.setWeight(sourcingProductParam.getWeight());
+                    pmsProductEdit.setUpdateTime(new Date());
+                    this.xmsPmsProductEditService.save(pmsProductEdit);
+                    productId = pmsProductEdit.getId();
+                    // 插入sku数据
                     this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                     stockEditList.clear();
                 }
-                this.xmsPmsProductEditService.updateById(pmsProductEdit);
-            } else {
-                // 如果不存在，则进行插入处理
-                // 插入product数据
-                XmsPmsProductEdit pmsProductEdit = new XmsPmsProductEdit();
-                BeanUtil.copyProperties(sourcingProductParam, pmsProductEdit);
-                pmsProductEdit.setProductId(sourcingProductParam.getProductId());
-                pmsProductEdit.setMemberId(currentMember.getId());
-                pmsProductEdit.setWeight(sourcingProductParam.getWeight());
-                this.xmsPmsProductEditService.save(pmsProductEdit);
-                productId = pmsProductEdit.getId();
-                // 插入sku数据
-                this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
-                stockEditList.clear();
+
+
+                // 调用shopify铺货
+                UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+                if (StrUtil.isEmpty(byId.getShopifyName())) {
+                    return CommonResult.validateFailed("Please bind the store first");
+                }
+
+
+                QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, sourcingProductParam.getProductId())
+                        .eq(XmsCustomerProduct::getSourcingId, sourcingProductParam.getSourcingId())
+                        .eq(XmsCustomerProduct::getMemberId, currentMember.getId());
+                int count = this.xmsCustomerProductService.count(queryWrapper);
+                if (count == 0) {
+                    XmsCustomerProduct customerProduct = new XmsCustomerProduct();
+                    customerProduct.setShopifyProductId(0L);
+                    customerProduct.setCreateTime(new Date());
+                    customerProduct.setSourcingId(sourcingProductParam.getSourcingId());
+                    customerProduct.setProductId(sourcingProductParam.getProductId());
+                    customerProduct.setSiteType(xmsSourcingList.getSiteType());
+                    customerProduct.setCostPrice(sourcingProductParam.getPriceXj());
+                    customerProduct.setSourceLink(xmsSourcingList.getSourceLink());
+                    customerProduct.setStatus(1);
+                    customerProduct.setShopifyName(byId.getShopifyName());
+                    customerProduct.setTitle(sourcingProductParam.getName());
+                    customerProduct.setImg(sourcingProductParam.getPic());
+                    customerProduct.setMemberId(currentMember.getId());
+                    customerProduct.setUsername(currentMember.getUsername());
+                    this.xmsCustomerProductService.save(customerProduct);
+                }
+
+                Map<String, String> param = new HashMap<>();
+                param.put("pid", String.valueOf(productId));
+                param.put("published", "0");
+                param.put("shopName", byId.getShopifyName());
+                param.put("skuCodes", skuSb.toString().substring(1));
+                param.put("collectionId", sourcingProductParam.getCollectionId());
+                param.put("productType", sourcingProductParam.getProductType());
+                param.put("productTags", sourcingProductParam.getProductTags());
+                param.put("memberId", String.valueOf(currentMember.getId()));
+
+                JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
+
+                if (null != jsonObject) {
+                    return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+                }
+                return CommonResult.failed("addProduct error");
             }
-
-
-            // 调用shopify铺货
-            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            if (StrUtil.isEmpty(byId.getShopifyName())) {
-                return CommonResult.validateFailed("Please bind the store first");
-            }
-
-
-            QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId).eq(XmsCustomerProduct::getMemberId, currentMember.getId());
-            int count = this.xmsCustomerProductService.count(queryWrapper);
-            if(count == 0){
-                XmsCustomerProduct customerProduct = new XmsCustomerProduct();
-                customerProduct.setShopifyProductId(0L);
-                customerProduct.setCreateTime(new Date());
-                customerProduct.setSourcingId(sourcingProductParam.getSourcingId());
-                customerProduct.setProductId(sourcingProductParam.getProductId());
-                customerProduct.setSiteType(xmsSourcingList.getSiteType());
-                customerProduct.setCostPrice(sourcingProductParam.getPriceXj());
-                customerProduct.setSourceLink(xmsSourcingList.getSourceLink());
-                customerProduct.setStatus(1);
-                customerProduct.setShopifyName(byId.getShopifyName());
-                customerProduct.setTitle(sourcingProductParam.getName());
-                customerProduct.setImg(sourcingProductParam.getPic());
-                customerProduct.setMemberId(currentMember.getId());
-                customerProduct.setUsername(currentMember.getUsername());
-                this.xmsCustomerProductService.save(customerProduct);
-            }
-
-            Map<String, String> param = new HashMap<>();
-            param.put("pid", String.valueOf(productId));
-            param.put("published", "0");
-            param.put("shopName", byId.getShopifyName());
-            param.put("skuCodes", skuSb.toString().substring(1));
-            param.put("collectionId", sourcingProductParam.getCollectionId());
-            param.put("productType", sourcingProductParam.getProductType());
-            param.put("productTags", sourcingProductParam.getProductTags());
-            param.put("memberId", String.valueOf(currentMember.getId()));
-
-            JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/addProduct", param);
-
-            if (null != jsonObject) {
-                return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
-            }
-            return CommonResult.failed("addProduct error");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("saveSourcingProduct,sourcingProductParam[{}],error:", sourcingProductParam, e);
@@ -554,7 +563,7 @@ public class XmsSourcingController {
             QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();
             productQueryWrapper.lambda().eq(XmsCustomerProduct::getProductId, sourcingPayParam.getProductId()).eq(XmsCustomerProduct::getSourcingId, sourcingPayParam.getSourcingId());
             List<XmsCustomerProduct> list = this.xmsCustomerProductService.list(productQueryWrapper);
-            if(CollectionUtil.isNotEmpty(list)) {
+            if (CollectionUtil.isNotEmpty(list)) {
                 if (StrUtil.isNotEmpty(list.get(0).getAddress())) {
                     if (!list.get(0).getAddress().contains(sourcingPayParam.getReceiverCountry())) {
                         list.get(0).setAddress(list.get(0).getAddress() + "," + sourcingPayParam.getReceiverCountry() + ",");
@@ -625,7 +634,7 @@ public class XmsSourcingController {
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
             boolean update = false;
             //1:Drop Shipping
-            if(siteSourcingParam.getChooseType()==1){
+            if (siteSourcingParam.getChooseType() == 1) {
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
                         .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
@@ -633,7 +642,7 @@ public class XmsSourcingController {
                 update = this.xmsSourcingListService.update(null, updateWrapper);
             }
             //2:Wholesale and Bulk Shipping
-            if(siteSourcingParam.getChooseType()==2){
+            if (siteSourcingParam.getChooseType() == 2) {
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
                         .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getOrderQuantity, siteSourcingParam.getAverageDailyOrder())
@@ -645,7 +654,7 @@ public class XmsSourcingController {
                 update = this.xmsSourcingListService.update(null, updateWrapper);
             }
             //4:Product Customization
-            if(siteSourcingParam.getChooseType()==4){
+            if (siteSourcingParam.getChooseType() == 4) {
                 updateWrapper.lambda().eq(XmsSourcingList::getId, siteSourcingParam.getId())
                         .set(XmsSourcingList::getChooseType, siteSourcingParam.getChooseType())
                         .set(XmsSourcingList::getCustomType, siteSourcingParam.getCustomType())
@@ -681,7 +690,7 @@ public class XmsSourcingController {
             QueryWrapper<XmsSourcingList> sourcingWrapper = new QueryWrapper<>();
             sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId).eq(XmsSourcingList::getMemberId, currentMember.getId());
             XmsSourcingList sourcingOne = this.xmsSourcingListService.getOne(sourcingWrapper);
-            if(null != sourcingOne && sourcingOne.getId() > 0){
+            if (null != sourcingOne && sourcingOne.getId() > 0) {
                 // 说明有数据直接返回
                 return CommonResult.success(sourcingOne);
             }
@@ -690,7 +699,7 @@ public class XmsSourcingController {
 
             sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, productId);
             List<XmsSourcingList> list = this.xmsSourcingListService.list(sourcingWrapper);
-            if(CollectionUtil.isEmpty(list)){
+            if (CollectionUtil.isEmpty(list)) {
                 return CommonResult.failed("no this sourcing");
             }
 

@@ -282,6 +282,9 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if(StrUtil.isBlank(currentMember.getShopifyName())){
+                return CommonResult.failed("Please bind the shopify store first");
+            }
             QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyCollections::getShopName, currentMember.getShopifyName());
             List<XmsShopifyCollections> list = this.xmsShopifyCollectionsService.list(queryWrapper);
@@ -458,6 +461,9 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if(StrUtil.isBlank(currentMember.getShopifyName())){
+                return CommonResult.failed("Please bind the shopify store first");
+            }
             Map<String, String> param = new HashMap<>();
             param.put("shopifyName", currentMember.getShopifyName());
 
@@ -1087,11 +1093,14 @@ public class XmsShopifyController {
 
                 List<Long> orderNoList = new ArrayList<>();
                 Map<Long, FulfillmentOrderItem> orderItemMap = new HashMap<>();
+
                 itemList.forEach(e -> {
                     orderNoList.add(e.getOrderNo());
                     orderItemMap.put(e.getOrderNo(), e);
+                    e.setShipFrom(-1);
                 });
 
+                this.shopifyOrderinfoService.dealItemImg(itemList);
 
 
                 if (CollectionUtil.isNotEmpty(orderNoList)) {
@@ -1108,21 +1117,23 @@ public class XmsShopifyController {
                         ourOrderIdAndOrderNoMap.put(e.getOurOrderId(), e.getOrderNo());
                     } );
 
-
-                    List<OmsOrder> omsOrders = this.omsPortalOrderService.queryByOrderIdList(ourOrderIdList);
-                    Map<Long,Integer> orderNoAndShipFromMap = new HashMap<>();
-                    omsOrders.forEach(e->  orderNoAndShipFromMap.put(ourOrderIdAndOrderNoMap.get(e.getId()), e.getShippingFrom()) );
-
-                    orderItemMap.forEach((k,v)->{
-                        if(orderNoAndShipFromMap.containsKey(k)){
-                            v.setShipFrom(orderNoAndShipFromMap.get(k));
+                    if (CollectionUtil.isNotEmpty(ourOrderIdList)) {
+                        List<OmsOrder> omsOrders = this.omsPortalOrderService.queryByOrderIdList(ourOrderIdList);
+                        Map<Long, Integer> orderNoAndShipFromMap = new HashMap<>();
+                        if (CollectionUtil.isNotEmpty(omsOrders)) {
+                            omsOrders.forEach(e -> orderNoAndShipFromMap.put(ourOrderIdAndOrderNoMap.get(e.getId()), e.getShippingFrom()));
+                            omsOrders.clear();
                         }
-                    });
+                        if (orderNoAndShipFromMap.size() > 0) {
+                            orderItemMap.forEach((k, v) -> v.setShipFrom(orderNoAndShipFromMap.getOrDefault(k, -1)));
+                            orderNoAndShipFromMap.clear();
+                        }
+
+                    }
 
                     orderNoList.clear();
                     ourOrderIdAndOrderNoMap.clear();
-                    orderNoAndShipFromMap.clear();
-                    omsOrders.clear();
+
                     shopifyOrderinfoList.clear();
 
                 }
