@@ -13,9 +13,9 @@ import com.macro.mall.mapper.XmsShopifyOrderAddressMapper;
 import com.macro.mall.mapper.XmsShopifyOrderDetailsMapper;
 import com.macro.mall.mapper.XmsShopifyOrderinfoMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
-import com.macro.mall.model.OmsOrder;
 import com.macro.mall.portal.dao.XmsShopifyOrderinfoDao;
-import com.macro.mall.portal.domain.XmsShopifyOrderComb;
+import com.macro.mall.portal.domain.FulfillmentOrderItem;
+import com.macro.mall.portal.domain.ShopifyOrderDetailsShort;
 import com.macro.mall.portal.domain.XmsShopifyOrderinfoParam;
 import com.macro.mall.portal.service.IXmsShopifyOrderinfoService;
 import com.macro.mall.portal.service.IXmsShopifyPidImgService;
@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -76,7 +73,7 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         }
         if (StrUtil.isBlank(orderinfoParam.getEndTime())) {
             orderinfoParam.setEndTime(null);
-        } else{
+        } else {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate dateTime = LocalDate.parse(orderinfoParam.getEndTime().substring(0, 10), dateTimeFormatter);
             LocalDate plusDays = dateTime.plusDays(1);
@@ -103,15 +100,15 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         QueryWrapper<XmsShopifyOrderDetails> detailsQueryWrapperWrapper = new QueryWrapper<>();
         detailsQueryWrapperWrapper.lambda().in(XmsShopifyOrderDetails::getOrderNo, orderIds);
         List<XmsShopifyOrderDetails> detailsList = this.xmsShopifyOrderDetailsMapper.selectList(detailsQueryWrapperWrapper);
-        if(CollectionUtil.isNotEmpty(detailsList)) {
+        if (CollectionUtil.isNotEmpty(detailsList)) {
             List<Long> collect = detailsList.stream().map(XmsShopifyOrderDetails::getProductId).collect(Collectors.toList());
             QueryWrapper<XmsShopifyPidImg> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, collect);
             List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(queryWrapper);
             Map<Long, String> imgMap = new HashMap<>();
-            list.forEach(e-> imgMap.put(Long.parseLong(e.getShopifyPid()), e.getImg()) );
-            detailsList.forEach(e->{
-                if(imgMap.containsKey(e.getProductId())){
+            list.forEach(e -> imgMap.put(Long.parseLong(e.getShopifyPid()), e.getImg()));
+            detailsList.forEach(e -> {
+                if (imgMap.containsKey(e.getProductId())) {
                     e.setMainImg(imgMap.get(e.getProductId()));
                 }
             });
@@ -134,9 +131,9 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
             orderComb.setTotalQuantity(sum);
 
             XmsShopifyOrderAddress tempOrderAddress = xmsShopifyOrderAddresses.stream().filter(e -> e.getOrderNo().equals(orderComb.getOrderNo())).findFirst().orElse(null);
-            if(null == tempOrderAddress){
+            if (null == tempOrderAddress) {
                 orderComb.setAddressInfo(new XmsShopifyOrderAddress());
-            } else{
+            } else {
                 orderComb.setAddressInfo(tempOrderAddress);
             }
 
@@ -156,9 +153,58 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
     @Override
     public List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems) {
         QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName,shopifyName).in(XmsShopifyPidInfo::getShopifyPid, lineItems);
+        queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName).in(XmsShopifyPidInfo::getShopifyPid, lineItems);
         return this.xmsShopifyPidInfoMapper.selectList(queryWrapper);
     }
 
+    @Override
+    public void dealShopifyOrderDetailsMainImg(Map<Long, List<ShopifyOrderDetailsShort>> shortMap) {
+        List<Long> pdIdList = new ArrayList<>();
+        shortMap.forEach((k, v) -> {
+            if (CollectionUtil.isNotEmpty(v)) {
+                v.forEach(cl -> {
+                    if (!pdIdList.contains(cl.getProductId())) {
+                        pdIdList.add(cl.getProductId());
+                    }
+                });
+            }
+        });
+        if (CollectionUtil.isNotEmpty(pdIdList)) {
+            QueryWrapper<XmsShopifyPidImg> pidImgWrapper = new QueryWrapper<>();
+            pidImgWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, pdIdList);
+            List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(pidImgWrapper);
+            Map<Long, String> imgMap = new HashMap<>();
+            list.forEach(e -> imgMap.put(Long.parseLong(e.getShopifyPid()), e.getImg()));
+            shortMap.forEach((k, v) -> {
+                if (CollectionUtil.isNotEmpty(v)) {
+                    v.forEach(cl -> cl.setMainImg(imgMap.getOrDefault(cl.getProductId(), "")) );
+                }
+            });
+            pdIdList.clear();
+            list.clear();
+            imgMap.clear();
+        }
+    }
+
+    @Override
+    public void dealItemImg(List<FulfillmentOrderItem> itemList){
+        Set<Long> pdIdList = new HashSet<>();
+        itemList.forEach(e-> pdIdList.add(e.getProductId()) );
+
+        if (CollectionUtil.isNotEmpty(pdIdList)) {
+            QueryWrapper<XmsShopifyPidImg> pidImgWrapper = new QueryWrapper<>();
+            pidImgWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, pdIdList);
+            List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(pidImgWrapper);
+            Map<Long, String> imgMap = new HashMap<>();
+            list.forEach(e -> imgMap.put(Long.parseLong(e.getShopifyPid()), e.getImg()));
+            itemList.forEach(e -> {
+                e.setMainImg(imgMap.getOrDefault(e.getProductId(), ""));
+            });
+            pdIdList.clear();
+            list.clear();
+            imgMap.clear();
+        }
+
+    }
 
 }

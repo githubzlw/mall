@@ -103,18 +103,8 @@ public class HomeController {
     public CommonResult getProductInfo(@RequestParam Long id) {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-            QueryWrapper<XmsPmsProductEdit> productEditWrapper = new QueryWrapper<>();
-            productEditWrapper.lambda().eq(XmsPmsProductEdit::getMemberId, currentMember.getId()).eq(XmsPmsProductEdit::getId, id);
-            int count = this.xmsPmsProductEditService.count(productEditWrapper);
-            if (count == 0) {
-                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id);
-                CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
-                return commonResult;
-            } else {
-                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getCustomProductInfo?id=" + id);
-                CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
-                return commonResult;
-            }
+            JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getProductUrl() + "/getProductInfo?id=" + id + "&shopifyName=" + currentMember.getShopifyName() + "&memberId=" + currentMember.getId());
+            return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
         } catch (Exception e) {
             return CommonResult.failed(e.getMessage());
         }

@@ -14,6 +14,8 @@ import com.macro.mall.entity.XmsShopifyOrderAddress;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.entity.*;
+import com.macro.mall.mapper.XmsCustomerProductMapper;
+import com.macro.mall.mapper.XmsCustomerSkuStockMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.mapper.XmsSourcingListMapper;
 import com.macro.mall.shopify.config.ShopifyConfig;
@@ -26,16 +28,17 @@ import com.macro.mall.shopify.pojo.orders.Orders;
 import com.macro.mall.shopify.pojo.orders.OrdersWraper;
 import com.macro.mall.shopify.pojo.orders.Shipping_address;
 import com.macro.mall.shopify.service.*;
+import com.sun.org.apache.regexp.internal.RE;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -68,8 +71,6 @@ public class ShopifyUtils {
     @Autowired
     private IXmsSourcingListService sourcingListService;
     @Autowired
-    private IXmsShopifyPidImgService xmsShopifyPidImgService;
-    @Autowired
     private IXmsShopifyCountryService xmsShopifyCountryService;
     @Autowired
     private XmsShopifyPidInfoMapper xmsShopifyPidInfoMapper;
@@ -79,6 +80,10 @@ public class ShopifyUtils {
     private IXmsShopifyFulfillmentService shopifyFulfillmentService;
     @Autowired
     private IXmsShopifyFulfillmentItemService shopifyFulfillmentItemService;
+    @Resource
+    private XmsCustomerProductMapper xmsCustomerProductMapper;
+    @Resource
+    private XmsCustomerSkuStockMapper xmsCustomerSkuStockMapper;
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private ZoneId zoneId = ZoneId.systemDefault();
@@ -135,16 +140,11 @@ public class ShopifyUtils {
     /**
      * 根据shopify的店铺名称获取订单信息
      *
-     * @param shopifyNameList
+     * @param shopifyName
      * @return
      */
-    public int getOrdersByShopifyName(List<String> shopifyNameList) {
-
-        AtomicInteger total = new AtomicInteger();
-        if (CollectionUtil.isNotEmpty(shopifyNameList)) {
-            shopifyNameList.forEach(e -> total.addAndGet(this.getOrdersSingle(e)));
-        }
-        return total.get();
+    public Set<Long> getOrdersByShopifyName(String shopifyName) {
+        return this.getOrdersSingle(shopifyName);
     }
 
 
@@ -436,28 +436,28 @@ public class ShopifyUtils {
     }
 
 
-    public int getFulfillmentByShopifyName(String shopifyName, List<Long> orderNoList) {
+    public Set<Long> getFulfillmentByShopifyName(String shopifyName, List<Long> orderNoList) {
 
-        AtomicInteger total = new AtomicInteger();
+        Set<Long> productList = new HashSet<>();
         if (CollectionUtil.isNotEmpty(orderNoList)) {
             String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
             orderNoList.forEach(e -> {
                 List<XmsShopifyFulfillmentResult> fulfillmentByOrderNoList = this.getFulfillmentByOrderNo(shopifyName, e, shopifyToken);
                 if (CollectionUtil.isNotEmpty(fulfillmentByOrderNoList)) {
-                    fulfillmentByOrderNoList.forEach(fulfRs-> total.addAndGet(this.checkAndSaveFulfillmentResult(fulfRs)) );
+                    fulfillmentByOrderNoList.forEach(fulfRs -> productList.addAll(this.checkAndSaveFulfillmentResult(fulfRs)));
                 }
             });
         }
-        return total.get();
+        return productList;
     }
 
+    private Set<Long> checkAndSaveFulfillmentResult(XmsShopifyFulfillmentResult fulfillment) {
 
-    private int checkAndSaveFulfillmentResult(XmsShopifyFulfillmentResult fulfillmentByOrderNo) {
+        Set<Long> productList = new HashSet<>();
         try {
 
-            XmsShopifyFulfillment fulfillment = fulfillmentByOrderNo.getFulfillment();
-            if(null == fulfillment.getFulfillmentId() || fulfillment.getFulfillmentId() == 0){
-                return 0;
+            if (null == fulfillment.getFulfillmentId() || fulfillment.getFulfillmentId() == 0) {
+                return productList;
             }
             QueryWrapper<XmsShopifyFulfillment> fulfillmentWrapper = new QueryWrapper<>();
             fulfillmentWrapper.lambda().eq(XmsShopifyFulfillment::getShopifyName, fulfillment.getShopifyName())
@@ -474,64 +474,61 @@ public class ShopifyUtils {
                 shopifyFulfillment.setTrackingUrl(fulfillment.getTrackingUrl());
                 shopifyFulfillment.setTrackingUrls(fulfillment.getTrackingUrls());
                 this.shopifyFulfillmentService.updateById(shopifyFulfillment);
+            } else {
+                this.shopifyFulfillmentService.save(fulfillment);
+            }
+            if (CollectionUtil.isNotEmpty(fulfillment.getItemList())) {
+                QueryWrapper<XmsShopifyFulfillmentItem> itemQueryWrapper = new QueryWrapper<>();
+                itemQueryWrapper.lambda().eq(XmsShopifyFulfillmentItem::getFulfillmentId, fulfillment.getFulfillmentId());
+                List<XmsShopifyFulfillmentItem> fulfillmentItemList = this.shopifyFulfillmentItemService.list(itemQueryWrapper);
 
+                if (CollectionUtil.isNotEmpty(fulfillmentItemList)) {
+                    Map<String, XmsShopifyFulfillmentItem> itemMap = new HashMap<>();
+                    fulfillmentItemList.forEach(e -> itemMap.put(e.getFulfillmentId() + "_" + e.getItemId(), e));
+                    fulfillmentItemList.clear();
 
-                if (CollectionUtil.isNotEmpty(fulfillmentByOrderNo.getItemList())) {
-                    QueryWrapper<XmsShopifyFulfillmentItem> itemQueryWrapper = new QueryWrapper<>();
-                    itemQueryWrapper.lambda().eq(XmsShopifyFulfillmentItem::getFulfillmentId, shopifyFulfillment.getFulfillmentId());
-                    List<XmsShopifyFulfillmentItem> fulfillmentItemList = this.shopifyFulfillmentItemService.list(itemQueryWrapper);
+                    List<XmsShopifyFulfillmentItem> insertList = new ArrayList<>();
+                    // List<XmsShopifyFulfillmentItem> updateList = new ArrayList<>();
+                    List<Long> dlIds = new ArrayList<>();
 
-
-                    if (CollectionUtil.isNotEmpty(fulfillmentItemList)) {
-                        Map<String, XmsShopifyFulfillmentItem> itemMap = new HashMap<>();
-                        fulfillmentItemList.forEach(e-> itemMap.put(e.getFulfillmentId() + "_" + e.getItemId(),e));
-                        fulfillmentItemList.clear();
-
-                        List<XmsShopifyFulfillmentItem> insertList = new ArrayList<>();
-                        // List<XmsShopifyFulfillmentItem> updateList = new ArrayList<>();
-                        List<Long> dlIds = new ArrayList<>();
-
-                        Set<String> itemSet = new HashSet<>();
-                        fulfillmentByOrderNo.getItemList().forEach(e -> {
-                            itemSet.add(e.getFulfillmentId() + "_" + e.getItemId());
-                            if (itemMap.containsKey(e.getFulfillmentId() + "_" + e.getItemId())) {
-                                //XmsShopifyFulfillmentItem tempItem = itemMap.get(e.getFulfillmentId());
-                                //updateList.add(e);
-                            } else {
-                                insertList.add(e);
-                            }
-                        });
-                        itemMap.forEach((k, v) -> {
-                            if (!itemSet.contains(k)) {
-                                dlIds.add(v.getId());
-                            }
-                        });
-                        itemMap.clear();
+                    Set<String> itemSet = new HashSet<>();
+                    fulfillment.getItemList().forEach(e -> {
+                        productList.add(e.getItemId());
+                        itemSet.add(e.getFulfillmentId() + "_" + e.getItemId());
+                        if (itemMap.containsKey(e.getFulfillmentId() + "_" + e.getItemId())) {
+                            //XmsShopifyFulfillmentItem tempItem = itemMap.get(e.getFulfillmentId());
+                            //updateList.add(e);
+                        } else {
+                            insertList.add(e);
+                        }
+                    });
+                    itemMap.forEach((k, v) -> {
+                        if (!itemSet.contains(k)) {
+                            dlIds.add(v.getId());
+                        }
+                    });
+                    itemMap.clear();
                         /*if(CollectionUtil.isNotEmpty(updateList)){
                             this.shopifyFulfillmentItemService.saveOrUpdateBatch(updateList);
                             updateList.clear();
                         }*/
-                        if (CollectionUtil.isNotEmpty(insertList)) {
-                            this.shopifyFulfillmentItemService.saveBatch(insertList);
-                            insertList.clear();
-                        }
-                        if (CollectionUtil.isNotEmpty(dlIds)) {
-                            this.shopifyFulfillmentItemService.removeByIds(dlIds);
-                            dlIds.clear();
-                        }
-                    } else {
-                        this.shopifyFulfillmentItemService.saveBatch(fulfillmentByOrderNo.getItemList());
+                    if (CollectionUtil.isNotEmpty(insertList)) {
+                        this.shopifyFulfillmentItemService.saveBatch(insertList);
+                        insertList.clear();
                     }
+                    if (CollectionUtil.isNotEmpty(dlIds)) {
+                        this.shopifyFulfillmentItemService.removeByIds(dlIds);
+                        dlIds.clear();
+                    }
+                } else {
+                    this.shopifyFulfillmentItemService.saveBatch(fulfillment.getItemList());
                 }
-            } else {
-                this.shopifyFulfillmentService.save(fulfillment);
             }
-            return 1;
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("checkAndSaveFulfillmentResult,fulfillmentByOrderNo[{}],,error:", fulfillmentByOrderNo, e);
-            return 0;
+            log.error("checkAndSaveFulfillmentResult,fulfillmentByOrderNo[{}],,error:", fulfillment, e);
         }
+        return productList;
     }
 
 
@@ -545,287 +542,21 @@ public class ShopifyUtils {
             if (null != rs) {
                 JSONArray fulfillments = JSONObject.parseObject(rs).getJSONArray("fulfillments");
 
-                /**
-                 * {
-                 *   "fulfillments": [
-                 *     {
-                 *       "id": 1069019868,
-                 *       "order_id": 450789469,
-                 *       "status": "success",
-                 *       "created_at": "2021-07-01T14:38:06-04:00",
-                 *       "service": "manual",
-                 *       "updated_at": "2021-07-01T14:38:06-04:00",
-                 *       "tracking_company": "TNT",
-                 *       "shipment_status": null,
-                 *       "location_id": 487838322,
-                 *       "line_items": [
-                 *         {
-                 *           "id": 466157049,
-                 *           "variant_id": 39072856,
-                 *           "title": "IPod Nano - 8gb",
-                 *           "quantity": 1,
-                 *           "sku": "IPOD2008GREEN",
-                 *           "variant_title": "green",
-                 *           "vendor": null,
-                 *           "fulfillment_service": "manual",
-                 *           "product_id": 632910392,
-                 *           "requires_shipping": true,
-                 *           "taxable": true,
-                 *           "gift_card": false,
-                 *           "name": "IPod Nano - 8gb - green",
-                 *           "variant_inventory_management": "shopify",
-                 *           "properties": [
-                 *             {
-                 *               "name": "Custom Engraving Front",
-                 *               "value": "Happy Birthday"
-                 *             },
-                 *             {
-                 *               "name": "Custom Engraving Back",
-                 *               "value": "Merry Christmas"
-                 *             }
-                 *           ],
-                 *           "product_exists": true,
-                 *           "fulfillable_quantity": 0,
-                 *           "grams": 200,
-                 *           "price": "199.00",
-                 *           "total_discount": "0.00",
-                 *           "fulfillment_status": null,
-                 *           "price_set": {
-                 *             "shop_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "total_discount_set": {
-                 *             "shop_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "discount_allocations": [
-                 *             {
-                 *               "amount": "3.34",
-                 *               "discount_application_index": 0,
-                 *               "amount_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.34",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.34",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ],
-                 *           "admin_graphql_api_id": "gid://shopify/LineItem/466157049",
-                 *           "tax_lines": [
-                 *             {
-                 *               "price": "3.98",
-                 *               "rate": 0.06,
-                 *               "title": "State Tax",
-                 *               "price_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ]
-                 *         },
-                 *         {
-                 *           "id": 518995019,
-                 *           "variant_id": 49148385,
-                 *           "title": "IPod Nano - 8gb",
-                 *           "quantity": 1,
-                 *           "sku": "IPOD2008RED",
-                 *           "variant_title": "red",
-                 *           "vendor": null,
-                 *           "fulfillment_service": "manual",
-                 *           "product_id": 632910392,
-                 *           "requires_shipping": true,
-                 *           "taxable": true,
-                 *           "gift_card": false,
-                 *           "name": "IPod Nano - 8gb - red",
-                 *           "variant_inventory_management": "shopify",
-                 *           "properties": [],
-                 *           "product_exists": true,
-                 *           "fulfillable_quantity": 0,
-                 *           "grams": 200,
-                 *           "price": "199.00",
-                 *           "total_discount": "0.00",
-                 *           "fulfillment_status": null,
-                 *           "price_set": {
-                 *             "shop_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "total_discount_set": {
-                 *             "shop_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "discount_allocations": [
-                 *             {
-                 *               "amount": "3.33",
-                 *               "discount_application_index": 0,
-                 *               "amount_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.33",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.33",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ],
-                 *           "admin_graphql_api_id": "gid://shopify/LineItem/518995019",
-                 *           "tax_lines": [
-                 *             {
-                 *               "price": "3.98",
-                 *               "rate": 0.06,
-                 *               "title": "State Tax",
-                 *               "price_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ]
-                 *         },
-                 *         {
-                 *           "id": 703073504,
-                 *           "variant_id": 457924702,
-                 *           "title": "IPod Nano - 8gb",
-                 *           "quantity": 1,
-                 *           "sku": "IPOD2008BLACK",
-                 *           "variant_title": "black",
-                 *           "vendor": null,
-                 *           "fulfillment_service": "manual",
-                 *           "product_id": 632910392,
-                 *           "requires_shipping": true,
-                 *           "taxable": true,
-                 *           "gift_card": false,
-                 *           "name": "IPod Nano - 8gb - black",
-                 *           "variant_inventory_management": "shopify",
-                 *           "properties": [],
-                 *           "product_exists": true,
-                 *           "fulfillable_quantity": 0,
-                 *           "grams": 200,
-                 *           "price": "199.00",
-                 *           "total_discount": "0.00",
-                 *           "fulfillment_status": null,
-                 *           "price_set": {
-                 *             "shop_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "199.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "total_discount_set": {
-                 *             "shop_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             },
-                 *             "presentment_money": {
-                 *               "amount": "0.00",
-                 *               "currency_code": "USD"
-                 *             }
-                 *           },
-                 *           "discount_allocations": [
-                 *             {
-                 *               "amount": "3.33",
-                 *               "discount_application_index": 0,
-                 *               "amount_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.33",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.33",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ],
-                 *           "admin_graphql_api_id": "gid://shopify/LineItem/703073504",
-                 *           "tax_lines": [
-                 *             {
-                 *               "price": "3.98",
-                 *               "rate": 0.06,
-                 *               "title": "State Tax",
-                 *               "price_set": {
-                 *                 "shop_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 },
-                 *                 "presentment_money": {
-                 *                   "amount": "3.98",
-                 *                   "currency_code": "USD"
-                 *                 }
-                 *               }
-                 *             }
-                 *           ]
-                 *         }
-                 *       ],
-                 *       "tracking_number": "123456789",
-                 *       "tracking_numbers": [
-                 *         "123456789"
-                 *       ],
-                 *       "tracking_url": "https://www.tnt.com/express/en_us/site/tracking.html?searchType=con&cons=123456789",
-                 *       "tracking_urls": [
-                 *         "https://www.tnt.com/express/en_us/site/tracking.html?searchType=con&cons=123456789"
-                 *       ],
-                 *       "receipt": {},
-                 *       "name": "#1001.1",
-                 *       "admin_graphql_api_id": "gid://shopify/Fulfillment/1069019868"
-                 *     }
-                 *   ]
-                 * }
-                 */
                 if (null != fulfillments && fulfillments.size() > 0) {
                     for (int k = 0; k < fulfillments.size(); k++) {
-                        XmsShopifyFulfillmentResult result = new XmsShopifyFulfillmentResult();
                         JSONObject jsonObject = fulfillments.getJSONObject(k);
-                        XmsShopifyFulfillment fulfillment = new XmsShopifyFulfillment();
+                        XmsShopifyFulfillmentResult fulfillment = new XmsShopifyFulfillmentResult();
                         fulfillment.setShopifyName(shopifyName);
                         fulfillment.setFulfillmentId(jsonObject.getLong("id"));
                         fulfillment.setOrderId(jsonObject.getLong("order_id"));
                         fulfillment.setStatus(jsonObject.getString("status"));
                         fulfillment.setCreatedAt(jsonObject.getString("created_at"));
                         fulfillment.setCreateTime(new Date());
+                        if (StrUtil.isNotBlank(fulfillment.getCreatedAt())) {
+                            LocalDateTime localDate = LocalDateTime.parse(fulfillment.getCreatedAt().replace("T", " ").substring(0, 19), dateTimeFormatter);
+                            ZonedDateTime zdt = localDate.atZone(zoneId);
+                            fulfillment.setCreateTm(Date.from(zdt.toInstant()));
+                        }
                         fulfillment.setService(jsonObject.getString("service"));
                         fulfillment.setUpdatedAt(jsonObject.getString("updated_at"));
                         if (StrUtil.isNotBlank(fulfillment.getUpdatedAt())) {
@@ -850,9 +581,6 @@ public class ShopifyUtils {
                         fulfillment.setName(jsonObject.getString("name"));
                         fulfillment.setAdminGraphqlApiId(jsonObject.getString("admin_graphql_api_id"));
 
-
-                        result.setFulfillment(fulfillment);
-
                         List<XmsShopifyFulfillmentItem> itemList = new ArrayList<>();
 
                         JSONArray line_items = jsonObject.getJSONArray("line_items");
@@ -860,6 +588,8 @@ public class ShopifyUtils {
                             for (int i = 0; i < line_items.size(); i++) {
                                 JSONObject itemsJson = line_items.getJSONObject(i);
                                 XmsShopifyFulfillmentItem fulfillmentItem = new XmsShopifyFulfillmentItem();
+                                fulfillmentItem.setOrderId(orderNo);
+                                fulfillmentItem.setShopifyName(shopifyName);
                                 fulfillmentItem.setFulfillmentId(fulfillment.getFulfillmentId());
                                 fulfillmentItem.setItemId(itemsJson.getLong("id"));
                                 fulfillmentItem.setVariantId(itemsJson.getString("variant_id"));
@@ -891,8 +621,8 @@ public class ShopifyUtils {
                                 itemList.add(fulfillmentItem);
                             }
                         }
-                        result.setItemList(itemList);
-                        resultList.add(result);
+                        fulfillment.setItemList(itemList);
+                        resultList.add(fulfillment);
                     }
 
                 }
@@ -904,6 +634,73 @@ public class ShopifyUtils {
             log.error("getFulfillmentByOrderNo,shopifyName[{}],orderNo[{}],error:", shopifyName, orderNo, e);
         }
         return resultList;
+    }
+
+
+    public String deleteProduct(String[] idsList, String shopifyName) {
+
+        QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(XmsCustomerProduct::getId, Arrays.asList(idsList));
+        List<XmsCustomerProduct> productList = this.customerProductService.list(queryWrapper);
+        if (CollectionUtil.isNotEmpty(productList)) {
+            String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+
+            List<Long> idList = productList.stream().map(XmsCustomerProduct::getId).collect(Collectors.toList());
+
+            List<Long> shopifyPidList = new ArrayList<>();
+            // 设置sourcingList的标识
+            List<Long> collect = productList.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
+            productList.forEach(e -> shopifyPidList.add(e.getShopifyProductId()));
+
+            UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
+            this.xmsSourcingListMapper.update(null, updateWrapper);
+            collect.clear();
+
+            // 移除商品
+            this.xmsCustomerProductMapper.deleteBatchIds(idList);
+            // 移除库存
+            UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
+            deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, idList);
+            this.xmsCustomerSkuStockMapper.delete(deleteWrapper);
+
+            if (CollectionUtil.isNotEmpty(shopifyPidList)) {
+
+                QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
+                // 删除关联关系
+                pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                        .in(XmsShopifyPidInfo::getShopifyPid, shopifyPidList);
+                this.xmsShopifyPidInfoMapper.delete(pidInfoQueryWrapper);
+                shopifyPidList.clear();
+            }
+
+
+            idList.clear();
+            // 删除商品
+            productList.forEach(e -> {
+                boolean b = this.singleDeleteProduct(e.getShopifyName(), e.getShopifyProductId(), shopifyToken);
+                if (b) {
+                    idList.add(e.getId());
+                }
+            });
+            productList.clear();
+            return "success size:" + idList.size();
+        }
+        return null;
+    }
+
+
+    private boolean singleDeleteProduct(String shopifyName, Long shopifyPid, String shopifyToken) {
+        try {
+            String url = String.format(shopifyConfig.SHOPIFY_URI_DELETE_PRODUCTS, shopifyName, shopifyPid);
+            String delete = this.shopifyRestTemplate.delete(url, shopifyToken);
+            System.err.println("," + shopifyPid + ":" + delete);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
 
@@ -943,7 +740,10 @@ public class ShopifyUtils {
      * @param shopifyName
      * @param orders
      */
-    private void genShopifyOrderInfo(String shopifyName, OrdersWraper orders) {
+    private Set<Long> genShopifyOrderInfo(String shopifyName, OrdersWraper orders) {
+        Set<Long> productList = new HashSet<>();
+
+
         List<Orders> shopifyOrderList = orders.getOrders();
 
         List<XmsShopifyOrderinfo> existList = this.shopifyOrderinfoService.queryListByShopifyName(shopifyName);
@@ -952,7 +752,6 @@ public class ShopifyUtils {
         List<XmsShopifyOrderinfo> updateList = new ArrayList<>();
         Map<Long, Orders> itemsMap = new HashMap<>();
 
-        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
         if (CollectionUtil.isNotEmpty(existList)) {
             // String nowDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             // 过滤已经存在的订单
@@ -978,7 +777,7 @@ public class ShopifyUtils {
                     try {
                         this.shopifyOrderinfoService.saveOrUpdate(orderInfo);
                         if (itemsMap.containsKey(orderInfo.getOrderNo())) {
-                            this.dealDetailsAndAddress(accessToken, itemsMap.get(orderInfo.getOrderNo()), shopifyName);
+                            productList.addAll(this.dealDetailsAndAddress(itemsMap.get(orderInfo.getOrderNo())));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1002,7 +801,7 @@ public class ShopifyUtils {
                     XmsShopifyOrderinfo xmsShopifyOrderinfo = this.genXmsShopifyOrderinfo(orderInfo);
                     this.shopifyOrderinfoService.save(xmsShopifyOrderinfo);
 
-                    this.dealDetailsAndAddress(accessToken, orderInfo, shopifyName);
+                    productList.addAll(this.dealDetailsAndAddress(orderInfo));
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error("shopifyName:" + shopifyName + ",genShopifyOrderInfo error:", e);
@@ -1010,22 +809,28 @@ public class ShopifyUtils {
             }
         }
         shopifyOrderList.clear();
+        return productList;
     }
 
-    private int getOrdersSingle(String shopifyName) {
+    private Set<Long> getOrdersSingle(String shopifyName) {
+        Set<Long> list = new HashSet<>();
+        if (StrUtil.isBlank(shopifyName)) {
+            return list;
+        }
         try {
 
             OrdersWraper orders = this.getOrders(shopifyName);
             if (null != orders && CollectionUtil.isNotEmpty(orders.getOrders())) {
+
+                orders.getOrders().forEach(e -> list.add(e.getId()));
                 // 执行插入数据
                 this.genShopifyOrderInfo(shopifyName, orders);
             }
-            return 1;
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getOrdersSingle,shopifyName[{}],error:", shopifyName, e);
-            return 0;
         }
+        return list;
     }
 
     private String getShopifyProductUrl(String shopifyName, Long productId) {
@@ -1047,7 +852,8 @@ public class ShopifyUtils {
         }
     }
 
-    public XmsSourcingList genXmsSourcingListByShopifyProduct(String shopifyName, Long memberId, String userName, JSONObject shopifyProduct) {
+    public XmsSourcingList genXmsSourcingListByShopifyProduct(String shopifyName, Long memberId, String
+            userName, JSONObject shopifyProduct) {
         XmsSourcingList sourcingList = new XmsSourcingList();
         sourcingList.setMemberId(memberId);
         sourcingList.setUsername(userName);
@@ -1073,11 +879,10 @@ public class ShopifyUtils {
         this.shopifyOrderinfoService.update(null, updateWrapper);
     }
 
-    private void dealDetailsAndAddress(String accessToken, Orders orderInfo, String shopifyName) {
+    private Set<Long> dealDetailsAndAddress(Orders orderInfo) {
+        Set<Long> productList = new HashSet<>();
+
         if (CollectionUtil.isNotEmpty(orderInfo.getLine_items())) {
-
-            List<Long> productList = new ArrayList<>();
-
             // 删除原来数据
             this.shopifyOrderDetailsService.deleteByOrderNo(orderInfo.getId());
             for (Line_items item : orderInfo.getLine_items()) {
@@ -1090,8 +895,7 @@ public class ShopifyUtils {
             }
 
             // 读取商品的图片信息
-            this.dealShopifyProductImg(productList, accessToken, shopifyName);
-
+            // this.dealShopifyProductImg(productList, accessToken, shopifyName);
         }
         if (orderInfo.getShipping_address() != null) {
             // 删除原来数据
@@ -1104,58 +908,9 @@ public class ShopifyUtils {
             XmsShopifyOrderAddress xmsShopifyOrderAddress = this.genXmsShopifyOrderAddress(orderInfo.getShipping_address());
             this.shopifyOrderAddressService.save(xmsShopifyOrderAddress);
         }
+        return productList;
     }
 
-    /**
-     * 读取商品的图片信息
-     *
-     * @param productList
-     * @param shopifyName
-     */
-    private void dealShopifyProductImg(List<Long> productList, String accessToken, String shopifyName) {
-        if (CollectionUtil.isNotEmpty(productList)) {
-            QueryWrapper<XmsShopifyPidImg> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, productList)
-                    .eq(XmsShopifyPidImg::getShopifyName, shopifyName);
-            List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(queryWrapper);
-            List<String> noList = new ArrayList<>();
-            if (CollectionUtil.isNotEmpty(list)) {
-                list.forEach(e -> {
-                    if (!productList.contains(Long.parseLong(e.getShopifyPid()))) {
-                        noList.add(e.getShopifyPid());
-                    }
-                });
-            } else {
-                productList.forEach(e -> noList.add(String.valueOf(e)));
-            }
-            // 过滤后，挨个读取图片信息
-            noList.forEach(e -> this.singleGetImgInfo(e, accessToken, shopifyName));
-        }
-    }
-
-    private void singleGetImgInfo(String pid, String accessToken, String shopifyName) {
-        try {
-
-            String url = String.format(shopifyConfig.SHOPIFY_URI_PRODUCTS_IMGS, shopifyName, pid);
-
-            String json = this.shopifyRestTemplate.exchange(url, accessToken);
-            if (null != json) {
-                JSONObject jsonObject = JSONObject.parseObject(json);
-                XmsShopifyPidImg pidImg = new XmsShopifyPidImg();
-                JSONArray images = jsonObject.getJSONArray("images");
-                if (null != images && images.size() > 0) {
-                    pidImg.setShopifyPid(pid);
-                    pidImg.setShopifyName(shopifyName);
-                    pidImg.setImg(images.getJSONObject(0).getString("src"));
-                    pidImg.setImgInfo(images.toJSONString());
-                    pidImg.setCreateTime(new Date());
-                    this.xmsShopifyPidImgService.save(pidImg);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * shopify过来的数据转换成可存储数据
@@ -1176,7 +931,7 @@ public class ShopifyUtils {
         shopifyOrderinfo.setClosedAt(orderInfo.getClosed_at());
         if (StrUtil.isNotBlank(orderInfo.getCreated_at())) {
             // 2021-08-13T01:55:49
-            shopifyOrderinfo.setCreatedAt(orderInfo.getCreated_at().trim().substring(0, 19).replace("T", ""));
+            shopifyOrderinfo.setCreatedAt(orderInfo.getCreated_at().trim().substring(0, 19).replace("T", " "));
         }
         shopifyOrderinfo.setUpdatedAt(orderInfo.getUpdated_at());
         shopifyOrderinfo.setTotalPrice(orderInfo.getTotal_price());

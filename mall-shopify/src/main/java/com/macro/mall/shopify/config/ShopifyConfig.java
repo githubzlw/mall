@@ -75,5 +75,11 @@ public class ShopifyConfig {
     @Value("${shopify.uri_put_smart_collections}")
     public String SHOPIFY_URI_PUT_SMART_COLLECTIONS;
 
+    @Value("${shopify.uri_put_products}")
+    public String SHOPIFY_URI_PUT_PRODUCTS;
+
+    @Value("${shopify.uri_delete_products}")
+    public String SHOPIFY_URI_DELETE_PRODUCTS;
+
 
 }

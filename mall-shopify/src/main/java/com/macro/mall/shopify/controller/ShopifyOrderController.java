@@ -11,6 +11,7 @@ import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
 import com.macro.mall.shopify.pojo.ShopifyOrderParam;
+import com.macro.mall.shopify.util.AsyncTask;
 import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,11 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -45,6 +44,9 @@ public class ShopifyOrderController {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Resource
+    private AsyncTask asyncTask;
 
     @PostMapping("/getCountryByShopifyName")
     @ApiOperation("根据shopifyName获取国家数据")
@@ -71,14 +73,18 @@ public class ShopifyOrderController {
 
     @PostMapping("/getOrdersByShopifyName")
     @ApiOperation("根据shopifyName获取订单数据")
-    public CommonResult getOrdersByShopifyName(@RequestParam("shopifyNameList") List<String> shopifyNameList) {
-        Assert.isTrue(CollectionUtil.isNotEmpty(shopifyNameList), "shopifyNameList null");
+    public CommonResult getOrdersByShopifyName(@RequestParam("shopifyName") String shopifyName) {
+        Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
         try {
-            int total = this.shopifyUtils.getOrdersByShopifyName(shopifyNameList);
-            return CommonResult.success(total);
+            Set<Long> orderList = this.shopifyUtils.getOrdersByShopifyName(shopifyName);
+            if(CollectionUtil.isNotEmpty(orderList)){
+                this.asyncTask.getShopifyImgByList(orderList, shopifyName);
+            }
+
+            return CommonResult.success(orderList.size());
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("getOrdersByShopifyName, shopifyNameList[{}],error:", shopifyNameList, e);
+            log.error("getOrdersByShopifyName, shopifyName[{}],error:", shopifyName, e);
             return CommonResult.failed(e.getMessage());
         }
     }
@@ -183,8 +189,11 @@ public class ShopifyOrderController {
         Assert.isTrue(CollectionUtil.isNotEmpty(orderNoList), "orderNoList is null");
 
         try {
-            int count = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList);
-            return CommonResult.success(count);
+            Set<Long> orderList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList);
+            if(CollectionUtil.isNotEmpty(orderList)){
+                this.asyncTask.getShopifyImgByList(orderList, shopifyName);
+            }
+            return CommonResult.success(1);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getFulfillmentByShopifyName,shopifyName[{}],error:", shopifyName, e);

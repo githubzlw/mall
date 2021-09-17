@@ -1,5 +1,6 @@
 package com.macro.mall.shopify.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
@@ -13,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.*;
@@ -80,23 +82,24 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
             ProductRequestWrap wrap = new ProductRequestWrap();
             wrap.setPid(addProductBean.getPid());
+            wrap.setSourcingId(addProductBean.getSourcingId());
             wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
             wrap.setShopname(addProductBean.getShopName());
             List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
             wrap.setSkus(skuList);
 
-            if(StrUtil.isNotBlank(addProductBean.getCollectionId())){
+            if (StrUtil.isNotBlank(addProductBean.getCollectionId())) {
                 wrap.setCollectionId(addProductBean.getCollectionId());
             }
-            if(StrUtil.isNotBlank(addProductBean.getProductTags())){
+            if (StrUtil.isNotBlank(addProductBean.getProductTags())) {
                 wrap.setProductTags(addProductBean.getProductTags());
             }
-            if(StrUtil.isNotBlank(addProductBean.getProductType())){
+            if (StrUtil.isNotBlank(addProductBean.getProductType())) {
                 wrap.setProductType(addProductBean.getProductType());
             }
 
 
-            ProductWraper wraper = pushProductWFW(wrap, addProductBean.getMemberId());
+            ProductWraper wraper = this.pushProductWFW(wrap, addProductBean.getMemberId());
             if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
                 return CommonResult.success("PUSH SUCCESSED");
             } else if (wraper != null && wraper.isPush()) {
@@ -118,12 +121,12 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             return productWraper;
         }
         // 产品信息数据查询
-        XmsPmsProductEdit pmsProduct = productMapper.selectById(Long.valueOf(wrap.getPid()));
+        XmsPmsProductEdit pmsProduct = this.productMapper.selectById(Long.valueOf(wrap.getPid()));
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId());
-        List<XmsPmsSkuStockEdit> skuList= skuStockMapper.selectList(queryWrapper);
+        List<XmsPmsSkuStockEdit> skuList = this.skuStockMapper.selectList(queryWrapper);
 
         List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
         goods.setSkuList(collect);
@@ -131,7 +134,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
         goods.setBodyHtml(wrap.isBodyHtml());
-        return onlineProduct(wrap,goods, memberId);
+        return this.onlineProduct(wrap, goods, memberId);
     }
 
     /**
@@ -164,12 +167,12 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         product.setTitle(goods.getName());
         // product.setPublished(goods.isPublished());
         product.setPublished(true);
-        if(goods.isBodyHtml()){
+        if (goods.isBodyHtml()) {
             String info_ori = goods.getInfoHtml();
             StringBuilder details = details(goods.getInfo());
             details.append(info_ori);
             product.setBody_html(details.toString());
-        } else{
+        } else {
             product.setBody_html("");
         }
 
@@ -184,20 +187,20 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         OptionWrap wrap;
         try {
             wrap = optionVariant(goods.getSkuList());
-        }catch (Exception e){
-            LOGGER.error("Option and Variant error",e.getMessage());
-            throw new ShopifyException("1005",e.getMessage());
+        } catch (Exception e) {
+            LOGGER.error("Option and Variant error", e.getMessage());
+            throw new ShopifyException("1005", e.getMessage());
         }
 
-        if(wrap !=null && wrap.getOptions() == null){
-            throw  new ShopifyException("Product options has something wrong");
-        }else if(wrap !=null){
+        if (wrap != null && wrap.getOptions() == null) {
+            throw new ShopifyException("Product options has something wrong");
+        } else if (wrap != null) {
             product.setOptions(wrap.getOptions());
         }
 
         List<Variants> lstVariants = wrap.getVariants();
-        if(lstVariants.isEmpty()){
-            Variants variant = variant(goods.getPrice(),goods.getPerWeight());
+        if (lstVariants.isEmpty()) {
+            Variants variant = variant(goods.getPrice(), goods.getPerWeight());
             lstVariants.add(variant);
         }
         product.setVariants(lstVariants);
@@ -206,20 +209,22 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         List<String> lstImg = goods.getImage();
         lstImg.addAll(wrap.getLstImages());
         List<Images> lstImages = images(lstImg);
-        if(lstImages.isEmpty()){
-            throw  new ShopifyException("Product has no images");
+        if (lstImages.isEmpty()) {
+            throw new ShopifyException("Product has no images");
         }
         product.setImages(lstImages);
         return product;
     }
 
-    /**图片
+    /**
+     * 图片
+     *
      * @param pImage
      * @return
      */
-    private List<Images>  images( List<String> pImage) throws ShopifyException{
-        if(pImage == null || pImage.isEmpty()){
-            throw  new ShopifyException("The image is empty");
+    private List<Images> images(List<String> pImage) throws ShopifyException {
+        if (pImage == null || pImage.isEmpty()) {
+            throw new ShopifyException("The image is empty");
         }
         List<Images> lstImages = Lists.newArrayList();
         Set<String> setImage = Sets.newHashSet(pImage);
@@ -237,11 +242,11 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return lstImages;
     }
 
-    private Variants variant(String goodsPrice,String weight) throws ShopifyException{
-        if(StringUtils.isBlank(goodsPrice)){
-            throw  new ShopifyException("The price is not valid");
+    private Variants variant(String goodsPrice, String weight) throws ShopifyException {
+        if (StringUtils.isBlank(goodsPrice)) {
+            throw new ShopifyException("The price is not valid");
         }
-        goodsPrice  = goodsPrice.split("-")[0];
+        goodsPrice = goodsPrice.split("-")[0];
         Variants variants = new Variants();
         variants.setPrice(goodsPrice);
         variants.setRequires_shipping(true);
@@ -263,15 +268,17 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return variants;
     }
 
-    /**明细
+    /**
+     * 明细
+     *
      * @param detail
      * @return
      */
-    private StringBuilder details(List<String> detail){
+    private StringBuilder details(List<String> detail) {
         StringBuilder sb = new StringBuilder();
         if (detail != null && !detail.isEmpty()) {
             sb.append("<div>");
-            detail.stream().forEach(d->{
+            detail.stream().forEach(d -> {
                 sb.append("<span style=\"margin-left: 10px;\">").append(d).append("</span><br>");
             });
             sb.append("</div");
@@ -329,14 +336,14 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return imgList;
     }
 
-    private ProductWraper checkPush(String shopName,String pid){
+    private ProductWraper checkPush(String shopName, String pid) {
         XmsShopifyPidInfo shopifyBean = checkProduct(shopName, pid);
-        if(shopifyBean != null && StringUtils.isNotBlank(shopifyBean.getShopifyPid())){
+        if (shopifyBean != null && StringUtils.isNotBlank(shopifyBean.getShopifyPid())) {
             ProductWraper wraper = new ProductWraper();
-            if(StringUtils.isNotBlank(shopifyBean.getShopifyInfo())){
-                wraper = JSON.parseObject(shopifyBean.getShopifyInfo(),ProductWraper.class);
+            if (StringUtils.isNotBlank(shopifyBean.getShopifyInfo())) {
+                wraper = JSON.parseObject(shopifyBean.getShopifyInfo(), ProductWraper.class);
             }
-            if(shopifyBean.getPublish() > 0){
+            if (shopifyBean.getPublish() > 0) {
                 wraper.setPush(true);
                 return wraper;
             }
@@ -345,7 +352,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
     public XmsShopifyPidInfo checkProduct(String shopname, String itemId) throws ShopifyException {
-        XmsShopifyPidInfo  shopifyBean = new XmsShopifyPidInfo();
+        XmsShopifyPidInfo shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(itemId);
         return selectShopifyId(shopifyBean);
@@ -361,19 +368,19 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods, Long memberId) throws ShopifyException {
         String shopname = wrap.getShopname();
         Product product = toProduct(goods);
-        if(StrUtil.isNotBlank(wrap.getCollectionId())){
+        if (StrUtil.isNotBlank(wrap.getCollectionId())) {
             product.setCollection_id(wrap.getCollectionId());
         }
-        if(StrUtil.isNotBlank(wrap.getProductType())){
+        if (StrUtil.isNotBlank(wrap.getProductType())) {
             product.setProduct_type(wrap.getProductType());
         }
-        if(StrUtil.isNotBlank(wrap.getProductTags())){
+        if (StrUtil.isNotBlank(wrap.getProductTags())) {
             JSONArray jsonArray = new JSONArray();
             jsonArray.addAll(Arrays.asList(wrap.getProductTags().split(",")));
             product.setTags(jsonArray.toJSONString());
         }
 
-        XmsShopifyPidInfo  shopifyBean = new XmsShopifyPidInfo();
+        XmsShopifyPidInfo shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(goods.getPid());
         XmsShopifyPidInfo shopifyId = selectShopifyId(shopifyBean);
@@ -382,7 +389,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         }
         ProductWraper productWraper = new ProductWraper();
         productWraper.setProduct(product);
-        productWraper = addProduct(shopname, productWraper);
+        productWraper = this.addProduct(shopname, productWraper, goods.getPid());
 
         if (productWraper != null && productWraper.getProduct() != null) {
 
@@ -394,14 +401,15 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setShopifyInfo(JSONObject.toJSONString(productWraper));
             shopifyBean.setPublish(product.isPublished() ? 1 : 0);
             shopifyBean.setCreateTime(new Date());
-            insertShopifyIdWithPid(shopifyBean);
+            this.insertShopifyIdWithPid(shopifyBean);
 
-            updateYouLiveProduct(Long.parseLong(goods.getPid()), productWraper.getProduct(), goods.getPrice(), memberId);
+            this.updateYouLiveProduct(Long.parseLong(goods.getPid()), wrap.getSourcingId(), productWraper.getProduct(), goods.getPrice(), memberId);
+
+            // 异步抓取商品信息
 
         }
         return productWraper;
     }
-
 
 
     private void dealShopifyCollections(ProductRequestWrap wrap, ProductWraper productWraper) {
@@ -511,13 +519,16 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         int result = 0;
         if (sopifyId != null) {
             UpdateWrapper<XmsShopifyPidInfo> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("shopify_name",shopifyBean.getShopifyName()).eq("pid",shopifyBean.getPid());
+            updateWrapper.eq("shopify_name", shopifyBean.getShopifyName()).eq("pid", shopifyBean.getPid());
             XmsShopifyPidInfo bean = new XmsShopifyPidInfo();
-            bean.setShopifyPid(shopifyBean.getShopifyPid());
+
+            BeanUtil.copyProperties(sopifyId, bean);
+            bean.setUpdateTime(new Date());
             bean.setPublish(shopifyBean.getPublish());
             bean.setShopifyInfo(shopifyBean.getShopifyInfo());
-            result = shopifyPidInfoMapper.update(bean,updateWrapper);
+            result = shopifyPidInfoMapper.update(bean, updateWrapper);
         } else {
+            shopifyBean.setUpdateTime(new Date());
             result = shopifyPidInfoMapper.insert(shopifyBean);
         }
         return result;
@@ -525,13 +536,16 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     /**
      * 更新YouLiveProduct表关联shopify的productId
+     *
      * @param productId
      * @param product
      */
-    public void updateYouLiveProduct(Long productId, Product product, String price, Long memberId) {
+    public void updateYouLiveProduct(Long productId, Long sourcingId, Product product, String price, Long memberId) {
         Long shopifyProductId = product.getId();
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId).eq(XmsCustomerProduct::getMemberId, memberId);
+        queryWrapper.lambda().eq(XmsCustomerProduct::getProductId, productId)
+                .eq(XmsCustomerProduct::getMemberId, memberId)
+                .eq(XmsCustomerProduct::getSourcingId, sourcingId);
         XmsCustomerProduct customerProduct = this.customerProductMapper.selectOne(queryWrapper);
         if (null != customerProduct) {
             UpdateWrapper<XmsCustomerProduct> updateWrapper = new UpdateWrapper<>();
@@ -552,20 +566,22 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
 
-    /**解析sku,转成shopify网站的Options以及Variants
+    /**
+     * 解析sku,转成shopify网站的Options以及Variants
+     *
      * @param skuList
      */
     public OptionWrap optionVariant(List<XmsPmsSkuStockEdit> skuList) throws Exception {
-        if(skuList == null || skuList.isEmpty()){
+        if (skuList == null || skuList.isEmpty()) {
             return OptionWrap.builder().lstImages(Lists.newArrayList())
                     .options(Lists.newArrayList()).variants(Lists.newArrayList()).build();
         }
         List<String> image = Lists.newArrayList();
         List<Variants> lstVariants = Lists.newArrayList();
         List<Options> lstOptions = Lists.newArrayList();
-        Map<String,Options> optionMap = Maps.newHashMap();
+        Map<String, Options> optionMap = Maps.newHashMap();
         Variants variants;
-        for(int i=0 ;i<skuList.size();i++){
+        for (int i = 0; i < skuList.size(); i++) {
             variants = new Variants();
             variants.setPrice(String.valueOf(skuList.get(i).getPrice()));
             variants.setSku(skuList.get(i).getSkuCode());
@@ -581,44 +597,47 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             // 规格数据
             Gson gson = new Gson();
             List<SkuVal> list = gson.fromJson(skuList.get(i).getSpData(),
-                    new TypeToken<List<SkuVal>>(){}.getType());
+                    new TypeToken<List<SkuVal>>() {
+                    }.getType());
 
-            for(int j=0;j<list.size();j++){
-                options(optionMap,list.get(j));
-                if(j == 0){
+            for (int j = 0; j < list.size(); j++) {
+                options(optionMap, list.get(j));
+                if (j == 0) {
                     variants.setOption1(list.get(j).getValue());
-                }else if(j == 1){
+                } else if (j == 1) {
                     variants.setOption2(list.get(j).getValue());
-                }else if(j == 2){
+                } else if (j == 2) {
                     variants.setOption3(list.get(j).getValue());
-                }else{
+                } else {
 
                 }
             }
             lstVariants.add(variants);
         }
 
-        optionMap.entrySet().stream().forEach(o->lstOptions.add(o.getValue()));
+        optionMap.entrySet().stream().forEach(o -> lstOptions.add(o.getValue()));
         return OptionWrap.builder().lstImages(image)
                 .options(lstOptions).variants(lstVariants).build();
     }
 
-    /**options转换
+    /**
+     * options转换
+     *
      * @param optionMap
      * @param typeBean
      */
-    private void options(Map<String,Options>optionMap,SkuVal typeBean){
+    private void options(Map<String, Options> optionMap, SkuVal typeBean) {
         Options options = optionMap.get(typeBean.getKey());
         options = options == null ? new Options() : options;
         options.setName(typeBean.getKey());
         List<String> values = options.getValues();
         values = values == null ? Lists.newArrayList() : values;
-        if(!values.contains(typeBean.getValue())){
+        if (!values.contains(typeBean.getValue())) {
             values.add(typeBean.getValue());
             values = values.stream().sorted().collect(Collectors.toList());
         }
         options.setValues(values);
-        optionMap.put(typeBean.getKey(),options);
+        optionMap.put(typeBean.getKey(), options);
     }
 
 
@@ -629,7 +648,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
      * @param productWraper
      * @return
      */
-    public ProductWraper addProduct(String shopName, ProductWraper productWraper) {
+    public ProductWraper addProduct(String shopName, ProductWraper productWraper, String productId) {
 
         Assert.notNull(productWraper, "product object is null");
         LOGGER.info("shopName:[{}] productWraper:[{}]", shopName, productWraper);
@@ -638,20 +657,207 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             Gson gson = new Gson();
             PushPrduct wrap = new PushPrduct();
             wrap.setProduct(productWraper.getProduct());
-            String json =  gson.toJson(wrap);
+            String json = gson.toJson(wrap);
+
+            // 判断是否 已经铺货
 
             QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
-            XmsShopifyAuth shopifyAuth = xmsShopifyAuthMapper.selectOne(queryWrapper);
+            XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(queryWrapper);
             String token = shopifyAuth.getAccessToken();
 
-            LOGGER.info("add product to myself shop:[{}]",shopName);
-            String returnJson = shopifyRestTemplate.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
-            LOGGER.info("returnJson:[{}]", returnJson);
-            result = gson.fromJson(returnJson, ProductWraper.class);
+            QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
+            pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getPid, productId)
+                    .eq(XmsShopifyPidInfo::getShopifyName, shopName);
+            XmsShopifyPidInfo xmsShopifyPidInfo = this.shopifyPidInfoMapper.selectOne(pidInfoQueryWrapper);
 
-        }catch (Exception e){
-            LOGGER.error("postForObject",e);
+            LOGGER.info("add product to myself shop:[{}]", shopName);
+            String returnJson;
+            if (null != xmsShopifyPidInfo) {
+
+                JSONObject saveObject = new JSONObject();
+
+                JSONObject product = new JSONObject();
+
+
+                // 获取最新的解析json数据
+                JSONObject oldJson = JSONObject.parseObject(xmsShopifyPidInfo.getShopifyInfo()).getJSONObject("product");
+                JSONArray oldImgs = oldJson.getJSONArray("images");
+                JSONArray oldVariants = oldJson.getJSONArray("variants");
+                JSONArray oldOptions = oldJson.getJSONArray("options");
+
+                Product saveProduct = productWraper.getProduct();
+                // 1. 匹配imgs，多余的新增
+
+                JSONArray newImgs = new JSONArray();
+                if (CollectionUtil.isNotEmpty(saveProduct.getImages())) {
+                    List<Images> productImages = saveProduct.getImages();
+                    int currImgCount = productImages.size();
+                    if (null == oldImgs || oldImgs.size() == 0) {
+                        for (int i = 0; i < currImgCount; i++) {
+                            JSONObject tmJson = new JSONObject();
+                            tmJson.put("src", productImages.get(i).getSrc());
+                            newImgs.add(tmJson);
+                        }
+                    } else {
+                        if (currImgCount <= oldImgs.size()) {
+                            // 标识 当前的图片比原来的少，需要移除
+                            // 匹配前面currImgCount 取oldImgs.size()填入，然后 新增img
+                            for (int i = 0; i < currImgCount; i++) {
+                                JSONObject tmJson = oldImgs.getJSONObject(i);
+                                JSONObject nwJson = new JSONObject();
+                                nwJson.put("id", tmJson.getString("id"));
+                                nwJson.put("src", productImages.get(i).getSrc());
+                                newImgs.add(nwJson);
+                            }
+                        } else {
+                            for (int i = oldImgs.size(); i < currImgCount - 1; i++) {
+                                JSONObject tmJson = new JSONObject();
+                                tmJson.put("src", productImages.get(i).getSrc());
+                                newImgs.add(tmJson);
+                            }
+                        }
+                    }
+                }
+                product.put("images", newImgs);
+
+
+                // 2.匹配 variants，多余的新增
+                JSONArray newVariants = new JSONArray();
+                if (CollectionUtil.isNotEmpty(saveProduct.getVariants())) {
+                    List<Variants> variants = saveProduct.getVariants();
+
+                    // PUT和POST
+                    if (null == oldVariants || oldVariants.size() == 0) {
+                        for (int i = 0; i < variants.size(); i++) {
+                            JSONObject tmJson = new JSONObject();
+                            tmJson.put("price", variants.get(i).getPrice());
+                            tmJson.put("grams", variants.get(i).getGrams());
+                            tmJson.put("title", variants.get(i).getTitle());
+                            tmJson.put("product_id", xmsShopifyPidInfo.getShopifyPid());
+                            tmJson.put("sku", variants.get(i).getSku());
+                            tmJson.put("option1", variants.get(i).getOption1());
+                            tmJson.put("option2", variants.get(i).getOption2());
+                            tmJson.put("weight", variants.get(i).getWeight());
+                            tmJson.put("weight_unit", variants.get(i).getWeight_unit());
+                            newVariants.add(tmJson);
+                        }
+                    } else {
+                        Map<String, Variants> variantsMap = new HashMap<>();
+                        variants.forEach(e -> variantsMap.put(e.getSku(), e));
+
+                        Set<String> skuSet = new HashSet<>();
+                        for (int i = 0; i < oldVariants.size(); i++) {
+                            JSONObject jsonObject = oldVariants.getJSONObject(i);
+                            if (variantsMap.containsKey(jsonObject.getString("sku"))) {
+                                Variants sku = variantsMap.get(jsonObject.getString("sku"));
+                                JSONObject tmJson = new JSONObject();
+                                skuSet.add(sku.getSku());
+                                tmJson.put("id", jsonObject.getString("id"));
+                                tmJson.put("price", sku.getPrice());
+                                tmJson.put("grams", sku.getInventory_quantity());
+                                tmJson.put("title", sku.getOption1() + " / " + sku.getOption2());
+                                tmJson.put("option1", sku.getOption1());
+                                tmJson.put("option2", sku.getOption2());
+                                tmJson.put("option3", sku.getOption3());
+                                tmJson.put("weight", sku.getWeight());
+                                tmJson.put("weight_unit", sku.getWeight_unit());
+                                newVariants.add(tmJson);
+                            }
+                        }
+                        variantsMap.forEach((k, v) -> {
+                            if (!skuSet.contains(k)) {
+                                JSONObject tmJson = new JSONObject();
+                                tmJson.put("price", v.getPrice());
+                                tmJson.put("grams", v.getInventory_quantity());
+                                tmJson.put("title", v.getOption1() + " / " + v.getOption2());
+                                tmJson.put("product_id", xmsShopifyPidInfo.getShopifyPid());
+                                tmJson.put("sku", v.getSku());
+                                tmJson.put("option1", v.getOption1());
+                                tmJson.put("option2", v.getOption2());
+                                tmJson.put("option3", v.getOption3());
+                                tmJson.put("weight", v.getWeight());
+                                tmJson.put("weight_unit", v.getWeight_unit());
+                                newVariants.add(tmJson);
+                            }
+                        });
+                        variantsMap.clear();
+                        skuSet.clear();
+                    }
+                }
+                product.put("variants", newVariants);
+
+                // 3.匹配 options，多余的新增
+                JSONArray newOptions = new JSONArray();
+                if (CollectionUtil.isNotEmpty(saveProduct.getOptions())) {
+                    List<Options> optionsList = saveProduct.getOptions();
+
+                    // PUT和POST
+                    if (null == oldOptions || oldOptions.size() == 0) {
+                        for (int i = 0; i < optionsList.size(); i++) {
+                            JSONObject tmJson = new JSONObject();
+                            tmJson.put("product_id", xmsShopifyPidInfo.getShopifyPid());
+                            tmJson.put("name", optionsList.get(i).getName());
+                            tmJson.put("values", optionsList.get(i).getValues());
+                            newOptions.add(tmJson);
+                        }
+                    } else {
+                        Map<String, Options> optionsMap = new HashMap<>();
+                        optionsList.forEach(e -> optionsMap.put(e.getName(), e));
+
+                        Set<String> nameSet = new HashSet<>();
+                        for (int i = 0; i < oldVariants.size(); i++) {
+                            JSONObject jsonObject = oldVariants.getJSONObject(i);
+                            if (optionsMap.containsKey(jsonObject.getString("name"))) {
+                                Options nameOp = optionsMap.get(jsonObject.getString("name"));
+                                JSONObject tmJson = new JSONObject();
+                                nameSet.add(nameOp.getName());
+                                tmJson.put("id", jsonObject.getString("id"));
+                                tmJson.put("name", jsonObject.getString("name"));
+                                tmJson.put("values", jsonObject.getJSONArray("values"));
+                                newOptions.add(tmJson);
+                            }
+                        }
+                        optionsMap.forEach((k, v) -> {
+                            if (!nameSet.contains(k)) {
+                                JSONObject tmJson = new JSONObject();
+                                tmJson.put("product_id", xmsShopifyPidInfo.getShopifyPid());
+                                tmJson.put("name", v.getName());
+                                tmJson.put("values", v.getValues());
+                                newOptions.add(tmJson);
+                            }
+                        });
+                        optionsMap.clear();
+                        nameSet.clear();
+                    }
+                }
+                product.put("options", newOptions);
+
+                // 4.设置tags
+                if (StrUtil.isNotBlank(saveProduct.getTags())) {
+                    product.put("tags", JSONArray.parseArray(saveProduct.getTags()));
+                }
+
+
+                // 5.设置product_type
+                product.put("product_type", saveProduct.getProduct_type());
+
+                // 6.组合PID数据 title和body_html
+                product.put("id", xmsShopifyPidInfo.getShopifyPid());
+                product.put("title", productWraper.getProduct().getTitle());
+                product.put("body_html", productWraper.getProduct().getBody_html());
+                // 7.完整更新
+                saveObject.put("product", product);
+
+                returnJson = this.shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_PRODUCTS, shopName, xmsShopifyPidInfo.getShopifyPid()), token, saveObject);
+                result = gson.fromJson(returnJson, ProductWraper.class);
+            } else {
+                returnJson = this.shopifyRestTemplate.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
+                result = gson.fromJson(returnJson, ProductWraper.class);
+            }
+            LOGGER.info("returnJson:[{}]", returnJson);
+        } catch (Exception e) {
+            LOGGER.error("postForObject", e);
             throw e;
         }
         return result;

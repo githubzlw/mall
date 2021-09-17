@@ -29,7 +29,7 @@ public class XmsCustomerProduct implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     @ApiModelProperty(value = "会员ID")
     private Long memberId;

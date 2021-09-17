@@ -282,6 +282,7 @@ public class OrderUtils {
             order.setSourceType(1);
             order.setPayType(1);
             order.setOrderType(0);
+            order.setShippingFrom(generateParam.getShippingFrom());
 
             order.setDeleteStatus(0);
             order.setStatus(0);// 待付款

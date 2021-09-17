@@ -182,5 +182,8 @@ public class XmsPmsProductEdit implements Serializable {
 
     private Long productId;
 
+    @ApiModelProperty(value = "更新时间")
+    @TableField(fill = FieldFill.INSERT)
+    private Date updateTime;
 
 }

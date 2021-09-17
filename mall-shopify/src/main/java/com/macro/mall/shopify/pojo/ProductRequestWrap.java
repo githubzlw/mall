@@ -32,4 +32,6 @@ public class ProductRequestWrap {
     private String productType;
     private String productTags;
 
+    private Long sourcingId;
+
 }

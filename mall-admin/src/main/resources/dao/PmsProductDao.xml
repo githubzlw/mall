@@ -40,7 +40,7 @@
 
 
     <select id="getCustomUpdateInfo" resultMap="updateInfoMap">
-        SELECT *,
+        SELECT p.*,
             pc.parent_id cateParentId,
             l.id ladder_id,l.product_id ladder_product_id,l.discount ladder_discount,l.count ladder_count,l.price ladder_price,
             pf.id full_id,pf.product_id full_product_id,pf.full_price full_full_price,pf.reduce_price full_reduce_price,
@@ -53,9 +53,9 @@
         LEFT JOIN pms_product_ladder l ON p.id = l.product_id
         LEFT JOIN pms_product_full_reduction pf ON pf.product_id=p.id
         LEFT JOIN pms_member_price m ON m.product_id = p.id
-        LEFT JOIN xms_pms_sku_stock_edit s ON s.product_id = p.id
+        LEFT JOIN xms_pms_sku_stock_edit s ON s.product_id = p.product_id
         LEFT JOIN pms_product_attribute_value a ON a.product_id=p.id
-        WHERE p.id=#{id};
+        WHERE p.product_id=#{id} and p.member_id = #{memberId};
     </select>
 
     <select id="selectSubjectProductRelationByProductId" resultMap="com.macro.mall.mapper.CmsSubjectProductRelationMapper.BaseResultMap">

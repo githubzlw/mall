@@ -17,6 +17,8 @@ mybatis-plus:
 shopify:
   uri_oauth: https://%s.myshopify.com/admin/oauth/access_token
   uri_products: https://%s.myshopify.com/admin/api/2021-04/products.json
+  uri_put_products: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
+  uri_delete_products: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
   uri_delete: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
   uri_orders: https://%s.myshopify.com/admin/api/2021-04/orders.json?status=any
   uri_put_orders: https://%s.myshopify.com/admin/api/unstable/orders/%s.json

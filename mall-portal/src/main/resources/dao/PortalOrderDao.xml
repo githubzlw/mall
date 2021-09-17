@@ -115,6 +115,9 @@
             <if test="status == 6">
                 and o.status in(-1, 6)
             </if>
+            <if test="status == 0">
+                and o.status = 0
+            </if>
         </if>
         <if test="orderType != null">
             and o.order_type = #{orderType}

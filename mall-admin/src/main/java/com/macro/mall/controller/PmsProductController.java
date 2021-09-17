@@ -15,12 +15,10 @@ import com.macro.mall.dto.PmsProductQueryParam;
 import com.macro.mall.dto.PmsProductResult;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsCustomerProduct;
+import com.macro.mall.entity.XmsShopifyPidInfo;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsSkuStock;
-import com.macro.mall.service.IXmsCustomerProductService;
-import com.macro.mall.service.PmsProductService;
-import com.macro.mall.service.XmsAli1688Service;
-import com.macro.mall.service.XmsAliExpressService;
+import com.macro.mall.service.*;
 import com.macro.mall.util.ProductUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 商品管理Controller
@@ -51,6 +51,8 @@ public class PmsProductController {
     private XmsAli1688Service ali1688Service;
     @Autowired
     private IXmsCustomerProductService xmsCustomerProductService;
+    @Resource
+    private IXmsShopifyPidInfoService xmsShopifyPidInfoService;
 
     @ApiOperation("创建商品")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -75,16 +77,45 @@ public class PmsProductController {
     @GetMapping(value = "/getProductInfo")
     @ApiOperation("根据id获得产品数据")
     @ResponseBody
-    public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
+    public CommonResult getProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id,
+                                       @ApiParam(name = "memberId", value = "客户id", required = true) Long memberId,
+                                       @ApiParam(name = "shopifyName", value = "shopify店铺名称") String shopifyName) {
         PmsProductResult productResult = productService.getUpdateInfo(id);
+        if (null == productResult) {
+            return CommonResult.failed("no data");
+        }
+        if (StrUtil.isNotBlank(shopifyName)) {
+            QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                    .eq(XmsShopifyPidInfo::getPid, id);
+            XmsShopifyPidInfo one = this.xmsShopifyPidInfoService.getOne(queryWrapper);
+
+            if (null != one) {
+                PmsProductResult editInfo = productService.getCustomUpdateInfo(id, memberId);
+                if (CollectionUtil.isNotEmpty(editInfo.getSkuStockList())) {
+                    List<String> collect = editInfo.getSkuStockList().stream().map(PmsSkuStock::getSkuCode).collect(Collectors.toList());
+                    productResult.setSkuCodes(collect);
+                } else {
+                    productResult.setSkuCodes(new ArrayList<>());
+                }
+                productResult.setShopifyPid(one.getShopifyPid());
+            } else {
+                productResult.setShopifyPid("");
+                productResult.setSkuCodes(new ArrayList<>());
+            }
+        } else {
+            productResult.setShopifyPid("");
+            productResult.setSkuCodes(new ArrayList<>());
+        }
         return CommonResult.success(productResult);
     }
 
     @GetMapping(value = "/getCustomProductInfo")
     @ApiOperation("根据id获得产品数据")
     @ResponseBody
-    public CommonResult getCustomProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id) {
-        PmsProductResult productResult = productService.getCustomUpdateInfo(id);
+    public CommonResult getCustomProductInfo(@ApiParam(name = "id", value = "产品id", required = true) Long id,
+                                             @ApiParam(name = "memberId", value = "客户id", required = true) Long memberId) {
+        PmsProductResult productResult = productService.getCustomUpdateInfo(id, memberId);
         return CommonResult.success(productResult);
     }
 
@@ -189,7 +220,7 @@ public class PmsProductController {
     @RequestMapping(value = "/update/productStatus", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult updateProductStatus(@RequestParam("ids") List<Long> ids,
-                                           @RequestParam("productStatus") Integer productStatus) {
+                                            @RequestParam("productStatus") Integer productStatus) {
         int count = productService.updateProductStatus(ids, productStatus);
         if (count > 0) {
             return CommonResult.success(count);
@@ -203,7 +234,7 @@ public class PmsProductController {
     @ApiOperation("前台取消商品")
     @ResponseBody
     public CommonResult updateProductCancle(@ApiParam(name = "id", value = "产品id", required = true) Long id
-    ,@ApiParam(name = "productStatus", value = "状态", required = true) Integer productStatus) {
+            , @ApiParam(name = "productStatus", value = "状态", required = true) Integer productStatus) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
         int count = productService.updateProductStatus(ids, productStatus);
@@ -348,7 +379,7 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
-                                    if(!typeMap.containsKey(split[2])){
+                                    if (!typeMap.containsKey(split[2])) {
                                         typeMap.put(split[2], new HashSet<>());
                                     }
                                     typeMap.get(split[2]).add(split[3].trim());
@@ -356,7 +387,7 @@ public class PmsProductController {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
 
-                                    if(!typeMap.containsKey(split[0])){
+                                    if (!typeMap.containsKey(split[0])) {
                                         typeMap.put(split[0], new HashSet<>());
                                     }
                                     typeMap.get(split[0]).add(split[1].trim());
@@ -365,22 +396,22 @@ public class PmsProductController {
                                     spDataList.add(childMap);
                                 }
                             }
-                            if(typeMap.size() > 0){
+                            if (typeMap.size() > 0) {
                                 StringBuffer sb = new StringBuffer();
-                                typeMap.forEach((k,v)->{
+                                typeMap.forEach((k, v) -> {
                                     sb.append(k + ":");
-                                    if(CollectionUtil.isNotEmpty(v)){
-                                        v.forEach(cl-> sb.append("," + cl));
+                                    if (CollectionUtil.isNotEmpty(v)) {
+                                        v.forEach(cl -> sb.append("," + cl));
                                     }
                                     sb.append(";");
                                 });
-                                chromeUpload.setType(sb.toString().replace(":,",":"));
+                                chromeUpload.setType(sb.toString().replace(":,", ":"));
                             }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
-                            if(StrUtil.isNotEmpty(tempSkuStock.getSpData())){
-                                if(checkSet.contains(tempSkuStock.getSpData().toLowerCase())){
+                            if (StrUtil.isNotEmpty(tempSkuStock.getSpData())) {
+                                if (checkSet.contains(tempSkuStock.getSpData().toLowerCase())) {
                                     continue;
-                                } else{
+                                } else {
                                     checkSet.add(tempSkuStock.getSpData().toLowerCase());
                                 }
                             }
@@ -399,7 +430,7 @@ public class PmsProductController {
                             }
                         }
                     }
-                    if(tempSkuJson.containsKey("price")){
+                    if (tempSkuJson.containsKey("price")) {
                         tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
                     }
                     skuStockList.add(tempSkuStock);
@@ -425,9 +456,9 @@ public class PmsProductController {
                 JSONArray item_imgs = jsonObject.getJSONArray("item_imgs");
                 StringBuffer sb = new StringBuffer();
                 for (int i = 0; i < item_imgs.size(); i++) {
-                    if(i == item_imgs.size() - 1){
+                    if (i == item_imgs.size() - 1) {
                         sb.append(item_imgs.getJSONObject(i).getString("url"));
-                    } else{
+                    } else {
                         sb.append(item_imgs.getJSONObject(i).getString("url") + ",");
                     }
                 }
@@ -466,7 +497,7 @@ public class PmsProductController {
                                 if (split.length == 4) {
                                     childMap.put("key", split[2]);
                                     childMap.put("value", split[3]);
-                                    if(!typeMap.containsKey(split[2])){
+                                    if (!typeMap.containsKey(split[2])) {
                                         typeMap.put(split[2], new HashSet<>());
                                     }
                                     typeMap.get(split[2]).add(split[3].trim());
@@ -474,7 +505,7 @@ public class PmsProductController {
                                     childMap.put("key", split[0]);
                                     childMap.put("value", split[1]);
 
-                                    if(!typeMap.containsKey(split[0])){
+                                    if (!typeMap.containsKey(split[0])) {
                                         typeMap.put(split[0], new HashSet<>());
                                     }
                                     typeMap.get(split[0]).add(split[1].trim());
@@ -483,16 +514,16 @@ public class PmsProductController {
                                     spDataList.add(childMap);
                                 }
                             }
-                            if(typeMap.size() > 0){
+                            if (typeMap.size() > 0) {
                                 StringBuffer sb = new StringBuffer();
-                                typeMap.forEach((k,v)->{
+                                typeMap.forEach((k, v) -> {
                                     sb.append(k + ":");
-                                    if(CollectionUtil.isNotEmpty(v)){
-                                        v.forEach(cl-> sb.append("," + cl));
+                                    if (CollectionUtil.isNotEmpty(v)) {
+                                        v.forEach(cl -> sb.append("," + cl));
                                     }
                                     sb.append(";");
                                 });
-                                chromeUpload.setType(sb.toString().replace(":,",":"));
+                                chromeUpload.setType(sb.toString().replace(":,", ":"));
                             }
                             tempSkuStock.setSpData(JSONObject.toJSONString(spDataList));
                         }
@@ -510,7 +541,7 @@ public class PmsProductController {
                             }
                         }
                     }
-                    if(tempSkuJson.containsKey("price")){
+                    if (tempSkuJson.containsKey("price")) {
                         tempSkuStock.setPrice(new BigDecimal(tempSkuJson.getDouble("price")));
                     }
                     skuStockList.add(tempSkuStock);
@@ -529,9 +560,9 @@ public class PmsProductController {
     }
 
 
-    private JSONObject checkAndLoadDataCircle(String pid, int siteFlag){
+    private JSONObject checkAndLoadDataCircle(String pid, int siteFlag) {
         JSONObject jsonObject = this.checkAndLoadData(pid, siteFlag);
-        if((siteFlag == 2 || siteFlag == 3) && ( null == jsonObject || jsonObject.size() == 0)){
+        if ((siteFlag == 2 || siteFlag == 3) && (null == jsonObject || jsonObject.size() == 0)) {
             jsonObject = this.checkAndLoadData(pid, siteFlag);
         }
         return jsonObject;

@@ -49,6 +49,7 @@
     <result column="comment_time" jdbcType="TIMESTAMP" property="commentTime" />
     <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
     <result column="shopify_order_no" jdbcType="VARCHAR" property="shopifyOrderNo" />
+    <result column="shipping_from" jdbcType="INTEGER" property="shippingFrom" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -116,7 +117,7 @@
     bill_receiver_phone, bill_receiver_email, receiver_name, receiver_phone, receiver_post_code, 
     receiver_country, receiver_province, receiver_city, receiver_region, receiver_detail_address, 
     note, confirm_status, delete_status, use_integration, payment_time, delivery_time, 
-    receive_time, comment_time, modify_time, shopify_order_no
+    receive_time, comment_time, modify_time, shopify_order_no, shipping_from
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.OmsOrderExample" resultMap="BaseResultMap">
     select
@@ -167,7 +168,7 @@
       note, confirm_status, delete_status, 
       use_integration, payment_time, delivery_time, 
       receive_time, comment_time, modify_time, 
-      shopify_order_no)
+      shopify_order_no, shipping_from)
     values (#{memberId,jdbcType=BIGINT}, #{couponId,jdbcType=BIGINT}, #{orderSn,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{memberUsername,jdbcType=VARCHAR}, #{totalAmount,jdbcType=DECIMAL}, 
       #{payAmount,jdbcType=DECIMAL}, #{balanceAmount,jdbcType=DOUBLE}, #{freightAmount,jdbcType=DECIMAL}, 
@@ -183,7 +184,7 @@
       #{note,jdbcType=VARCHAR}, #{confirmStatus,jdbcType=INTEGER}, #{deleteStatus,jdbcType=INTEGER}, 
       #{useIntegration,jdbcType=INTEGER}, #{paymentTime,jdbcType=TIMESTAMP}, #{deliveryTime,jdbcType=TIMESTAMP}, 
       #{receiveTime,jdbcType=TIMESTAMP}, #{commentTime,jdbcType=TIMESTAMP}, #{modifyTime,jdbcType=TIMESTAMP}, 
-      #{shopifyOrderNo,jdbcType=VARCHAR})
+      #{shopifyOrderNo,jdbcType=VARCHAR}, #{shippingFrom,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.OmsOrder">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -329,6 +330,9 @@
       <if test="shopifyOrderNo != null">
         shopify_order_no,
       </if>
+      <if test="shippingFrom != null">
+        shipping_from,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="memberId != null">
@@ -468,6 +472,9 @@
       </if>
       <if test="shopifyOrderNo != null">
         #{shopifyOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="shippingFrom != null">
+        #{shippingFrom,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -621,6 +628,9 @@
       <if test="record.shopifyOrderNo != null">
         shopify_order_no = #{record.shopifyOrderNo,jdbcType=VARCHAR},
       </if>
+      <if test="record.shippingFrom != null">
+        shipping_from = #{record.shippingFrom,jdbcType=INTEGER},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -674,7 +684,8 @@
       receive_time = #{record.receiveTime,jdbcType=TIMESTAMP},
       comment_time = #{record.commentTime,jdbcType=TIMESTAMP},
       modify_time = #{record.modifyTime,jdbcType=TIMESTAMP},
-      shopify_order_no = #{record.shopifyOrderNo,jdbcType=VARCHAR}
+      shopify_order_no = #{record.shopifyOrderNo,jdbcType=VARCHAR},
+      shipping_from = #{record.shippingFrom,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -820,6 +831,9 @@
       <if test="shopifyOrderNo != null">
         shopify_order_no = #{shopifyOrderNo,jdbcType=VARCHAR},
       </if>
+      <if test="shippingFrom != null">
+        shipping_from = #{shippingFrom,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -870,7 +884,8 @@
       receive_time = #{receiveTime,jdbcType=TIMESTAMP},
       comment_time = #{commentTime,jdbcType=TIMESTAMP},
       modify_time = #{modifyTime,jdbcType=TIMESTAMP},
-      shopify_order_no = #{shopifyOrderNo,jdbcType=VARCHAR}
+      shopify_order_no = #{shopifyOrderNo,jdbcType=VARCHAR},
+      shipping_from = #{shippingFrom,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.macro.mall.shopify.exception.ShopifyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -132,9 +131,23 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("exchange",e);
+            log.error("exchange,uri[{}],token[{}]", uri, token, e);
             throw new ShopifyException("1003", "exchange error");
         }
+    }
+
+    public String get(String uri, String token){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+        HttpEntity entity = new HttpEntity(headers);
+        String params = null;
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class, params);
+        if(response.getStatusCode().is2xxSuccessful()){
+            return response.getBody();
+        } else{
+            log.error("exchange,uri[{}],token[{}],error!!", uri, token);
+        }
+        return null;
     }
 
 
@@ -199,11 +212,29 @@ public class ShopifyRestTemplate {
         System.err.println(token);
         System.err.println(JSONObject.toJSONString(param));
 
-        ResponseEntity<String> result = null;
-
         try {
             HttpEntity entity = new HttpEntity(param, headers);
             ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+            return response.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("put",e);
+            throw new ShopifyException("1003", "put error");
+        }
+    }
+
+
+    public String delete(String uri, String token) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+
+        try {
+            System.err.println("url:" + uri);
+            System.err.println("token:" + token);
+
+            HttpEntity entity = new HttpEntity(null, headers);
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
@@ -217,9 +248,6 @@ public class ShopifyRestTemplate {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Shopify-Access-Token", token);
-
-
-        ResponseEntity<String> result = null;
 
         try {
             HttpEntity entity = new HttpEntity(param, headers);

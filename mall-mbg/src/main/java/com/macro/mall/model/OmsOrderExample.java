@@ -3115,6 +3115,66 @@ public class OmsOrderExample {
             addCriterion("shopify_order_no not between", value1, value2, "shopifyOrderNo");
             return (Criteria) this;
         }
+
+        public Criteria andShippingFromIsNull() {
+            addCriterion("shipping_from is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromIsNotNull() {
+            addCriterion("shipping_from is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromEqualTo(Integer value) {
+            addCriterion("shipping_from =", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromNotEqualTo(Integer value) {
+            addCriterion("shipping_from <>", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromGreaterThan(Integer value) {
+            addCriterion("shipping_from >", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromGreaterThanOrEqualTo(Integer value) {
+            addCriterion("shipping_from >=", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromLessThan(Integer value) {
+            addCriterion("shipping_from <", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromLessThanOrEqualTo(Integer value) {
+            addCriterion("shipping_from <=", value, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromIn(List<Integer> values) {
+            addCriterion("shipping_from in", values, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromNotIn(List<Integer> values) {
+            addCriterion("shipping_from not in", values, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromBetween(Integer value1, Integer value2) {
+            addCriterion("shipping_from between", value1, value2, "shippingFrom");
+            return (Criteria) this;
+        }
+
+        public Criteria andShippingFromNotBetween(Integer value1, Integer value2) {
+            addCriterion("shipping_from not between", value1, value2, "shippingFrom");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

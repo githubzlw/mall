@@ -40,6 +40,8 @@ public class XmsShopifyFulfillment implements Serializable {
 
     private String createdAt;
 
+    private Date createTm;
+
     private String service;
 
     private String updatedAt;

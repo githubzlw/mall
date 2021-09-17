@@ -61,7 +61,7 @@ public class XmsCustomerSkuStockServiceImpl extends ServiceImpl<XmsCustomerSkuSt
             List<XmsCustomerProduct> productList = this.xmsCustomerProductMapper.selectList(productQueryWrapper);
 
             if(CollectionUtil.isNotEmpty(productList)){
-                List<Integer> collect = productList.stream().mapToInt(XmsCustomerProduct::getId).boxed().collect(Collectors.toList());
+                List<Long> collect = productList.stream().mapToLong(XmsCustomerProduct::getId).boxed().collect(Collectors.toList());
                 lambdaQuery.in(XmsCustomerSkuStock::getProductId, collect);
                 productList.clear();
             }

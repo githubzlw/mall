@@ -19,6 +19,6 @@ public interface PmsProductDao {
      * @param id
      * @return
      */
-    PmsProductResult getCustomUpdateInfo(@Param("id") Long id);
+    PmsProductResult getCustomUpdateInfo(@Param("id") Long id, @Param("memberId") Long memberId);
 
 }

@@ -2,6 +2,7 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -89,24 +90,24 @@ public class XmsYouLiveProductController {
             productParam.setMemberId(currentMember.getId());
             productParam.setUsername(currentMember.getUsername());
             productParam.setImportFlag(importFlag);
-            if(StrUtil.isNotBlank(shopifyPids)){
+            if (StrUtil.isNotBlank(shopifyPids)) {
                 productParam.setShopifyPidList(new ArrayList<>(Arrays.asList(shopifyPids.split(","))));
             }
             Page<XmsCustomerProduct> productPage = this.xmsCustomerProductService.list(productParam);
-            if(CollectionUtil.isNotEmpty(productPage.getRecords())){
-                productPage.getRecords().forEach(e-> {
+            if (CollectionUtil.isNotEmpty(productPage.getRecords())) {
+                productPage.getRecords().forEach(e -> {
                     e.setShopifyJson(null);
                     e.setShopifyProductUrl(String.format(SourcingUtils.SHOPIFY_PRODUCT_URL, currentMember.getShopifyName(), e.getShopifyProductId()));
-                    if(StrUtil.isEmpty(e.getAddress())){
+                    if (StrUtil.isEmpty(e.getAddress())) {
                         e.setAddress("");
                     }
                 });
                 // 读取产品相关的信息
                 List<Long> collect = productPage.getRecords().stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
                 List<PmsProduct> pmsProducts = this.portalProductService.queryByIds(collect);
-                if(CollectionUtil.isNotEmpty(pmsProducts)){
+                if (CollectionUtil.isNotEmpty(pmsProducts)) {
                     Map<Long, PmsProduct> mapCombos = pmsProducts.stream().collect(Collectors.toMap(PmsProduct::getId, e -> e, (a, b) -> b));
-                    productPage.getRecords().forEach(e-> {
+                    productPage.getRecords().forEach(e -> {
                         if (mapCombos.containsKey(e.getProductId())) {
                             e.setTitle(mapCombos.get(e.getProductId()).getName());
                             e.setSourceLink(mapCombos.get(e.getProductId()).getUrl());
@@ -122,11 +123,11 @@ public class XmsYouLiveProductController {
                 QueryWrapper<XmsCustomerSkuStock> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, collect).eq(XmsCustomerSkuStock::getStatus, 2);
                 List<XmsCustomerSkuStock> stockList = this.xmsCustomerSkuStockService.list(queryWrapper);
-                if(CollectionUtil.isNotEmpty(stockList)){
+                if (CollectionUtil.isNotEmpty(stockList)) {
                     Map<Long, List<XmsCustomerSkuStock>> listMap = stockList.stream().collect(Collectors.groupingBy(XmsCustomerSkuStock::getProductId));
-                    productPage.getRecords().forEach(e-> {
+                    productPage.getRecords().forEach(e -> {
                         e.setStockNum(0);
-                        if(listMap.containsKey(e.getProductId())){
+                        if (listMap.containsKey(e.getProductId())) {
                             int sum = listMap.get(e.getProductId()).stream().mapToInt(XmsCustomerSkuStock::getStock).sum();
                             e.setStockNum(sum);
                         }
@@ -228,29 +229,49 @@ public class XmsYouLiveProductController {
         Assert.isTrue(null != currentMember.getId() && currentMember.getId() > 0, "currentMemberId null");
         try {
 
-            List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductService.listByIds(ids);
-            if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
-                List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
-                UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
-                xmsSourcingListService.update(null, updateWrapper);
-                collect.clear();
-            }
 
+            boolean b;
             if (null != sameShopify && sameShopify == 1) {
+
+                StringBuffer sb = new StringBuffer();
+                ids.forEach(e -> sb.append(",").append(e));
                 // 进行shopify的客户商品删除
-                // XmsCustomerProduct byId = this.xmsCustomerProductService.getById(ids);
-                //  byId.getShopifyProductId()
-            }
-            boolean b = this.xmsCustomerProductService.removeByIds(ids);
-            if(b) {
-                // 移除库存
-                UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
-                deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, ids);
-                b = this.xmsCustomerSkuStockService.remove(deleteWrapper);
+                Map<String, String> param = new HashMap<>();
+                param.put("idList", sb.substring(1));
+                param.put("shopifyName", currentMember.getShopifyName());
+                JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/deleteProduct", param);
+                b = null != jsonObject && jsonObject.containsKey("code") && jsonObject.getIntValue("code") == 200;
+                if (b) {
+                    return CommonResult.success(b);
+                }
+            } else {
+                List<Long> productIds = new ArrayList<>();
+                List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductService.listByIds(ids);
+                if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
+                    List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
+                    productIds = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
+                    UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
+                    this.xmsSourcingListService.update(null, updateWrapper);
+                    collect.clear();
+                }
+
+                if (CollectionUtil.isNotEmpty(ids)) {
+                    QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();
+                    productQueryWrapper.lambda().in(XmsCustomerProduct::getId, ids).eq(XmsCustomerProduct::getMemberId, currentMember.getId());
+                    this.xmsCustomerProductService.remove(productQueryWrapper);
+                }
+                if (CollectionUtil.isNotEmpty(productIds)) {
+                    // 移除库存
+                    UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
+                    deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, productIds).eq(XmsCustomerSkuStock::getMemberId, currentMember.getId());
+                    this.xmsCustomerSkuStockService.remove(deleteWrapper);
+                }
+
+                return CommonResult.success("execute success！");
             }
 
-            return CommonResult.success(b);
+            return CommonResult.failed("delete error!");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("deleteCustomProduct,ids[{}],error:", ids, e);
@@ -283,11 +304,6 @@ public class XmsYouLiveProductController {
             return CommonResult.failed("shopfiyToSourcing failed");
         }
     }
-
-
-
-
-
 
 
 }

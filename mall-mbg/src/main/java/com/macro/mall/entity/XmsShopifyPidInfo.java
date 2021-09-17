@@ -28,7 +28,7 @@ public class XmsShopifyPidInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     @ApiModelProperty(value = "店铺名称")
     private String shopifyName;
@@ -45,6 +45,9 @@ public class XmsShopifyPidInfo implements Serializable {
 
     @ApiModelProperty(value = "发布状态，0-预发布  1-发布")
     private Integer publish;
+
+    @TableField(fill = FieldFill.INSERT)
+    private Date updateTime;
 
 
 }
