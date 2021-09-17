@@ -667,7 +667,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             String token = shopifyAuth.getAccessToken();
 
             QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
-            pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getPid, productId);
+            pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getPid, productId)
+                    .eq(XmsShopifyPidInfo::getShopifyName, shopName);
             XmsShopifyPidInfo xmsShopifyPidInfo = this.shopifyPidInfoMapper.selectOne(pidInfoQueryWrapper);
 
             LOGGER.info("add product to myself shop:[{}]", shopName);

@@ -359,7 +359,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
 
         //加入到客户的库存里面
         if("inv".equalsIgnoreCase(orderParam.getModeOfTransportation()) ){
-            genOrderStock(orderItemList, currentMember, order.getOrderSn(), orderParam.getReceiverCountry());
+            this.genOrderStock(orderItemList, currentMember, order.getOrderSn(), orderParam.getReceiverCountry());
         }
 
 
@@ -438,6 +438,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                     XmsCustomerProduct tmProduct = new XmsCustomerProduct();
                     BeanUtil.copyProperties(e, tmProduct);
                     tmProduct.setMemberId(currentMember.getId());
+                    tmProduct.setShopifyName(currentMember.getShopifyName());
                     tmProduct.setUsername(currentMember.getUsername());
                     tmProduct.setCreateTime(new Date());
                     tmProduct.setUpdateTime(new Date());
