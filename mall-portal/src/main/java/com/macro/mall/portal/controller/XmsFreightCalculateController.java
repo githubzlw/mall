@@ -264,7 +264,7 @@ public class XmsFreightCalculateController {
             busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
             // importXPremium cost 集运价格-EUB
-            double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight() * 1000);// EUB
+            double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight());// EUB
             double centralizedFreight = this.freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
             double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
             if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
