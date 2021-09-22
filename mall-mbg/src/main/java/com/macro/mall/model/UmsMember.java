@@ -84,8 +84,41 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
 
-    @ApiModelProperty(value = "国家名称")
-    private String countryName;
+    @ApiModelProperty(value = "sourcing运输方式  1进FBA, 2 进客户门点, 3 CIF")
+    private Integer sourcingTypeOfShipping;
+
+    @ApiModelProperty(value = "sourcing选择类型 1:Drop Shipping  2:Wholesale and Bulk Shipping 3 Transportation Only:  4:Product Customization")
+    private Integer sourcingChooseType;
+
+    @ApiModelProperty(value = "sourcing目的国家")
+    private String sourcingCountryName;
+
+    @ApiModelProperty(value = "sourcing国家id")
+    private Integer sourcingCountryId;
+
+    @ApiModelProperty(value = "sourcing目的州或者城市")
+    private String sourcingStateName;
+
+    @ApiModelProperty(value = "sourcing 定制类型 1:changePackaging 2:changeColor,Material 3:Improve Quality 4:changeShape")
+    private String sourcingCustomType;
+
+    @ApiModelProperty(value = "sourcing询问订单量")
+    private Integer sourcingOrderQuantity;
+
+    @ApiModelProperty(value = "sourcing客户备注")
+    private String sourcingRemark;
+
+    @ApiModelProperty(value = "sourcing 1货源已处理")
+    private Integer sourcingPrcFlag;
+
+    @ApiModelProperty(value = "sourcing aliexpress处理")
+    private String sourcingPricePs;
+
+    @ApiModelProperty(value = "sourcing cif的港口")
+    private String sourcingCifPort;
+
+    @ApiModelProperty(value = "sourcing amazon的fba地址")
+    private String sourcingFbaWarehouse;
 
     private static final long serialVersionUID = 1L;
 
@@ -305,12 +338,100 @@ public class UmsMember implements Serializable {
         this.countryId = countryId;
     }
 
-    public String getCountryName() {
-        return countryName;
+    public Integer getSourcingTypeOfShipping() {
+        return sourcingTypeOfShipping;
     }
 
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
+    public void setSourcingTypeOfShipping(Integer sourcingTypeOfShipping) {
+        this.sourcingTypeOfShipping = sourcingTypeOfShipping;
+    }
+
+    public Integer getSourcingChooseType() {
+        return sourcingChooseType;
+    }
+
+    public void setSourcingChooseType(Integer sourcingChooseType) {
+        this.sourcingChooseType = sourcingChooseType;
+    }
+
+    public String getSourcingCountryName() {
+        return sourcingCountryName;
+    }
+
+    public void setSourcingCountryName(String sourcingCountryName) {
+        this.sourcingCountryName = sourcingCountryName;
+    }
+
+    public Integer getSourcingCountryId() {
+        return sourcingCountryId;
+    }
+
+    public void setSourcingCountryId(Integer sourcingCountryId) {
+        this.sourcingCountryId = sourcingCountryId;
+    }
+
+    public String getSourcingStateName() {
+        return sourcingStateName;
+    }
+
+    public void setSourcingStateName(String sourcingStateName) {
+        this.sourcingStateName = sourcingStateName;
+    }
+
+    public String getSourcingCustomType() {
+        return sourcingCustomType;
+    }
+
+    public void setSourcingCustomType(String sourcingCustomType) {
+        this.sourcingCustomType = sourcingCustomType;
+    }
+
+    public Integer getSourcingOrderQuantity() {
+        return sourcingOrderQuantity;
+    }
+
+    public void setSourcingOrderQuantity(Integer sourcingOrderQuantity) {
+        this.sourcingOrderQuantity = sourcingOrderQuantity;
+    }
+
+    public String getSourcingRemark() {
+        return sourcingRemark;
+    }
+
+    public void setSourcingRemark(String sourcingRemark) {
+        this.sourcingRemark = sourcingRemark;
+    }
+
+    public Integer getSourcingPrcFlag() {
+        return sourcingPrcFlag;
+    }
+
+    public void setSourcingPrcFlag(Integer sourcingPrcFlag) {
+        this.sourcingPrcFlag = sourcingPrcFlag;
+    }
+
+    public String getSourcingPricePs() {
+        return sourcingPricePs;
+    }
+
+    public void setSourcingPricePs(String sourcingPricePs) {
+        this.sourcingPricePs = sourcingPricePs;
+    }
+
+    public String getSourcingCifPort() {
+        return sourcingCifPort;
+    }
+
+    public void setSourcingCifPort(String sourcingCifPort) {
+        this.sourcingCifPort = sourcingCifPort;
+    }
+
+    public String getSourcingFbaWarehouse() {
+        return sourcingFbaWarehouse;
+    }
+
+    public void setSourcingFbaWarehouse(String sourcingFbaWarehouse) {
+        this.sourcingFbaWarehouse = sourcingFbaWarehouse;
     }
 
     @Override
@@ -346,6 +467,18 @@ public class UmsMember implements Serializable {
         sb.append(", shopifyFlag=").append(shopifyFlag);
         sb.append(", guidedFlag=").append(guidedFlag);
         sb.append(", countryId=").append(countryId);
+        sb.append(", sourcingTypeOfShipping=").append(sourcingTypeOfShipping);
+        sb.append(", sourcingChooseType=").append(sourcingChooseType);
+        sb.append(", sourcingCountryName=").append(sourcingCountryName);
+        sb.append(", sourcingCountryId=").append(sourcingCountryId);
+        sb.append(", sourcingStateName=").append(sourcingStateName);
+        sb.append(", sourcingCustomType=").append(sourcingCustomType);
+        sb.append(", sourcingOrderQuantity=").append(sourcingOrderQuantity);
+        sb.append(", sourcingRemark=").append(sourcingRemark);
+        sb.append(", sourcingPrcFlag=").append(sourcingPrcFlag);
+        sb.append(", sourcingPricePs=").append(sourcingPricePs);
+        sb.append(", sourcingCifPort=").append(sourcingCifPort);
+        sb.append(", sourcingFbaWarehouse=").append(sourcingFbaWarehouse);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

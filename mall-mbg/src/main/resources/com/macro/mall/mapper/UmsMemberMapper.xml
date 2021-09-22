@@ -29,6 +29,18 @@
     <result column="shopify_flag" jdbcType="INTEGER" property="shopifyFlag" />
     <result column="guided_flag" jdbcType="INTEGER" property="guidedFlag" />
     <result column="country_id" jdbcType="INTEGER" property="countryId" />
+    <result column="sourcing_type_of_shipping" jdbcType="INTEGER" property="sourcingTypeOfShipping" />
+    <result column="sourcing_choose_type" jdbcType="INTEGER" property="sourcingChooseType" />
+    <result column="sourcing_country_name" jdbcType="VARCHAR" property="sourcingCountryName" />
+    <result column="sourcing_country_id" jdbcType="INTEGER" property="sourcingCountryId" />
+    <result column="sourcing_state_name" jdbcType="VARCHAR" property="sourcingStateName" />
+    <result column="sourcing_custom_type" jdbcType="VARCHAR" property="sourcingCustomType" />
+    <result column="sourcing_order_quantity" jdbcType="INTEGER" property="sourcingOrderQuantity" />
+    <result column="sourcing_remark" jdbcType="VARCHAR" property="sourcingRemark" />
+    <result column="sourcing_prc_flag" jdbcType="INTEGER" property="sourcingPrcFlag" />
+    <result column="sourcing_price_ps" jdbcType="VARCHAR" property="sourcingPricePs" />
+    <result column="sourcing_cif_port" jdbcType="VARCHAR" property="sourcingCifPort" />
+    <result column="sourcing_fba_warehouse" jdbcType="VARCHAR" property="sourcingFbaWarehouse" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -92,7 +104,10 @@
     id, member_level_id, username, password, nickname, phone, status, create_time, icon, 
     gender, birthday, city, job, personalized_signature, source_type, integration, growth, 
     luckey_count, history_integration, organizationname, monthly_orders, login_type, 
-    balance, shopify_name, shopify_flag, guided_flag, country_id
+    balance, shopify_name, shopify_flag, guided_flag, country_id, sourcing_type_of_shipping, 
+    sourcing_choose_type, sourcing_country_name, sourcing_country_id, sourcing_state_name, 
+    sourcing_custom_type, sourcing_order_quantity, sourcing_remark, sourcing_prc_flag, 
+    sourcing_price_ps, sourcing_cif_port, sourcing_fba_warehouse
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.UmsMemberExample" resultMap="BaseResultMap">
     select
@@ -136,7 +151,12 @@
       luckey_count, history_integration, organizationname, 
       monthly_orders, login_type, balance, 
       shopify_name, shopify_flag, guided_flag, 
-      country_id)
+      country_id, sourcing_type_of_shipping, sourcing_choose_type, 
+      sourcing_country_name, sourcing_country_id, 
+      sourcing_state_name, sourcing_custom_type, 
+      sourcing_order_quantity, sourcing_remark, 
+      sourcing_prc_flag, sourcing_price_ps, sourcing_cif_port, 
+      sourcing_fba_warehouse)
     values (#{memberLevelId,jdbcType=BIGINT}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{nickname,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, 
       #{createTime,jdbcType=TIMESTAMP}, #{icon,jdbcType=VARCHAR}, #{gender,jdbcType=INTEGER}, 
@@ -145,7 +165,12 @@
       #{luckeyCount,jdbcType=INTEGER}, #{historyIntegration,jdbcType=INTEGER}, #{organizationname,jdbcType=VARCHAR}, 
       #{monthlyOrders,jdbcType=VARCHAR}, #{loginType,jdbcType=INTEGER}, #{balance,jdbcType=DOUBLE}, 
       #{shopifyName,jdbcType=VARCHAR}, #{shopifyFlag,jdbcType=INTEGER}, #{guidedFlag,jdbcType=INTEGER}, 
-      #{countryId,jdbcType=INTEGER})
+      #{countryId,jdbcType=INTEGER}, #{sourcingTypeOfShipping,jdbcType=INTEGER}, #{sourcingChooseType,jdbcType=INTEGER}, 
+      #{sourcingCountryName,jdbcType=VARCHAR}, #{sourcingCountryId,jdbcType=INTEGER}, 
+      #{sourcingStateName,jdbcType=VARCHAR}, #{sourcingCustomType,jdbcType=VARCHAR}, 
+      #{sourcingOrderQuantity,jdbcType=INTEGER}, #{sourcingRemark,jdbcType=VARCHAR}, 
+      #{sourcingPrcFlag,jdbcType=INTEGER}, #{sourcingPricePs,jdbcType=VARCHAR}, #{sourcingCifPort,jdbcType=VARCHAR}, 
+      #{sourcingFbaWarehouse,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.UmsMember">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -231,6 +256,42 @@
       <if test="countryId != null">
         country_id,
       </if>
+      <if test="sourcingTypeOfShipping != null">
+        sourcing_type_of_shipping,
+      </if>
+      <if test="sourcingChooseType != null">
+        sourcing_choose_type,
+      </if>
+      <if test="sourcingCountryName != null">
+        sourcing_country_name,
+      </if>
+      <if test="sourcingCountryId != null">
+        sourcing_country_id,
+      </if>
+      <if test="sourcingStateName != null">
+        sourcing_state_name,
+      </if>
+      <if test="sourcingCustomType != null">
+        sourcing_custom_type,
+      </if>
+      <if test="sourcingOrderQuantity != null">
+        sourcing_order_quantity,
+      </if>
+      <if test="sourcingRemark != null">
+        sourcing_remark,
+      </if>
+      <if test="sourcingPrcFlag != null">
+        sourcing_prc_flag,
+      </if>
+      <if test="sourcingPricePs != null">
+        sourcing_price_ps,
+      </if>
+      <if test="sourcingCifPort != null">
+        sourcing_cif_port,
+      </if>
+      <if test="sourcingFbaWarehouse != null">
+        sourcing_fba_warehouse,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="memberLevelId != null">
@@ -310,6 +371,42 @@
       </if>
       <if test="countryId != null">
         #{countryId,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingTypeOfShipping != null">
+        #{sourcingTypeOfShipping,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingChooseType != null">
+        #{sourcingChooseType,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingCountryName != null">
+        #{sourcingCountryName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCountryId != null">
+        #{sourcingCountryId,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingStateName != null">
+        #{sourcingStateName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCustomType != null">
+        #{sourcingCustomType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingOrderQuantity != null">
+        #{sourcingOrderQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingRemark != null">
+        #{sourcingRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingPrcFlag != null">
+        #{sourcingPrcFlag,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingPricePs != null">
+        #{sourcingPricePs,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCifPort != null">
+        #{sourcingCifPort,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingFbaWarehouse != null">
+        #{sourcingFbaWarehouse,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -403,6 +500,42 @@
       <if test="record.countryId != null">
         country_id = #{record.countryId,jdbcType=INTEGER},
       </if>
+      <if test="record.sourcingTypeOfShipping != null">
+        sourcing_type_of_shipping = #{record.sourcingTypeOfShipping,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcingChooseType != null">
+        sourcing_choose_type = #{record.sourcingChooseType,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcingCountryName != null">
+        sourcing_country_name = #{record.sourcingCountryName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingCountryId != null">
+        sourcing_country_id = #{record.sourcingCountryId,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcingStateName != null">
+        sourcing_state_name = #{record.sourcingStateName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingCustomType != null">
+        sourcing_custom_type = #{record.sourcingCustomType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingOrderQuantity != null">
+        sourcing_order_quantity = #{record.sourcingOrderQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcingRemark != null">
+        sourcing_remark = #{record.sourcingRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingPrcFlag != null">
+        sourcing_prc_flag = #{record.sourcingPrcFlag,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcingPricePs != null">
+        sourcing_price_ps = #{record.sourcingPricePs,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingCifPort != null">
+        sourcing_cif_port = #{record.sourcingCifPort,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourcingFbaWarehouse != null">
+        sourcing_fba_warehouse = #{record.sourcingFbaWarehouse,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -436,7 +569,19 @@
       shopify_name = #{record.shopifyName,jdbcType=VARCHAR},
       shopify_flag = #{record.shopifyFlag,jdbcType=INTEGER},
       guided_flag = #{record.guidedFlag,jdbcType=INTEGER},
-      country_id = #{record.countryId,jdbcType=INTEGER}
+      country_id = #{record.countryId,jdbcType=INTEGER},
+      sourcing_type_of_shipping = #{record.sourcingTypeOfShipping,jdbcType=INTEGER},
+      sourcing_choose_type = #{record.sourcingChooseType,jdbcType=INTEGER},
+      sourcing_country_name = #{record.sourcingCountryName,jdbcType=VARCHAR},
+      sourcing_country_id = #{record.sourcingCountryId,jdbcType=INTEGER},
+      sourcing_state_name = #{record.sourcingStateName,jdbcType=VARCHAR},
+      sourcing_custom_type = #{record.sourcingCustomType,jdbcType=VARCHAR},
+      sourcing_order_quantity = #{record.sourcingOrderQuantity,jdbcType=INTEGER},
+      sourcing_remark = #{record.sourcingRemark,jdbcType=VARCHAR},
+      sourcing_prc_flag = #{record.sourcingPrcFlag,jdbcType=INTEGER},
+      sourcing_price_ps = #{record.sourcingPricePs,jdbcType=VARCHAR},
+      sourcing_cif_port = #{record.sourcingCifPort,jdbcType=VARCHAR},
+      sourcing_fba_warehouse = #{record.sourcingFbaWarehouse,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -522,6 +667,42 @@
       <if test="countryId != null">
         country_id = #{countryId,jdbcType=INTEGER},
       </if>
+      <if test="sourcingTypeOfShipping != null">
+        sourcing_type_of_shipping = #{sourcingTypeOfShipping,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingChooseType != null">
+        sourcing_choose_type = #{sourcingChooseType,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingCountryName != null">
+        sourcing_country_name = #{sourcingCountryName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCountryId != null">
+        sourcing_country_id = #{sourcingCountryId,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingStateName != null">
+        sourcing_state_name = #{sourcingStateName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCustomType != null">
+        sourcing_custom_type = #{sourcingCustomType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingOrderQuantity != null">
+        sourcing_order_quantity = #{sourcingOrderQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingRemark != null">
+        sourcing_remark = #{sourcingRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingPrcFlag != null">
+        sourcing_prc_flag = #{sourcingPrcFlag,jdbcType=INTEGER},
+      </if>
+      <if test="sourcingPricePs != null">
+        sourcing_price_ps = #{sourcingPricePs,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingCifPort != null">
+        sourcing_cif_port = #{sourcingCifPort,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcingFbaWarehouse != null">
+        sourcing_fba_warehouse = #{sourcingFbaWarehouse,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -552,7 +733,19 @@
       shopify_name = #{shopifyName,jdbcType=VARCHAR},
       shopify_flag = #{shopifyFlag,jdbcType=INTEGER},
       guided_flag = #{guidedFlag,jdbcType=INTEGER},
-      country_id = #{countryId,jdbcType=INTEGER}
+      country_id = #{countryId,jdbcType=INTEGER},
+      sourcing_type_of_shipping = #{sourcingTypeOfShipping,jdbcType=INTEGER},
+      sourcing_choose_type = #{sourcingChooseType,jdbcType=INTEGER},
+      sourcing_country_name = #{sourcingCountryName,jdbcType=VARCHAR},
+      sourcing_country_id = #{sourcingCountryId,jdbcType=INTEGER},
+      sourcing_state_name = #{sourcingStateName,jdbcType=VARCHAR},
+      sourcing_custom_type = #{sourcingCustomType,jdbcType=VARCHAR},
+      sourcing_order_quantity = #{sourcingOrderQuantity,jdbcType=INTEGER},
+      sourcing_remark = #{sourcingRemark,jdbcType=VARCHAR},
+      sourcing_prc_flag = #{sourcingPrcFlag,jdbcType=INTEGER},
+      sourcing_price_ps = #{sourcingPricePs,jdbcType=VARCHAR},
+      sourcing_cif_port = #{sourcingCifPort,jdbcType=VARCHAR},
+      sourcing_fba_warehouse = #{sourcingFbaWarehouse,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

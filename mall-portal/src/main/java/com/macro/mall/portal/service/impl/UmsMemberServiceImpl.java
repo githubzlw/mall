@@ -362,4 +362,85 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             this.memberCacheService.setMember(umsMember);
     }
 
+
+    @Override
+    public void setOtherInfo(UmsMember umsUp) {
+        UmsMember temp = new UmsMember();
+        temp.setId(umsUp.getId());
+        if(null == umsUp.getSourcingTypeOfShipping() || umsUp.getSourcingTypeOfShipping() == 0){
+            temp.setSourcingTypeOfShipping(0);
+        } else{
+            temp.setSourcingTypeOfShipping(umsUp.getSourcingTypeOfShipping());
+        }
+
+        if(null == umsUp.getSourcingChooseType() || umsUp.getSourcingChooseType() == 0){
+            temp.setSourcingChooseType(0);
+        } else{
+            temp.setSourcingChooseType(umsUp.getSourcingChooseType());
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingCountryName())){
+            temp.setSourcingCountryName(umsUp.getSourcingCountryName());
+        } else{
+            temp.setSourcingCountryName("");
+        }
+
+        if(null == umsUp.getSourcingCountryId() || umsUp.getSourcingCountryId() == 0){
+            temp.setSourcingChooseType(0);
+        } else{
+            temp.setSourcingCountryId(umsUp.getSourcingCountryId());
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingStateName())){
+            temp.setSourcingStateName(umsUp.getSourcingStateName());
+        } else{
+            temp.setSourcingStateName("");
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingCustomType())){
+            temp.setSourcingCustomType(umsUp.getSourcingCustomType());
+        } else{
+            temp.setSourcingCustomType("");
+        }
+
+        if(null == umsUp.getSourcingOrderQuantity() || umsUp.getSourcingOrderQuantity() == 0){
+            temp.setSourcingOrderQuantity(0);
+        } else{
+            temp.setSourcingOrderQuantity(umsUp.getSourcingOrderQuantity());
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingRemark())){
+            temp.setSourcingRemark(umsUp.getSourcingRemark());
+        } else{
+            temp.setSourcingRemark("");
+        }
+
+        if(null == umsUp.getSourcingPrcFlag() || umsUp.getSourcingPrcFlag() == 0){
+            temp.setSourcingPrcFlag(0);
+        } else{
+            temp.setSourcingPrcFlag(umsUp.getSourcingPrcFlag());
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingCifPort())){
+            temp.setSourcingCifPort(umsUp.getSourcingCifPort());
+        } else{
+            temp.setSourcingCifPort("");
+        }
+
+        if(StrUtil.isNotBlank(umsUp.getSourcingFbaWarehouse())){
+            temp.setSourcingFbaWarehouse(umsUp.getSourcingFbaWarehouse());
+        } else{
+            temp.setSourcingFbaWarehouse("");
+        }
+
+        this.memberMapper.updateByPrimaryKeySelective(temp);
+
+        UmsMember usm = this.memberMapper.selectByPrimaryKey(getCurrentMember().getId());
+        MemberDetails userDetails = new MemberDetails(usm);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            this.memberCacheService.delMember(usm.getId());
+            this.memberCacheService.setMember(usm);
+    }
+
 }
