@@ -84,6 +84,9 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
 
+    @ApiModelProperty(value = "国家名称")
+    private String countryName;
+
     @ApiModelProperty(value = "sourcing运输方式  1进FBA, 2 进客户门点, 3 CIF")
     private Integer sourcingTypeOfShipping;
 
@@ -432,6 +435,14 @@ public class UmsMember implements Serializable {
 
     public void setSourcingFbaWarehouse(String sourcingFbaWarehouse) {
         this.sourcingFbaWarehouse = sourcingFbaWarehouse;
+    }
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
     }
 
     @Override
