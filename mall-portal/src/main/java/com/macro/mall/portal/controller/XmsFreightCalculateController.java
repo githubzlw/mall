@@ -298,7 +298,7 @@ public class XmsFreightCalculateController {
                         busySellStandard.setCost(BigDecimalUtil.truncateDoubleToString(unitShort.getTotalFreight(), 2));
                     } else {
                         //busySellStandard.setCost("-1");
-                        busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+                        busySellStandard.setCost(BigDecimalUtil.truncateDoubleToString(unitResult.getUnitList().get(0).getTotalFreight(), 2));
                     }
                 } else {
                     //busySellStandard.setCost("-1");
