@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.enums.MailTemplateType;
 import com.macro.mall.model.UmsMember;
+import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.FacebookPojo;
@@ -67,14 +68,14 @@ public class UmsMemberController {
                                  @RequestParam String organizationname,
                                  @RequestParam String monthlyOrders, String uuid,
                                  @RequestParam Integer countryId) {
-        memberService.register(username, password, organizationname, monthlyOrders, 0,countryId);
-        String token = memberService.login(username, password);
+        this.memberService.register(username, password, organizationname, monthlyOrders, 0,countryId);
+        String token = this.memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
         // 整合sourcing数据
         if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
-            this.sourcingUtils.mergeSourcingList(memberService.getCurrentMember(), uuid);
+            this.sourcingUtils.mergeSourcingList(this.memberService.getCurrentMember(), uuid);
         }
 
         Map<String, String> tokenMap = new HashMap<>();
@@ -98,6 +99,7 @@ public class UmsMemberController {
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
         tokenMap.put("mail", usernamez);
+        tokenMap.put("sourcingCountryId", String.valueOf(userinfo.getUmsMember().getSourcingCountryId()));
 
         memberService.updateSecurityContext();
 
@@ -107,7 +109,7 @@ public class UmsMemberController {
             this.sourcingUtils.mergeSourcingList(currentMember, uuid);
         }
         tokenMap.put("nickName", currentMember.getNickname());
-        tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
+        // tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 
@@ -379,6 +381,41 @@ public class UmsMemberController {
                                           @RequestParam String password) {
         String token = memberService.verifyOldPassword(username, password);
         return CommonResult.success(token);
+    }
+
+    @ApiOperation("其他信息设置")
+    @RequestMapping(value = "/setOtherInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult setOtherInfo(UmsMember umsMember) {
+        UmsMember currentMember = this.memberService.getCurrentMember();
+        try {
+            umsMember.setId(currentMember.getId());
+            this.memberService.setOtherInfo(umsMember);
+            return CommonResult.success(umsMember);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("setOtherInfo,umsMember[{}],error:", umsMember, e);
+            return CommonResult.failed("setOtherInfo error");
+        }
+    }
+
+
+    @ApiOperation("判断邮箱是否注册")
+    @RequestMapping(value = "/checkUserName", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult checkUserName(String userName) {
+        try {
+            UmsMember byUsername = this.memberService.getByUsername(userName);
+            if (null != byUsername && null != byUsername.getId() && byUsername.getId() > 0) {
+                return CommonResult.success(1);
+            } else {
+                return CommonResult.success(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("checkUserName,userName[{}],error:", userName, e);
+            return CommonResult.failed("checkUserName error");
+        }
     }
 
 }

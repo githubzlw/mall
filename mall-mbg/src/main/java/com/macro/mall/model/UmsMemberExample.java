@@ -1861,6 +1861,796 @@ public class UmsMemberExample {
             addCriterion("country_id not between", value1, value2, "countryId");
             return (Criteria) this;
         }
+
+        public Criteria andSourcingTypeOfShippingIsNull() {
+            addCriterion("sourcing_type_of_shipping is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingIsNotNull() {
+            addCriterion("sourcing_type_of_shipping is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingEqualTo(Integer value) {
+            addCriterion("sourcing_type_of_shipping =", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingNotEqualTo(Integer value) {
+            addCriterion("sourcing_type_of_shipping <>", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingGreaterThan(Integer value) {
+            addCriterion("sourcing_type_of_shipping >", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingGreaterThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_type_of_shipping >=", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingLessThan(Integer value) {
+            addCriterion("sourcing_type_of_shipping <", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingLessThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_type_of_shipping <=", value, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingIn(List<Integer> values) {
+            addCriterion("sourcing_type_of_shipping in", values, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingNotIn(List<Integer> values) {
+            addCriterion("sourcing_type_of_shipping not in", values, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_type_of_shipping between", value1, value2, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingTypeOfShippingNotBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_type_of_shipping not between", value1, value2, "sourcingTypeOfShipping");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeIsNull() {
+            addCriterion("sourcing_choose_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeIsNotNull() {
+            addCriterion("sourcing_choose_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeEqualTo(Integer value) {
+            addCriterion("sourcing_choose_type =", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeNotEqualTo(Integer value) {
+            addCriterion("sourcing_choose_type <>", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeGreaterThan(Integer value) {
+            addCriterion("sourcing_choose_type >", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeGreaterThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_choose_type >=", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeLessThan(Integer value) {
+            addCriterion("sourcing_choose_type <", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeLessThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_choose_type <=", value, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeIn(List<Integer> values) {
+            addCriterion("sourcing_choose_type in", values, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeNotIn(List<Integer> values) {
+            addCriterion("sourcing_choose_type not in", values, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_choose_type between", value1, value2, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingChooseTypeNotBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_choose_type not between", value1, value2, "sourcingChooseType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameIsNull() {
+            addCriterion("sourcing_country_name is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameIsNotNull() {
+            addCriterion("sourcing_country_name is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameEqualTo(String value) {
+            addCriterion("sourcing_country_name =", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameNotEqualTo(String value) {
+            addCriterion("sourcing_country_name <>", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameGreaterThan(String value) {
+            addCriterion("sourcing_country_name >", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_country_name >=", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameLessThan(String value) {
+            addCriterion("sourcing_country_name <", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_country_name <=", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameLike(String value) {
+            addCriterion("sourcing_country_name like", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameNotLike(String value) {
+            addCriterion("sourcing_country_name not like", value, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameIn(List<String> values) {
+            addCriterion("sourcing_country_name in", values, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameNotIn(List<String> values) {
+            addCriterion("sourcing_country_name not in", values, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameBetween(String value1, String value2) {
+            addCriterion("sourcing_country_name between", value1, value2, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryNameNotBetween(String value1, String value2) {
+            addCriterion("sourcing_country_name not between", value1, value2, "sourcingCountryName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdIsNull() {
+            addCriterion("sourcing_country_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdIsNotNull() {
+            addCriterion("sourcing_country_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdEqualTo(Integer value) {
+            addCriterion("sourcing_country_id =", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdNotEqualTo(Integer value) {
+            addCriterion("sourcing_country_id <>", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdGreaterThan(Integer value) {
+            addCriterion("sourcing_country_id >", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_country_id >=", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdLessThan(Integer value) {
+            addCriterion("sourcing_country_id <", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdLessThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_country_id <=", value, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdIn(List<Integer> values) {
+            addCriterion("sourcing_country_id in", values, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdNotIn(List<Integer> values) {
+            addCriterion("sourcing_country_id not in", values, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_country_id between", value1, value2, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCountryIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_country_id not between", value1, value2, "sourcingCountryId");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameIsNull() {
+            addCriterion("sourcing_state_name is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameIsNotNull() {
+            addCriterion("sourcing_state_name is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameEqualTo(String value) {
+            addCriterion("sourcing_state_name =", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameNotEqualTo(String value) {
+            addCriterion("sourcing_state_name <>", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameGreaterThan(String value) {
+            addCriterion("sourcing_state_name >", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_state_name >=", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameLessThan(String value) {
+            addCriterion("sourcing_state_name <", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_state_name <=", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameLike(String value) {
+            addCriterion("sourcing_state_name like", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameNotLike(String value) {
+            addCriterion("sourcing_state_name not like", value, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameIn(List<String> values) {
+            addCriterion("sourcing_state_name in", values, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameNotIn(List<String> values) {
+            addCriterion("sourcing_state_name not in", values, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameBetween(String value1, String value2) {
+            addCriterion("sourcing_state_name between", value1, value2, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingStateNameNotBetween(String value1, String value2) {
+            addCriterion("sourcing_state_name not between", value1, value2, "sourcingStateName");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeIsNull() {
+            addCriterion("sourcing_custom_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeIsNotNull() {
+            addCriterion("sourcing_custom_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeEqualTo(String value) {
+            addCriterion("sourcing_custom_type =", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeNotEqualTo(String value) {
+            addCriterion("sourcing_custom_type <>", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeGreaterThan(String value) {
+            addCriterion("sourcing_custom_type >", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_custom_type >=", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeLessThan(String value) {
+            addCriterion("sourcing_custom_type <", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_custom_type <=", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeLike(String value) {
+            addCriterion("sourcing_custom_type like", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeNotLike(String value) {
+            addCriterion("sourcing_custom_type not like", value, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeIn(List<String> values) {
+            addCriterion("sourcing_custom_type in", values, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeNotIn(List<String> values) {
+            addCriterion("sourcing_custom_type not in", values, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeBetween(String value1, String value2) {
+            addCriterion("sourcing_custom_type between", value1, value2, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCustomTypeNotBetween(String value1, String value2) {
+            addCriterion("sourcing_custom_type not between", value1, value2, "sourcingCustomType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityIsNull() {
+            addCriterion("sourcing_order_quantity is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityIsNotNull() {
+            addCriterion("sourcing_order_quantity is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityEqualTo(Integer value) {
+            addCriterion("sourcing_order_quantity =", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityNotEqualTo(Integer value) {
+            addCriterion("sourcing_order_quantity <>", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityGreaterThan(Integer value) {
+            addCriterion("sourcing_order_quantity >", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityGreaterThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_order_quantity >=", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityLessThan(Integer value) {
+            addCriterion("sourcing_order_quantity <", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityLessThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_order_quantity <=", value, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityIn(List<Integer> values) {
+            addCriterion("sourcing_order_quantity in", values, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityNotIn(List<Integer> values) {
+            addCriterion("sourcing_order_quantity not in", values, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_order_quantity between", value1, value2, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingOrderQuantityNotBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_order_quantity not between", value1, value2, "sourcingOrderQuantity");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkIsNull() {
+            addCriterion("sourcing_remark is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkIsNotNull() {
+            addCriterion("sourcing_remark is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkEqualTo(String value) {
+            addCriterion("sourcing_remark =", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkNotEqualTo(String value) {
+            addCriterion("sourcing_remark <>", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkGreaterThan(String value) {
+            addCriterion("sourcing_remark >", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_remark >=", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkLessThan(String value) {
+            addCriterion("sourcing_remark <", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_remark <=", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkLike(String value) {
+            addCriterion("sourcing_remark like", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkNotLike(String value) {
+            addCriterion("sourcing_remark not like", value, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkIn(List<String> values) {
+            addCriterion("sourcing_remark in", values, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkNotIn(List<String> values) {
+            addCriterion("sourcing_remark not in", values, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkBetween(String value1, String value2) {
+            addCriterion("sourcing_remark between", value1, value2, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingRemarkNotBetween(String value1, String value2) {
+            addCriterion("sourcing_remark not between", value1, value2, "sourcingRemark");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagIsNull() {
+            addCriterion("sourcing_prc_flag is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagIsNotNull() {
+            addCriterion("sourcing_prc_flag is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagEqualTo(Integer value) {
+            addCriterion("sourcing_prc_flag =", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagNotEqualTo(Integer value) {
+            addCriterion("sourcing_prc_flag <>", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagGreaterThan(Integer value) {
+            addCriterion("sourcing_prc_flag >", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagGreaterThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_prc_flag >=", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagLessThan(Integer value) {
+            addCriterion("sourcing_prc_flag <", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagLessThanOrEqualTo(Integer value) {
+            addCriterion("sourcing_prc_flag <=", value, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagIn(List<Integer> values) {
+            addCriterion("sourcing_prc_flag in", values, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagNotIn(List<Integer> values) {
+            addCriterion("sourcing_prc_flag not in", values, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_prc_flag between", value1, value2, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPrcFlagNotBetween(Integer value1, Integer value2) {
+            addCriterion("sourcing_prc_flag not between", value1, value2, "sourcingPrcFlag");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsIsNull() {
+            addCriterion("sourcing_price_ps is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsIsNotNull() {
+            addCriterion("sourcing_price_ps is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsEqualTo(String value) {
+            addCriterion("sourcing_price_ps =", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsNotEqualTo(String value) {
+            addCriterion("sourcing_price_ps <>", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsGreaterThan(String value) {
+            addCriterion("sourcing_price_ps >", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_price_ps >=", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsLessThan(String value) {
+            addCriterion("sourcing_price_ps <", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_price_ps <=", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsLike(String value) {
+            addCriterion("sourcing_price_ps like", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsNotLike(String value) {
+            addCriterion("sourcing_price_ps not like", value, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsIn(List<String> values) {
+            addCriterion("sourcing_price_ps in", values, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsNotIn(List<String> values) {
+            addCriterion("sourcing_price_ps not in", values, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsBetween(String value1, String value2) {
+            addCriterion("sourcing_price_ps between", value1, value2, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingPricePsNotBetween(String value1, String value2) {
+            addCriterion("sourcing_price_ps not between", value1, value2, "sourcingPricePs");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortIsNull() {
+            addCriterion("sourcing_cif_port is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortIsNotNull() {
+            addCriterion("sourcing_cif_port is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortEqualTo(String value) {
+            addCriterion("sourcing_cif_port =", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortNotEqualTo(String value) {
+            addCriterion("sourcing_cif_port <>", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortGreaterThan(String value) {
+            addCriterion("sourcing_cif_port >", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_cif_port >=", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortLessThan(String value) {
+            addCriterion("sourcing_cif_port <", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_cif_port <=", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortLike(String value) {
+            addCriterion("sourcing_cif_port like", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortNotLike(String value) {
+            addCriterion("sourcing_cif_port not like", value, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortIn(List<String> values) {
+            addCriterion("sourcing_cif_port in", values, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortNotIn(List<String> values) {
+            addCriterion("sourcing_cif_port not in", values, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortBetween(String value1, String value2) {
+            addCriterion("sourcing_cif_port between", value1, value2, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingCifPortNotBetween(String value1, String value2) {
+            addCriterion("sourcing_cif_port not between", value1, value2, "sourcingCifPort");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseIsNull() {
+            addCriterion("sourcing_fba_warehouse is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseIsNotNull() {
+            addCriterion("sourcing_fba_warehouse is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseEqualTo(String value) {
+            addCriterion("sourcing_fba_warehouse =", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseNotEqualTo(String value) {
+            addCriterion("sourcing_fba_warehouse <>", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseGreaterThan(String value) {
+            addCriterion("sourcing_fba_warehouse >", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseGreaterThanOrEqualTo(String value) {
+            addCriterion("sourcing_fba_warehouse >=", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseLessThan(String value) {
+            addCriterion("sourcing_fba_warehouse <", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseLessThanOrEqualTo(String value) {
+            addCriterion("sourcing_fba_warehouse <=", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseLike(String value) {
+            addCriterion("sourcing_fba_warehouse like", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseNotLike(String value) {
+            addCriterion("sourcing_fba_warehouse not like", value, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseIn(List<String> values) {
+            addCriterion("sourcing_fba_warehouse in", values, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseNotIn(List<String> values) {
+            addCriterion("sourcing_fba_warehouse not in", values, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseBetween(String value1, String value2) {
+            addCriterion("sourcing_fba_warehouse between", value1, value2, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
+
+        public Criteria andSourcingFbaWarehouseNotBetween(String value1, String value2) {
+            addCriterion("sourcing_fba_warehouse not between", value1, value2, "sourcingFbaWarehouse");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

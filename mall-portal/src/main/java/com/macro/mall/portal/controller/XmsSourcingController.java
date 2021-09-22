@@ -92,6 +92,7 @@ public class XmsSourcingController {
 
         Assert.isTrue(null != sourcingParam, "sourcingParam null");
 
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
 
         try {
 
@@ -101,14 +102,29 @@ public class XmsSourcingController {
             if (null == sourcingParam.getPageSize() || sourcingParam.getPageSize() == 0) {
                 sourcingParam.setPageSize(10);
             }
-            sourcingParam.setMemberId(this.umsMemberService.getCurrentMember().getId());
-            sourcingParam.setUsername(this.umsMemberService.getCurrentMember().getUsername());
+            sourcingParam.setMemberId(currentMember.getId());
+            sourcingParam.setUsername(currentMember.getUsername());
             Page<XmsSourcingList> listPage = this.xmsSourcingListService.list(sourcingParam);
 
             if (CollectionUtil.isNotEmpty(listPage.getRecords())) {
                 listPage.getRecords().forEach(e -> {
                     if (StrUtil.isEmpty(e.getCost())) {
                         e.setCost("");
+                    }
+                    if(null == e.getChooseType() || e.getChooseType() == 0){
+                        // 如果没有设置ChooseType，则使用客户默认带过来的数据
+                        e.setChooseType(currentMember.getSourcingChooseType());
+
+                        e.setTypeOfShipping(currentMember.getSourcingTypeOfShipping());
+                        e.setCountryName(currentMember.getSourcingCountryName());
+                        e.setCountryId(currentMember.getSourcingCountryId());
+                        e.setStateName(currentMember.getSourcingStateName());
+                        e.setCustomType(currentMember.getSourcingCustomType());
+                        e.setOrderQuantity(currentMember.getSourcingOrderQuantity());
+                        e.setRemark(currentMember.getSourcingRemark());
+                        e.setPrcFlag(currentMember.getSourcingPrcFlag());
+                        e.setCifPort(currentMember.getSourcingCifPort());
+                        e.setFbaWarehouse(currentMember.getSourcingFbaWarehouse());
                     }
                 });
             }

@@ -166,7 +166,7 @@ public class XmsFreightCalculateController {
                         case 35:// UK
 //                            tempWeight = Math.max(fbaFreightParam.getWeight(), 1);
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
-                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100/ 6000);
+                            tempWeight = Math.max(fbaFreightParam.getWeight(), fbaFreightParam.getVolume() * 100 * 100 * 100 / 6000);
                             break;
                         case 13:// GERMANY
                             // 计费重量=max(实际重量，体积（立方厘米）/6000)
@@ -188,7 +188,7 @@ public class XmsFreightCalculateController {
                             xmsFbaFreightUnit = collect.get(0);
                         }
                     }
-                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble((xmsFbaFreightUnit.getWeightPrice() * tempWeight)/ this.exchangeRateUtils.getUsdToCnyRate(), 2));
+                    xmsFbaFreightUnit.setTotalPrice(BigDecimalUtil.truncateDouble((xmsFbaFreightUnit.getWeightPrice() * tempWeight) / this.exchangeRateUtils.getUsdToCnyRate(), 2));
                     xmsFbaFreightUnit.setWeight(fbaFreightParam.getWeight());
                     xmsFbaFreightUnit.setVolume(fbaFreightParam.getVolume());
                     return CommonResult.success(xmsFbaFreightUnit);
@@ -255,26 +255,56 @@ public class XmsFreightCalculateController {
             EstimatedCost busySellStandard = new EstimatedCost();
             EstimatedCost busySellPremium = new EstimatedCost();
 
-            // 价格95折
-            busySellStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
-            busySellPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+            if (36 == estimatedCostParam.getCountryId()) {
+                // 价格95折
+                busySellStandard.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
+                busySellPremium.setEstimatedPrice(estimatedCostResult.getOriginalProductPrice());
 
 
-            // importXStandard cost 照抄
-            busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+                // importXStandard cost 照抄
+                busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
 
-            // importXPremium cost 集运价格-EUB
-            double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight());// EUB
-            double centralizedFreight = this.freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
-            double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
-            if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
-                // 直接用集运价格
-                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
+                // importXPremium cost 集运价格-EUB
+                double eubFreight = this.freightUtils.getEubFreight(estimatedCostParam.getWeight());// EUB
+                double centralizedFreight = this.freightUtils.getCentralizedTransportFreight(estimatedCostParam.getWeight());// 集运价格
+                double rsFreight = centralizedFreight > eubFreight ? BigDecimalUtil.truncateDouble(centralizedFreight - eubFreight, 2) : 0;
+                if (StrUtil.isNotEmpty(estimatedCostParam.getOriginalShippingFee())) {
+                    // 直接用集运价格
+                    busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(centralizedFreight, 2));
+                } else {
+                    busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
+                }
             } else {
-                busySellPremium.setCost(BigDecimalUtil.truncateDoubleToString(rsFreight, 2));
+                // 其他国家的运费计算：标准运费按eub算，premium不支持，海运的只有有海外仓的那几个国家有
+                FreightResult freightResult = new FreightResult();
+                if (StrUtil.isNotBlank(estimatedCostParam.getOriginalProductPrice())) {
+                    freightResult.setProductCost(Double.parseDouble(estimatedCostParam.getOriginalProductPrice()));
+                } else {
+                    freightResult.setProductCost(0);
+                }
+
+                freightResult.setTotalWeight(estimatedCostParam.getWeight());
+                if (StrUtil.isNotBlank(estimatedCostParam.getOriginalShippingFee()) && !(estimatedCostParam.getOriginalShippingFee().contains("free") || estimatedCostParam.getOriginalShippingFee().contains("FREE"))) {
+                    freightResult.setB2cFlag(0);
+                } else {
+                    freightResult.setB2cFlag(1);
+                }
+
+                freightResult.setCountryId(estimatedCostParam.getCountryId());
+                TrafficFreightUnitResult unitResult = this.freightUtils.commonCalculateResult(freightResult);
+                if (CollectionUtil.isNotEmpty(unitResult.getUnitList())) {
+                    TrafficFreightUnitShort unitShort = unitResult.getUnitList().stream().filter(e -> StrUtil.isNotBlank(e.getModeOfTransport()) && e.getModeOfTransport().toUpperCase().contains("EPACKET")).findFirst().orElse(null);
+                    if (null != unitShort) {
+                        busySellStandard.setCost(BigDecimalUtil.truncateDoubleToString(unitShort.getTotalFreight(), 2));
+                    } else {
+                        //busySellStandard.setCost("-1");
+                        busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+                    }
+                } else {
+                    //busySellStandard.setCost("-1");
+                    busySellStandard.setCost(estimatedCostResult.getOriginalShippingFee());
+                }
             }
-
-
             estimatedCostResult.setBusySellStandard(busySellStandard);
             estimatedCostResult.setBusySellPremium(busySellPremium);
 
@@ -296,6 +326,7 @@ public class XmsFreightCalculateController {
             // 计算尾程运费
             XmsTailFreightResult tailFreightResult = fbaFreightUtils.getTailFreightResult(estimatedCostParam.getWeight() * 1000);
             estimatedCostResult.setTailFreight(tailFreightResult);
+
 
             return CommonResult.success(estimatedCostResult);
         } catch (Exception e) {

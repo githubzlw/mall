@@ -2,6 +2,7 @@ package com.macro.mall.portal.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -850,7 +851,12 @@ public class TrafficFreightUtils {
                 this.cifFreightUnitList = this.cifFreightUnitMapper.selectList(queryWrapper);
             }
             if (CollectionUtil.isNotEmpty(this.cifFreightUnitList)) {
-                this.cifFreightUnitList.forEach(e -> e.setRmbRate(this.exchangeRateUtils.getUsdToCnyRate()));
+                this.cifFreightUnitList.forEach(e -> {
+                    e.setRmbRate(this.exchangeRateUtils.getUsdToCnyRate());
+                    if(StrUtil.isNotBlank(e.getPortName())){
+                        e.setPortName(StrUtil.trim(e.getPortName()));
+                    }
+                });
             }
         }
     }
@@ -879,6 +885,13 @@ public class TrafficFreightUtils {
             if (CollectionUtil.isEmpty(this.listOfFbaCountries)) {
                 QueryWrapper<XmsListOfFbaCountries> queryWrapper = new QueryWrapper<>();
                 this.listOfFbaCountries = this.listOfFbaCountriesMapper.selectList(queryWrapper);
+            }
+            if(CollectionUtil.isNotEmpty(this.listOfFbaCountries)){
+                this.listOfFbaCountries.forEach(e-> {
+                    if(StrUtil.isNotBlank(e.getState())){
+                        e.setState(StrUtil.trim(e.getState()));
+                    }
+                });
             }
         }
     }

@@ -111,4 +111,6 @@ public interface UmsMemberService {
      * 更新缓存信息
      */
     void updateSecurityContext();
+
+    void setOtherInfo(UmsMember umsMember);
 }
