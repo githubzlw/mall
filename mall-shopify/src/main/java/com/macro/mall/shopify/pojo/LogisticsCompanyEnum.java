@@ -16,7 +16,8 @@ public enum  LogisticsCompanyEnum {
 
     DHL(1,"DHL","https://www.dhl.com/cn-zh/home.html"),
     CNE(2,"CNE","https://www.cne.com/"),
-    FEDEX(2,"FedEx","https://www.cne.com/");
+    FEDEX(2,"FedEx","https://www.cne.com/"),
+    COMMON(3,"common","https://www.17track.net/en#nums=");
 
 
     private int code;

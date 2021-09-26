@@ -81,6 +81,10 @@ public class CommonResult<T> {
         return new CommonResult<T>(ResultCode.FAILED.getCode(), message, null);
     }
 
+    public static <T> CommonResult<T> existing(String message) {
+        return new CommonResult<T>(ResultCode.EXISTING.getCode(), message, null);
+    }
+
     /**
      * 失败返回结果
      */

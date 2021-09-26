@@ -1,5 +1,6 @@
 package com.macro.mall.shopify.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
@@ -98,7 +99,7 @@ public class ShopifyAuthController {
                 String authUri = shopUrl + "/admin/oauth/authorize?client_id="
                         + shopifyConfig.SHOPIFY_CLIENT_ID + "&scope=" + shopifyConfig.SHOPIFY_SCOPE + "&redirect_uri="
                         + shopifyConfig.SHOPIFY_REDIRECT_URI;
-
+                // + "&grant_options[]=per-user&state=" + RandomUtil.randomString(32) ;
                 map.put(shop, "success");
                 this.redisUtil.hmset(RedisUtil.AUTH_URI, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
                 return CommonResult.success(new Gson().toJson(
