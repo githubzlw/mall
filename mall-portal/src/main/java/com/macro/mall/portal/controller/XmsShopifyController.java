@@ -165,15 +165,42 @@ public class XmsShopifyController {
         }
         Map<String, Object> rsMap = new HashMap<>();
         try {
+            rsMap.put("shopifyFlag", 0);
 
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
             Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId");
 
             if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
-                rsMap.put("result", "Please input shop name to authorize");
-                redirectUrl = "redirect:/apa/product-shopify.html";
-                rsMap.put("redirectUrl", redirectUrl);
-                return CommonResult.failed(JSONObject.toJSONString(rsMap));
+
+                if (StrUtil.isBlank(shop)) {
+                    rsMap.put("result", "Please input shop name to authorize");
+                    redirectUrl = "redirect:/apa/product-shopify.html";
+                    rsMap.put("redirectUrl", redirectUrl);
+                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
+                } else {
+                    String shopName = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
+                    //请求授权
+                    JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
+                    CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+
+                    if (commonResult.getCode() == 200) {
+                        JSONObject dataJson = JSON.parseObject(commonResult.getData().toString());
+                        if (dataJson != null) {
+                            clientId = dataJson.getString("id");
+                            System.err.println("clientId:" + clientId);
+                            String uri = dataJson.getString("uri");
+                            redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                            rsMap.put("shopifyName", shop);
+                            rsMap.put("shopifyFlag", 2);
+                            rsMap.put("redirectUrl", uri);
+                            return CommonResult.success(JSONObject.toJSONString(rsMap));
+                        }
+                    }
+                    rsMap.put("result", "Failed");
+                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
+                }
+
+
             }
             shop = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
             SecretKeySpec keySpec = new SecretKeySpec(clientId.toString().getBytes(), ShopifyConfig.HMAC_ALGORITHM);
@@ -282,7 +309,7 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-            if(StrUtil.isBlank(currentMember.getShopifyName())){
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
                 return CommonResult.failed("Please bind the shopify store first");
             }
             QueryWrapper<XmsShopifyCollections> queryWrapper = new QueryWrapper<>();
@@ -462,7 +489,7 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-            if(StrUtil.isBlank(currentMember.getShopifyName())){
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
                 return CommonResult.failed("Please bind the shopify store first");
             }
             Map<String, String> param = new HashMap<>();
@@ -999,7 +1026,7 @@ public class XmsShopifyController {
             orderNoList.add(e.getOrderId());
             FulfillmentOrder tempRs = new FulfillmentOrder();
             BeanUtil.copyProperties(e, tempRs);
-            if(StrUtil.isBlank(tempRs.getShipmentStatus())){
+            if (StrUtil.isBlank(tempRs.getShipmentStatus())) {
                 tempRs.setShipmentStatus("");
             }
             fulfillmentOrderList.add(tempRs);
@@ -1070,19 +1097,19 @@ public class XmsShopifyController {
             if (StrUtil.isBlank(currentMember.getShopifyName())) {
                 return CommonResult.failed("Please bind the store first");
             }
-            if(StrUtil.isBlank(fulfillmentParam.getTrackingNumber())){
+            if (StrUtil.isBlank(fulfillmentParam.getTrackingNumber())) {
                 fulfillmentParam.setTrackingNumber(null);
             }
-            if(StrUtil.isBlank(fulfillmentParam.getBeginTime())){
+            if (StrUtil.isBlank(fulfillmentParam.getBeginTime())) {
                 fulfillmentParam.setBeginTime(null);
             }
-            if(StrUtil.isBlank(fulfillmentParam.getEndTime())){
+            if (StrUtil.isBlank(fulfillmentParam.getEndTime())) {
                 fulfillmentParam.setEndTime(null);
             }
-            if(StrUtil.isBlank(fulfillmentParam.getCountry())){
+            if (StrUtil.isBlank(fulfillmentParam.getCountry())) {
                 fulfillmentParam.setCountry(null);
             }
-            if(StrUtil.isBlank(fulfillmentParam.getTitle())){
+            if (StrUtil.isBlank(fulfillmentParam.getTitle())) {
                 fulfillmentParam.setTitle(null);
             }
 
@@ -1110,13 +1137,12 @@ public class XmsShopifyController {
                     List<XmsShopifyOrderinfo> shopifyOrderinfoList = this.shopifyOrderinfoService.list(orderinfoWrapper);
 
 
-
-                    Map<Long,Long> ourOrderIdAndOrderNoMap = new HashMap<>();
+                    Map<Long, Long> ourOrderIdAndOrderNoMap = new HashMap<>();
                     List<Long> ourOrderIdList = new ArrayList<>();
-                    shopifyOrderinfoList.forEach(e-> {
+                    shopifyOrderinfoList.forEach(e -> {
                         ourOrderIdList.add(e.getOurOrderId());
                         ourOrderIdAndOrderNoMap.put(e.getOurOrderId(), e.getOrderNo());
-                    } );
+                    });
 
                     if (CollectionUtil.isNotEmpty(ourOrderIdList)) {
                         List<OmsOrder> omsOrders = this.omsPortalOrderService.queryByOrderIdList(ourOrderIdList);
