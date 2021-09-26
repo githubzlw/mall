@@ -171,37 +171,37 @@ public class XmsShopifyController {
             Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId");
 
             if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
-
-                if (StrUtil.isBlank(shop)) {
-                    rsMap.put("result", "Please input shop name to authorize");
-                    redirectUrl = "redirect:/apa/product-shopify.html";
-                    rsMap.put("redirectUrl", redirectUrl);
-                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
-                } else {
-                    String shopName = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
-                    //请求授权
-                    JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
-                    CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
-
-                    if (commonResult.getCode() == 200) {
-                        JSONObject dataJson = JSON.parseObject(commonResult.getData().toString());
-                        if (dataJson != null) {
-                            clientId = dataJson.getString("id");
-                            System.err.println("clientId:" + clientId);
-                            String uri = dataJson.getString("uri");
-                            redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
-                            rsMap.put("shopifyName", shop);
-                            rsMap.put("shopifyFlag", 2);
-                            rsMap.put("redirectUrl", uri);
-                            return CommonResult.success(JSONObject.toJSONString(rsMap));
-                        }
-                    }
-                    rsMap.put("result", "Failed");
-                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
-                }
-
-
+                rsMap.put("result", "Please input shop name to authorize");
+                redirectUrl = "redirect:/apa/product-shopify.html";
+                rsMap.put("redirectUrl", redirectUrl);
+                return CommonResult.failed(JSONObject.toJSONString(rsMap));
             }
+
+
+            if (StrUtil.isBlank(code) || "undefined".equalsIgnoreCase(code)) {
+                String shopName = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
+                //请求授权
+                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
+                CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+
+                if (commonResult.getCode() == 200) {
+                    JSONObject dataJson = JSON.parseObject(commonResult.getData().toString());
+                    if (dataJson != null) {
+                        clientId = dataJson.getString("id");
+                        System.err.println("clientId:" + clientId);
+                        String uri = dataJson.getString("uri");
+                        redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                        rsMap.put("shopifyName", shop);
+                        rsMap.put("shopifyFlag", 2);
+                        rsMap.put("redirectUrl", uri);
+                        return CommonResult.success(JSONObject.toJSONString(rsMap));
+                    }
+                }
+                rsMap.put("result", "Failed");
+                return CommonResult.failed(JSONObject.toJSONString(rsMap));
+            }
+
+
             shop = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
             SecretKeySpec keySpec = new SecretKeySpec(clientId.toString().getBytes(), ShopifyConfig.HMAC_ALGORITHM);
             Mac mac = Mac.getInstance(ShopifyConfig.HMAC_ALGORITHM);
