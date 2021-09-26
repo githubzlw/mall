@@ -226,6 +226,7 @@ public class ShopifyUtils {
     }
 
 
+
     private void saveSingleProduct(String shopifyName, Long memberId, String userName, JSONObject jsonObject) {
         try {
             // 获取sourcing的数据
@@ -363,7 +364,7 @@ public class ShopifyUtils {
         return json;
     }
 
-    public String createFulfillmentOrders(XmsShopifyOrderinfo shopifyOrderinfo, List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
+    /*public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
         String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
         // 步骤1：查询订单以查看其订单项
@@ -378,7 +379,9 @@ public class ShopifyUtils {
         //步骤2. https://{shop}.myshopify.com/admin/api/2021-04/variants/{variant_rest_id}.json
 
         String variant_id = itemsArray.getJSONObject(0).getString("variant_id");
-
+        if(StrUtil.isBlank(variant_id)){
+            return null;
+        }
         url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_VARIANTS, fulfillmentParam.getShopifyName(), variant_id);
         json = this.shopifyRestTemplate.exchange(url, token);
 
@@ -397,14 +400,99 @@ public class ShopifyUtils {
 
         //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
 
+
+        *//**
+         * {
+         *   "fulfillment": {
+         *     "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
+         *     "tracking_company": "Jack Black's Pack, Stack and Track",
+         *     "line_items": [
+         *       {
+         *         "id": 466157049
+         *       },
+         *       {
+         *         "id": 518995019
+         *       },
+         *       {
+         *         "id": 703073504
+         *       }
+         *     ]
+         *   }
+         * }
+         *//*
+        Map<String, Object> param = new HashMap<>();
+
+        Map<String, Object> fulfillmentMap = new HashMap<>();
+        fulfillmentMap.put("location_id", location_id);
+        fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
+        *//*JSONArray jsonArray = new JSONArray();
+        jsonArray.add(anElse.getName() + fulfillmentParam.getTrackingNumber());*//*
+        fulfillmentMap.put("tracking_url", anElse.getName() + fulfillmentParam.getTrackingNumber());
+        //fulfillmentMap.put("tracking_url", anElse.getUrl());
+
+        List<Map<String, Object>> line_itemsList = new ArrayList<>();
+        detailsList.forEach(e -> {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("id", e.getLineItemId());
+            line_itemsList.add(itemMap);
+        });
+
+        fulfillmentMap.put("line_items", line_itemsList);
+
+        param.put("fulfillment", fulfillmentMap);
+
+        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName()), param);
+        return json;
+
+    }*/
+
+
+    public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
+
+        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
+        // 步骤1：查询订单以查看其订单项
+        // get https://{shop}.myshopify.com/admin/api/2021-04/orders/{order_rest_id}.json
+
+        String url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        String json = this.shopifyRestTemplate.exchange(url, token);
+        JSONObject orderJson = JSONObject.parseObject(json);
+        // 获取variant_id
+        JSONArray itemsArray = orderJson.getJSONObject("order").getJSONArray("line_items");
+
+        // 寻找还未设置运单的商品
+
+        JSONArray flItemListIds = new JSONArray();
+        if(null != itemsArray && itemsArray.size() > 0){
+            for (int i = 0; i < itemsArray.size(); i++) {
+                JSONObject tempCl = itemsArray.getJSONObject(i);
+                if(StrUtil.isNotBlank(tempCl.getString("fulfillment_status")) && "fulfilled".equalsIgnoreCase(tempCl.getString("fulfillment_status"))){
+                    continue;
+                }
+                flItemListIds.add(tempCl.getLongValue("id"));
+            }
+        }
+
+        if(flItemListIds.size() == 0){
+            return null;
+        }
+
+        //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
+
         /**
          * {
          *   "fulfillment": {
-         *     "location_id": "{location_rest_id}",
-         *     "tracking_number": "{tracking_number}",
+         *     "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
+         *     "tracking_company": "Jack Black's Pack, Stack and Track",
          *     "line_items": [
          *       {
-         *         "id": "{line_item_rest_id}"
+         *         "id": 466157049
+         *       },
+         *       {
+         *         "id": 518995019
+         *       },
+         *       {
+         *         "id": 703073504
          *       }
          *     ]
          *   }
@@ -413,9 +501,11 @@ public class ShopifyUtils {
         Map<String, Object> param = new HashMap<>();
 
         Map<String, Object> fulfillmentMap = new HashMap<>();
-        fulfillmentMap.put("location_id", location_id);
+        //fulfillmentMap.put("location_id", location_id);
         fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
-        fulfillmentMap.put("tracking_company", anElse.getName());
+        /*JSONArray jsonArray = new JSONArray();
+        jsonArray.add(anElse.getName() + fulfillmentParam.getTrackingNumber());*/
+        fulfillmentMap.put("tracking_url", anElse.getName() + fulfillmentParam.getTrackingNumber());
         //fulfillmentMap.put("tracking_url", anElse.getUrl());
 
         List<Map<String, Object>> line_itemsList = new ArrayList<>();

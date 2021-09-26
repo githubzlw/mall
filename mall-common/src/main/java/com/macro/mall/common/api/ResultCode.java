@@ -7,6 +7,7 @@ package com.macro.mall.common.api;
 public enum ResultCode implements IErrorCode {
     SUCCESS(200, "Operation is successful"),
     FAILED(500, "The operation failure"),
+    EXISTING(501, "The data is existing"),
     VALIDATE_FAILED(404, "Parameter verification failure"),
     UNAUTHORIZED(401, "No login is performed or the token has expired"),
     FORBIDDEN(403, "No relevant permissions");

@@ -117,7 +117,7 @@ public class XmsShopifyController {
             List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
             if (CollectionUtil.isNotEmpty(list)) {
                 list.clear();
-                return CommonResult.failed("Already bind shop");
+                return CommonResult.existing("Already bind shop");
             }
 
             //请求授权

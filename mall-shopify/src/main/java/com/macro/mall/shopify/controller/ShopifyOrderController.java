@@ -92,30 +92,38 @@ public class ShopifyOrderController {
 
     @PostMapping("/createFulfillment")
     @ApiOperation("创建履行订单")
-    public CommonResult createFulfillment(@RequestBody FulfillmentParam fulfillmentParam) {
+    public CommonResult createFulfillment(FulfillmentParam fulfillmentParam) {
 
         Assert.notNull(fulfillmentParam, "fulfillmentParam is null");
         Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getShopifyName()), "shopifyName is null");
         Assert.isTrue(null != fulfillmentParam.getOrderNo() && fulfillmentParam.getOrderNo() > 0, "orderNo is null");
         Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingNumber()), "trackingNumber is null");
-        Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingCompany()), "trackingCompany is null");
+        //Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingCompany()), "trackingCompany is null");
 
 
         try {
             // 获取订单fulfillmentservice的ID
-            LogisticsCompanyEnum anElse = Arrays.stream(LogisticsCompanyEnum.values()).filter(e -> e.getName().equalsIgnoreCase(fulfillmentParam.getTrackingCompany())).findFirst().orElse(null);
+            /*LogisticsCompanyEnum anElse = Arrays.stream(LogisticsCompanyEnum.values()).filter(e -> e.getName().equalsIgnoreCase(fulfillmentParam.getTrackingCompany())).findFirst().orElse(null);
             if (null == anElse) {
                 return CommonResult.failed("Cannot match company name");
-            }
+            }*/
+
+            LogisticsCompanyEnum anElse = LogisticsCompanyEnum.COMMON;
+
             List<XmsShopifyOrderinfo> xmsShopifyOrderinfos = this.shopifyUtils.queryListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(xmsShopifyOrderinfos)) {
                 return CommonResult.failed("Cannot match OrderNo");
+            } else{
+                xmsShopifyOrderinfos.clear();
             }
+
             List<XmsShopifyOrderDetails> detailsList = this.shopifyUtils.queryDetailsListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(detailsList)) {
                 return CommonResult.failed("Cannot match Details List");
             }
-            String updateOrder = this.shopifyUtils.createFulfillmentOrders(xmsShopifyOrderinfos.get(0), detailsList, fulfillmentParam, anElse);
+            String updateOrder = this.shopifyUtils.createFulfillmentOrders(detailsList, fulfillmentParam, anElse);
+
+            detailsList.clear();
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
@@ -183,12 +191,14 @@ public class ShopifyOrderController {
 
     @PostMapping("/getFulfillmentByShopifyName")
     @ApiOperation("获取运单数据")
-    public CommonResult getFulfillmentByShopifyName(@RequestParam("shopifyName") String shopifyName, @RequestParam("orderNoList") List<Long> orderNoList) {
+    public CommonResult getFulfillmentByShopifyName(String shopifyName, String orders) {
 
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName is null");
-        Assert.isTrue(CollectionUtil.isNotEmpty(orderNoList), "orderNoList is null");
+        Assert.isTrue(StrUtil.isNotBlank(orders), "orders is null");
 
         try {
+            List<Long> orderNoList = new ArrayList<>();
+            Arrays.asList(orders.split(",")).forEach(e->  orderNoList.add(Long.parseLong(e)));
             Set<Long> orderList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList);
             if(CollectionUtil.isNotEmpty(orderList)){
                 this.asyncTask.getShopifyImgByList(orderList, shopifyName);
