@@ -168,14 +168,7 @@ public class XmsShopifyController {
             rsMap.put("shopifyFlag", 0);
 
             UmsMember currentMember = this.umsMemberService.getCurrentMember();
-            Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId");
-
-            if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
-                rsMap.put("result", "Please input shop name to authorize");
-                redirectUrl = "redirect:/apa/product-shopify.html";
-                rsMap.put("redirectUrl", redirectUrl);
-                return CommonResult.failed(JSONObject.toJSONString(rsMap));
-            }
+            Object clientId;
 
 
             if (StrUtil.isBlank(code) || "undefined".equalsIgnoreCase(code)) {
@@ -198,6 +191,15 @@ public class XmsShopifyController {
                     }
                 }
                 rsMap.put("result", "Failed");
+                return CommonResult.failed(JSONObject.toJSONString(rsMap));
+            }
+
+            clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId");
+
+            if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
+                rsMap.put("result", "Please input shop name to authorize");
+                redirectUrl = "redirect:/apa/product-shopify.html";
+                rsMap.put("redirectUrl", redirectUrl);
                 return CommonResult.failed(JSONObject.toJSONString(rsMap));
             }
 
