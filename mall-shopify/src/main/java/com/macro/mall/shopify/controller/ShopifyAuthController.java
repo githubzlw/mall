@@ -67,6 +67,7 @@ public class ShopifyAuthController {
             shopifyAuth.setShopName(shop);
             shopifyAuth.setScope(scope);
             shopifyAuth.setAccessToken(accessToken);
+            shopifyAuth.setMemberId(Long.parseLong(userId));
 
             map.put(key, "success");
             this.redisUtil.hmset(RedisUtil.AUTH_GET_TOKEN, map, RedisUtil.EXPIRATION_TIME_1_HOURS);

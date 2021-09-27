@@ -173,6 +173,25 @@ public class XmsShopifyController {
 
             if (StrUtil.isBlank(code) || "undefined".equalsIgnoreCase(code)) {
                 String shopName = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
+
+                rsMap.put("shopifyName", shop);
+                // 数据库判断是否绑定
+                UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+                if (StrUtil.isNotEmpty(byId.getShopifyName()) && 1 == byId.getShopifyFlag()) {
+                    rsMap.put("result", "This Member Already bind shop");
+                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
+                }
+
+                QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+                List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
+                if (CollectionUtil.isNotEmpty(list)) {
+                    list.clear();
+                    rsMap.put("result", "Other Member Already bind shop");
+                    return CommonResult.existing(JSONObject.toJSONString(rsMap));
+                }
+
+
                 //请求授权
                 JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
                 CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
@@ -213,7 +232,7 @@ public class XmsShopifyController {
                 Map<String, String> mapParam = Maps.newHashMap();
                 mapParam.put("shop", shop);
                 mapParam.put("code", code);
-                mapParam.put("userId", String.valueOf(currentMember.getUsername()));
+                mapParam.put("userId", String.valueOf(currentMember.getId()));
                 mapParam.put("userName", currentMember.getUsername());
 
                 JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/authGetToken", mapParam);

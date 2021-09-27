@@ -42,5 +42,6 @@ public class XmsShopifyAuth implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
+    private Long memberId;
 
 }
