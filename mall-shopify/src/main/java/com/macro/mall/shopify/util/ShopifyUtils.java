@@ -285,8 +285,10 @@ public class ShopifyUtils {
         customerProduct.setStatus(9);
         customerProduct.setSiteType(siteType);
         customerProduct.setTitle(shopifyProduct.getString("title"));
-        if (shopifyProduct.containsKey("image") && shopifyProduct.getJSONObject("image").containsKey("src")) {
+        if (shopifyProduct.containsKey("image") && null != shopifyProduct.getJSONObject("image") && shopifyProduct.getJSONObject("image").containsKey("src")) {
             customerProduct.setImg(shopifyProduct.getJSONObject("image").getString("src"));
+        } else if(shopifyProduct.containsKey("images") && null != shopifyProduct.getJSONArray("images") && shopifyProduct.getJSONArray("images").size() > 0){
+            customerProduct.setImg(shopifyProduct.getJSONArray("images").getJSONObject(0).getString("src"));
         }
         JSONArray variantsArr = shopifyProduct.getJSONArray("variants");
         if (null != variantsArr && variantsArr.size() > 0) {
