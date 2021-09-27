@@ -109,7 +109,7 @@ public class UmsMemberController {
             this.sourcingUtils.mergeSourcingList(currentMember, uuid);
         }
         tokenMap.put("nickName", currentMember.getNickname());
-        // tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
+        tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
 
