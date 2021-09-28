@@ -23,7 +23,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsCustomerProduct对象", description="客户的产品表")
+@ApiModel(value="XmsCustomerProduct对象", description="客户的产品表,给shopify使用")
 public class XmsCustomerProduct implements Serializable {
 
     private static final long serialVersionUID = 1L;

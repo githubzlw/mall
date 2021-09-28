@@ -261,12 +261,12 @@ public class XmsYouLiveProductController {
                     productQueryWrapper.lambda().in(XmsCustomerProduct::getId, ids).eq(XmsCustomerProduct::getMemberId, currentMember.getId());
                     this.xmsCustomerProductService.remove(productQueryWrapper);
                 }
-                if (CollectionUtil.isNotEmpty(productIds)) {
+                /*if (CollectionUtil.isNotEmpty(productIds)) {
                     // 移除库存
                     UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
                     deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, productIds).eq(XmsCustomerSkuStock::getMemberId, currentMember.getId());
                     this.xmsCustomerSkuStockService.remove(deleteWrapper);
-                }
+                }*/
 
                 return CommonResult.success("execute success！");
             }

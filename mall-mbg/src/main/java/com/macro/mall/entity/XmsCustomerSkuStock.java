@@ -23,7 +23,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="XmsCustomerSkuStock对象", description="客户的库存")
+@ApiModel(value="XmsCustomerSkuStock对象", description="客户的库存,给客户下单保存的库存使用")
 public class XmsCustomerSkuStock implements Serializable {
 
     private static final long serialVersionUID = 1L;

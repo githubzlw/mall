@@ -1,6 +1,7 @@
 package com.macro.mall.shopify.controller;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
@@ -44,8 +45,7 @@ public class ShopifyAuthController {
     public CommonResult authGetToken(
             @ApiParam(name = "code", value = "shopify返回的code", required = true) String code,
             @ApiParam(name = "shop", value = "shopify店铺名", required = true) String shop,
-            @ApiParam(name = "userId", value = "客户ID", required = true) String userId,
-            @ApiParam(name = "userName", value = "客户名称", required = true) String userName) {
+            @ApiParam(name = "userId", value = "客户ID", required = true) String userId) {
 
         log.info("code:{},shop:{}", code, shop);
         Map<String, String> map = new HashMap<>();
@@ -68,6 +68,7 @@ public class ShopifyAuthController {
             shopifyAuth.setScope(scope);
             shopifyAuth.setAccessToken(accessToken);
             shopifyAuth.setMemberId(Long.parseLong(userId));
+            shopifyAuth.setShopJson(JSONObject.toJSONString(result));
 
             map.put(key, "success");
             this.redisUtil.hmset(RedisUtil.AUTH_GET_TOKEN, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
@@ -82,7 +83,7 @@ public class ShopifyAuthController {
 
     @GetMapping(value = "/authuri")
     @ApiOperation("请求授权接口")
-    public CommonResult authUri(String shop) {
+    public CommonResult authUri(String shop, String uuid) {
         Map<String, String> map = new HashMap<>();
         try {
             Object val = this.redisUtil.hmgetObj(RedisUtil.AUTH_URI, shop);
@@ -99,7 +100,7 @@ public class ShopifyAuthController {
             if (UrlUtil.getInstance().isAccessURL(shopUrl)) {
                 String authUri = shopUrl + "/admin/oauth/authorize?client_id="
                         + shopifyConfig.SHOPIFY_CLIENT_ID + "&scope=" + shopifyConfig.SHOPIFY_SCOPE + "&redirect_uri="
-                        + shopifyConfig.SHOPIFY_REDIRECT_URI + "&grant_options[]=per-user&state=" + RandomUtil.randomString(32) ;
+                        + shopifyConfig.SHOPIFY_REDIRECT_URI + "&grant_options[]=per-user&state=" + uuid ;
                 map.put(shop, "success");
                 this.redisUtil.hmset(RedisUtil.AUTH_URI, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
                 return CommonResult.success(new Gson().toJson(

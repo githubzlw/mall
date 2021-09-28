@@ -96,7 +96,7 @@ public class XmsPrivateStorageController {
                 List<String> tempSkuCodes = productRsList.stream().map(XmsCustomerProductQuery::getSkuCode).collect(Collectors.toList());
 
                 QueryWrapper<XmsCustomerSkuStock> stockQueryWrapper = new QueryWrapper<>();
-                stockQueryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, tempProductIds).in(XmsCustomerSkuStock::getSkuCode, tempSkuCodes).gt(XmsCustomerSkuStock::getStatus, 0);
+                stockQueryWrapper.lambda().in(XmsCustomerSkuStock::getProductId, tempProductIds).in(XmsCustomerSkuStock::getSkuCode, tempSkuCodes).gt(XmsCustomerSkuStock::getStatus, 0).eq(XmsCustomerSkuStock::getMemberId, currentMember.getId());
 
                 List<XmsCustomerSkuStock> list = this.iXmsCustomerSkuStockService.list(stockQueryWrapper);
                 if (CollectionUtil.isNotEmpty(list)) {

@@ -53,6 +53,8 @@ secure:
       - /buyForMe/**
       - /sourcing/**
       - /shopifyWebhook/**
+      - /shopify/authorization
+      - /shopify/authCallback
 
 # 自定义redis key
 redis:

@@ -8,8 +8,8 @@
         select * from (
         select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time,
         c.shipping_from as shippingFrom
-        from xms_customer_sku_stock c, xms_customer_product a, pms_product b
-        where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
+        from xms_customer_sku_stock c, pms_product b
+        where c.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = b.id
         and c.status > 0
         <if test="title != null">
             and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')
@@ -29,8 +29,8 @@
         select count(0) from (
         select c.product_id as productId,b.pic as img,b.name as title,c.sku_code as skuCode,b.create_time,
         c.shipping_from as shippingFrom
-        from xms_customer_sku_stock c, xms_customer_product a, pms_product b
-        where a.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = a.product_id and a.product_id = b.id
+        from xms_customer_sku_stock c, pms_product b
+        where c.member_id = #{memberId,jdbcType=BIGINT} and c.product_id = b.id
         and c.status > 0
         <if test="title != null">
             and b.name like concat('%',#{title,jdbcType=VARCHAR},'%')

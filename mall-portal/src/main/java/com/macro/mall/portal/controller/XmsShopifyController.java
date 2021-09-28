@@ -2,6 +2,7 @@ package com.macro.mall.portal.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -98,19 +99,14 @@ public class XmsShopifyController {
     @Autowired
     private IXmsShopifyFulfillmentItemService xmsShopifyFulfillmentItemService;
 
+    private Map<String, String> shopMap = new HashMap<>();
 
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
     public CommonResult authorization(@RequestParam("shopName") String shopName) {
 
         try {
-            UmsMember currentMember = this.umsMemberService.getCurrentMember();
-
-            // 数据库判断是否绑定
-            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            if (StrUtil.isNotEmpty(byId.getShopifyName()) && 1 == byId.getShopifyFlag()) {
-                return CommonResult.failed("Already bind shop");
-            }
+            // 开放登录权限
 
             QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
@@ -120,8 +116,10 @@ public class XmsShopifyController {
                 return CommonResult.existing("Already bind shop");
             }
 
+            String uuid = RandomUtil.randomString(32);
+            this.shopMap.put(shopName, uuid);
             //请求授权
-            JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
+            JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName + "&uuid=" + uuid);
             CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
 
             if (commonResult.getCode() == 200) {
@@ -130,7 +128,7 @@ public class XmsShopifyController {
                     String clientId = dataJson.getString("id");
                     System.err.println("clientId:" + clientId);
                     String uri = dataJson.getString("uri");
-                    redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                    redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
                     return CommonResult.success(uri);
                 }
             }
@@ -165,55 +163,11 @@ public class XmsShopifyController {
         }
         Map<String, Object> rsMap = new HashMap<>();
         try {
+            UmsMember currentMember = this.umsMemberService.getCurrentMember();
+
             rsMap.put("shopifyFlag", 0);
 
-            UmsMember currentMember = this.umsMemberService.getCurrentMember();
-            Object clientId;
-
-
-            if (StrUtil.isBlank(code) || "undefined".equalsIgnoreCase(code)) {
-                String shopName = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
-
-                rsMap.put("shopifyName", shop);
-                // 数据库判断是否绑定
-                UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-                if (StrUtil.isNotEmpty(byId.getShopifyName()) && 1 == byId.getShopifyFlag()) {
-                    rsMap.put("result", "This Member Already bind shop");
-                    return CommonResult.failed(JSONObject.toJSONString(rsMap));
-                }
-
-                QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
-                List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
-                if (CollectionUtil.isNotEmpty(list)) {
-                    list.clear();
-                    rsMap.put("result", "Other Member Already bind shop");
-                    return CommonResult.existing(JSONObject.toJSONString(rsMap));
-                }
-
-
-                //请求授权
-                JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName);
-                CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
-
-                if (commonResult.getCode() == 200) {
-                    JSONObject dataJson = JSON.parseObject(commonResult.getData().toString());
-                    if (dataJson != null) {
-                        clientId = dataJson.getString("id");
-                        System.err.println("clientId:" + clientId);
-                        String uri = dataJson.getString("uri");
-                        redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
-                        rsMap.put("shopifyName", shop);
-                        rsMap.put("shopifyFlag", 2);
-                        rsMap.put("redirectUrl", uri);
-                        return CommonResult.success(JSONObject.toJSONString(rsMap));
-                    }
-                }
-                rsMap.put("result", "Failed");
-                return CommonResult.failed(JSONObject.toJSONString(rsMap));
-            }
-
-            clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + currentMember.getId(), "clientId");
+            Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + this.shopMap.get(shop), "clientId");
 
             if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
                 rsMap.put("result", "Please input shop name to authorize");
@@ -229,18 +183,49 @@ public class XmsShopifyController {
             mac.init(keySpec);
             byte[] rawHmac = mac.doFinal(data.getBytes());
             if (Hex.encodeHexString(rawHmac).equals(hmac)) {
+
+
                 Map<String, String> mapParam = Maps.newHashMap();
                 mapParam.put("shop", shop);
                 mapParam.put("code", code);
-                mapParam.put("userId", String.valueOf(currentMember.getId()));
-                mapParam.put("userName", currentMember.getUsername());
+                if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
+                    mapParam.put("userId", "0");
+                } else {
+                    mapParam.put("userId", String.valueOf(currentMember.getId()));
+                }
 
+                boolean noLogin = true;
+                String token = "";
                 JSONObject jsonObject = this.urlUtil.postURL(microServiceConfig.getShopifyUrl() + "/authGetToken", mapParam);
                 CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
-
                 if (commonResult.getCode() == 200) {
+
+                    // 如果是没有登录的情况下，获取客户的邮箱，进行登录，然后绑定数据
+                    if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
+                        JSONObject shopifyUser = JSONObject.parseObject(commonResult.getData().toString()).getJSONObject("associated_user");
+                        String userName = shopifyUser.getString("email");
+
+                        // 登录或者注册，
+                        currentMember = this.umsMemberService.getByUsername(userName);
+                        if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
+                            // 注册
+                            this.umsMemberService.register(userName, "123456", "shopifyEmail", "10000", 1, 36);
+                            token = this.umsMemberService.login(userName, "123456");
+                            currentMember = this.umsMemberService.getByUsername(userName);
+                        }
+                    } else {
+                        noLogin = false;
+                    }
+
                     // 绑定shopify到客户ID
                     this.umsMemberService.updateShopifyInfo(currentMember.getId(), shop, 1);
+                    // shopify授权更新
+                    if (noLogin) {
+                        UpdateWrapper<XmsShopifyAuth> updateWrapper = new UpdateWrapper<>();
+                        updateWrapper.lambda().set(XmsShopifyAuth::getMemberId, currentMember.getId()).set(XmsShopifyAuth::getUpdateTime, new Date()).eq(XmsShopifyAuth::getShopName, shop);
+                        this.xmsShopifyAuthService.update(updateWrapper);
+                    }
+
                     currentMember.setShopifyFlag(1);
                     currentMember.setShopifyName(shop);
 
@@ -250,9 +235,12 @@ public class XmsShopifyController {
                     // 插入shopify的token
                     // ------------------
                     rsMap.put("shopifyName", shop);
+                    rsMap.put("noLogin", noLogin ? 1 : 0);
+                    rsMap.put("token", token);
+                    rsMap.put("mail", currentMember.getUsername());
                     rsMap.put("shopifyFlag", 1);
                     // ------------------
-                    rsMap.put("redirectUrl", redirectUrl);
+                    // rsMap.put("redirectUrl", redirectUrl);
                     return CommonResult.success(JSONObject.toJSONString(rsMap));
                 } else {
                     log.warn("authorization failed");

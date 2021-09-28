@@ -403,7 +403,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             skuStockInsertList.add(tempSkuStock);
         });
 
-
+/*
         // 如果没有客户的产品数据在，则插入进去
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(XmsCustomerProduct::getProductId, productList);
@@ -461,7 +461,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
             sourcingListMap.clear();
             queryList.clear();
         }
-        // 插入到客户商品结束
+        // 插入到客户商品结束*/
 
         this.iXmsCustomerSkuStockService.saveBatch(skuStockInsertList);
         skuStockInsertList.clear();

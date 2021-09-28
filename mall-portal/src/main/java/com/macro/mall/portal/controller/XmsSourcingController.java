@@ -578,7 +578,7 @@ public class XmsSourcingController {
             GenerateOrderParam generateOrderParam = GenerateOrderParam.builder().orderNo(orderNo).totalFreight(totalFreight).currentMember(currentMember).pmsSkuStockList(pmsSkuStockList).orderPayParam(orderPayParam).type(0).build();
             GenerateOrderResult orderResult = this.orderUtils.generateOrder(generateOrderParam);
 
-            // 更新客户库存数据
+            /*// 更新客户库存数据
             QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();
             productQueryWrapper.lambda().eq(XmsCustomerProduct::getProductId, sourcingPayParam.getProductId()).eq(XmsCustomerProduct::getSourcingId, sourcingPayParam.getSourcingId());
             List<XmsCustomerProduct> list = this.xmsCustomerProductService.list(productQueryWrapper);
@@ -592,7 +592,7 @@ public class XmsSourcingController {
                 }
                 list.get(0).setUpdateTime(new Date());
                 this.xmsCustomerProductService.updateById(list.get(0));
-            }
+            }*/
 
             skuCodeList.clear();
             productIdList.clear();

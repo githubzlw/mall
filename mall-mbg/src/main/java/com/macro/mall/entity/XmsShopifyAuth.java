@@ -44,4 +44,6 @@ public class XmsShopifyAuth implements Serializable {
 
     private Long memberId;
 
+    private String shopJson;
+
 }
