@@ -121,11 +121,15 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             return productWraper;
         }
         // 产品信息数据查询
-        XmsPmsProductEdit pmsProduct = this.productMapper.selectById(Long.valueOf(wrap.getPid()));
+        QueryWrapper<XmsPmsProductEdit> editQueryWrapper = new QueryWrapper<>();
+        editQueryWrapper.lambda().eq(XmsPmsProductEdit::getProductId, Long.valueOf(wrap.getPid()))
+                .eq(XmsPmsProductEdit::getMemberId, memberId);
+        XmsPmsProductEdit pmsProduct = this.productMapper.selectOne(editQueryWrapper);
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId());
+        queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId())
+        .eq(XmsPmsSkuStockEdit::getMemberId, memberId);
         List<XmsPmsSkuStockEdit> skuList = this.skuStockMapper.selectList(queryWrapper);
 
         List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
