@@ -109,6 +109,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("PUSH PRODUCT FAILED:", e);
             return CommonResult.failed(e.getMessage());
         }

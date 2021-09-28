@@ -221,7 +221,6 @@ public class ShopifyUtils {
     }
 
 
-
     private void saveSingleProduct(String shopifyName, Long memberId, String userName, JSONObject jsonObject) {
         try {
             // 获取sourcing的数据
@@ -287,7 +286,7 @@ public class ShopifyUtils {
         customerProduct.setTitle(shopifyProduct.getString("title"));
         if (shopifyProduct.containsKey("image") && null != shopifyProduct.getJSONObject("image") && shopifyProduct.getJSONObject("image").containsKey("src")) {
             customerProduct.setImg(shopifyProduct.getJSONObject("image").getString("src"));
-        } else if(shopifyProduct.containsKey("images") && null != shopifyProduct.getJSONArray("images") && shopifyProduct.getJSONArray("images").size() > 0){
+        } else if (shopifyProduct.containsKey("images") && null != shopifyProduct.getJSONArray("images") && shopifyProduct.getJSONArray("images").size() > 0) {
             customerProduct.setImg(shopifyProduct.getJSONArray("images").getJSONObject(0).getString("src"));
         }
         JSONArray variantsArr = shopifyProduct.getJSONArray("variants");
@@ -398,25 +397,27 @@ public class ShopifyUtils {
         //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
 
 
-        *//**
-         * {
-         *   "fulfillment": {
-         *     "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
-         *     "tracking_company": "Jack Black's Pack, Stack and Track",
-         *     "line_items": [
-         *       {
-         *         "id": 466157049
-         *       },
-         *       {
-         *         "id": 518995019
-         *       },
-         *       {
-         *         "id": 703073504
-         *       }
-         *     ]
-         *   }
-         * }
-         *//*
+        */
+
+    /**
+     * {
+     * "fulfillment": {
+     * "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
+     * "tracking_company": "Jack Black's Pack, Stack and Track",
+     * "line_items": [
+     * {
+     * "id": 466157049
+     * },
+     * {
+     * "id": 518995019
+     * },
+     * {
+     * "id": 703073504
+     * }
+     * ]
+     * }
+     * }
+     *//*
         Map<String, Object> param = new HashMap<>();
 
         Map<String, Object> fulfillmentMap = new HashMap<>();
@@ -443,8 +444,6 @@ public class ShopifyUtils {
         return json;
 
     }*/
-
-
     public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
         String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
@@ -460,17 +459,17 @@ public class ShopifyUtils {
         // 寻找还未设置运单的商品
 
         JSONArray flItemListIds = new JSONArray();
-        if(null != itemsArray && itemsArray.size() > 0){
+        if (null != itemsArray && itemsArray.size() > 0) {
             for (int i = 0; i < itemsArray.size(); i++) {
                 JSONObject tempCl = itemsArray.getJSONObject(i);
-                if(StrUtil.isNotBlank(tempCl.getString("fulfillment_status")) && "fulfilled".equalsIgnoreCase(tempCl.getString("fulfillment_status"))){
+                if (StrUtil.isNotBlank(tempCl.getString("fulfillment_status")) && "fulfilled".equalsIgnoreCase(tempCl.getString("fulfillment_status"))) {
                     continue;
                 }
                 flItemListIds.add(tempCl.getLongValue("id"));
             }
         }
 
-        if(flItemListIds.size() == 0){
+        if (flItemListIds.size() == 0) {
             return null;
         }
 
@@ -730,9 +729,27 @@ public class ShopifyUtils {
         queryWrapper.lambda().in(XmsCustomerProduct::getId, Arrays.asList(idsList));
         List<XmsCustomerProduct> productList = this.customerProductService.list(queryWrapper);
         if (CollectionUtil.isNotEmpty(productList)) {
+
             String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
 
-            List<Long> idList = productList.stream().map(XmsCustomerProduct::getId).collect(Collectors.toList());
+            List<Long> idList = new ArrayList<>();
+
+            Set<Long> pidSet = new HashSet<>();
+            // 删除商品
+            for (XmsCustomerProduct xmsCustomerProduct : productList) {
+                if (pidSet.contains(xmsCustomerProduct.getShopifyProductId())) {
+                    idList.add(xmsCustomerProduct.getId());
+                } else {
+                    boolean b = this.singleDeleteProduct(xmsCustomerProduct.getShopifyName(), xmsCustomerProduct.getShopifyProductId(), shopifyToken);
+                    if (b) {
+                        pidSet.add(xmsCustomerProduct.getShopifyProductId());
+                        idList.add(xmsCustomerProduct.getId());
+                    }
+                }
+            }
+
+            pidSet.clear();
+
 
             List<Long> shopifyPidList = new ArrayList<>();
             // 设置sourcingList的标识
@@ -744,12 +761,15 @@ public class ShopifyUtils {
             this.xmsSourcingListMapper.update(null, updateWrapper);
             collect.clear();
 
-            // 移除商品
-            this.xmsCustomerProductMapper.deleteBatchIds(idList);
-            // 移除库存
+            if (CollectionUtil.isNotEmpty(idList)) {
+                // 移除商品
+                this.xmsCustomerProductMapper.deleteBatchIds(idList);
+            }
+
+            /*// 移除库存
             UpdateWrapper<XmsCustomerSkuStock> deleteWrapper = new UpdateWrapper<>();
             deleteWrapper.lambda().in(XmsCustomerSkuStock::getProductId, idList);
-            this.xmsCustomerSkuStockMapper.delete(deleteWrapper);
+            this.xmsCustomerSkuStockMapper.delete(deleteWrapper);*/
 
             if (CollectionUtil.isNotEmpty(shopifyPidList)) {
 
@@ -763,13 +783,7 @@ public class ShopifyUtils {
 
 
             idList.clear();
-            // 删除商品
-            productList.forEach(e -> {
-                boolean b = this.singleDeleteProduct(e.getShopifyName(), e.getShopifyProductId(), shopifyToken);
-                if (b) {
-                    idList.add(e.getId());
-                }
-            });
+
             productList.clear();
             return "success size:" + idList.size();
         }
