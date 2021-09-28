@@ -99,8 +99,7 @@ public class ShopifyAuthController {
             if (UrlUtil.getInstance().isAccessURL(shopUrl)) {
                 String authUri = shopUrl + "/admin/oauth/authorize?client_id="
                         + shopifyConfig.SHOPIFY_CLIENT_ID + "&scope=" + shopifyConfig.SHOPIFY_SCOPE + "&redirect_uri="
-                        + shopifyConfig.SHOPIFY_REDIRECT_URI;
-                // + "&grant_options[]=per-user&state=" + RandomUtil.randomString(32) ;
+                        + shopifyConfig.SHOPIFY_REDIRECT_URI + "&grant_options[]=per-user&state=" + RandomUtil.randomString(32) ;
                 map.put(shop, "success");
                 this.redisUtil.hmset(RedisUtil.AUTH_URI, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
                 return CommonResult.success(new Gson().toJson(

@@ -774,7 +774,12 @@ public class XmsSourcingController {
             sourcingList.setUrl(detail.getProduct().getUrl());
 
             sourcingList.setUpdateTime(new Date());
-            sourcingList.setImages(detail.getProduct().getAlbumPics());
+            if(StrUtil.isNotBlank(detail.getProduct().getAlbumPics())){
+                sourcingList.setImages(detail.getProduct().getAlbumPics());
+            } else{
+                sourcingList.setImages(detail.getProduct().getPic());
+            }
+
             sourcingList.setTitle(detail.getProduct().getName());
             sourcingList.setStatus(2);
             sourcingList.setSiteType(list.get(0).getSiteType());
