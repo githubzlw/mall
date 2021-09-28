@@ -322,7 +322,8 @@ public class XmsSourcingController {
                 if (CollectionUtil.isNotEmpty(list)) {
                     XmsPmsProductEdit pmsProductEdit = list.get(0);
                     pmsProductEdit.setAlbumPics(sourcingProductParam.getAlbumPics());
-                    productId = pmsProductEdit.getId();
+                    // productId = pmsProductEdit.getId();
+                    productId = sourcingProductParam.getProductId();
                     pmsProductEdit.setName(sourcingProductParam.getName());
                     // 处理sku数据
                     QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
@@ -367,7 +368,8 @@ public class XmsSourcingController {
                     pmsProductEdit.setWeight(sourcingProductParam.getWeight());
                     pmsProductEdit.setUpdateTime(new Date());
                     this.xmsPmsProductEditService.save(pmsProductEdit);
-                    productId = pmsProductEdit.getId();
+                    // productId = pmsProductEdit.getId();
+                    productId = sourcingProductParam.getProductId();
                     // 插入sku数据
                     this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
                     stockEditList.clear();

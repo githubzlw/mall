@@ -125,6 +125,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         editQueryWrapper.lambda().eq(XmsPmsProductEdit::getProductId, Long.valueOf(wrap.getPid()))
                 .eq(XmsPmsProductEdit::getMemberId, memberId);
         XmsPmsProductEdit pmsProduct = this.productMapper.selectOne(editQueryWrapper);
+
+        LOGGER.info("pushProductWFW,wrap[{}],memberId[{}]", wrap, memberId);
+        LOGGER.info("pushProductWFW,XmsPmsProductEdit[{}]", pmsProduct);
+
         ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
@@ -132,7 +136,18 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         .eq(XmsPmsSkuStockEdit::getMemberId, memberId);
         List<XmsPmsSkuStockEdit> skuList = this.skuStockMapper.selectList(queryWrapper);
 
-        List<XmsPmsSkuStockEdit> collect = skuList.stream().filter(e -> wrap.getSkus().contains(e.getSkuCode())).collect(Collectors.toList());
+        LOGGER.info("pushProductWFW,skuList[{}]", skuList);
+
+        List<XmsPmsSkuStockEdit> collect = new ArrayList<>();
+
+        Set<String> skuSet = new HashSet<>();
+        skuList.forEach(e -> {
+            if(wrap.getSkus().contains(e.getSkuCode()) && !skuSet.contains(e.getSkuCode())){
+                collect.add(e);
+                skuSet.add(e.getSkuCode());
+            }
+        });
+        skuSet.clear();
         goods.setSkuList(collect);
 
         goods.setSkus(wrap.getSkus());
@@ -371,7 +386,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods, Long memberId) throws ShopifyException {
         String shopname = wrap.getShopname();
-        Product product = toProduct(goods);
+        Product product = this.toProduct(goods);
         if (StrUtil.isNotBlank(wrap.getCollectionId())) {
             product.setCollection_id(wrap.getCollectionId());
         }
@@ -597,7 +612,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             variants.setInventory_quantity(skuList.get(i).getStock());
             variants.setInventory_management("shopify");
 //            variants.setCompare_at_price(String.valueOf(skuList.get(i).getComparedAtPrice()));
-            image.add(skuList.get(i).getPic());
+            if(StrUtil.isNotBlank(skuList.get(i).getPic())){
+                image.add(skuList.get(i).getPic());
+            }
             // 规格数据
             Gson gson = new Gson();
             List<SkuVal> list = gson.fromJson(skuList.get(i).getSpData(),
