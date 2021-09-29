@@ -20,20 +20,18 @@ import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.config.ShopifyConfig;
 import com.macro.mall.portal.domain.*;
 import com.macro.mall.portal.service.*;
+import com.macro.mall.portal.util.DigestUtils;
 import com.macro.mall.portal.util.OrderUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -128,8 +126,8 @@ public class XmsShopifyController {
                     String clientId = dataJson.getString("id");
                     System.err.println("--------------clientId:" + clientId);
                     String uri = dataJson.getString("uri");
-                    //redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
-                    this.shopMap.put(uuid, clientId);
+                    this.redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                    //this.shopMap.put(uuid, clientId);
                     return CommonResult.success(uri);
                 }
             }
@@ -174,10 +172,10 @@ public class XmsShopifyController {
 
             rsMap.put("shopifyFlag", 0);
 
-            // Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + this.shopMap.get(state), "clientId");
-            String clientId = this.shopMap.get(state);
+            Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + state, "clientId");
+            // String clientId = this.shopMap.get(state);
 
-            if (null == clientId || StringUtils.isBlank(clientId) || StringUtils.isBlank(shop)) {
+            if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
                 rsMap.put("result", "Please input shop name to authorize");
                 redirectUrl = "redirect:/apa/product-shopify.html";
                 rsMap.put("redirectUrl", redirectUrl);
@@ -186,11 +184,13 @@ public class XmsShopifyController {
 
 
             shop = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
-            SecretKeySpec keySpec = new SecretKeySpec(clientId.getBytes(), ShopifyConfig.HMAC_ALGORITHM);
+            /*SecretKeySpec keySpec = new SecretKeySpec(clientId.toString().getBytes(), ShopifyConfig.HMAC_ALGORITHM);
             Mac mac = Mac.getInstance(ShopifyConfig.HMAC_ALGORITHM);
             mac.init(keySpec);
             byte[] rawHmac = mac.doFinal(data.getBytes());
-            if (Hex.encodeHexString(rawHmac).equals(hmac)) {
+*/
+            String hmacsha256 = DigestUtils.HMACSHA256(data, clientId.toString());
+            if (hmacsha256.equalsIgnoreCase(hmac)) {
 
 
                 Map<String, String> mapParam = Maps.newHashMap();
