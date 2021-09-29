@@ -38,7 +38,7 @@ public class ShopifyProductController {
 
 
     @PostMapping("/getCollectionByShopifyName")
-    public CommonResult getCollectionByShopifyName(@RequestParam("shopifyName") String shopifyName) {
+    public CommonResult getCollectionByShopifyName(@RequestParam("shopifyName") String shopifyName, @RequestParam("memberId") Long memberId) {
         Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
         Map<String, String> map = new HashMap<>();
         try {
@@ -48,7 +48,7 @@ public class ShopifyProductController {
             }
             map.put(shopifyName, "success");
             this.redisUtil.hmset(RedisUtil.GET_COLLECTION_BY_SHOPIFY_NAME, map, 60);
-            int total = this.shopifyUtils.getCollectionByShopifyName(shopifyName);
+            int total = this.shopifyUtils.getCollectionByShopifyName(shopifyName, memberId);
             return CommonResult.success(total);
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,11 +110,11 @@ public class ShopifyProductController {
     @ApiOperation("删除shopify商品")
     @RequestMapping(value = "/deleteProduct", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult deleteProduct(@RequestParam("idList") String idList, @RequestParam("shopifyName") String shopifyName) {
+    public CommonResult deleteProduct(@RequestParam("idList") String idList, @RequestParam("shopifyName") String shopifyName, @RequestParam("memberId") Long memberId) {
 
         try {
 
-            String s = this.shopifyUtils.deleteProduct(idList.split(","), shopifyName);
+            String s = this.shopifyUtils.deleteProduct(idList.split(","), shopifyName, memberId);
             return CommonResult.success(s);
         } catch (Exception e) {
             e.printStackTrace();

@@ -18,6 +18,8 @@ public interface UmsMemberService {
      */
     UmsMember getByUsername(String username);
 
+    UmsMember getByUsernameNoCache(String username);
+
     /**
      * 根据会员编号获取会员
      */
@@ -28,6 +30,8 @@ public interface UmsMemberService {
      */
     @Transactional
     void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType,Integer countryId);
+
+    void registerNew(String username, String password, String organizationname,String monthlyOrders,Integer loginType,Integer countryId);
 
     /**
      * 生成验证码

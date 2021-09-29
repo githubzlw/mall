@@ -81,5 +81,8 @@ public class ShopifyConfig {
     @Value("${shopify.uri_delete_products}")
     public String SHOPIFY_URI_DELETE_PRODUCTS;
 
+    @Value("${shopify.uri_put_cancel_order}")
+    public String SHOPIFY_URI_PUT_CANCEL_ORDER;
+
 
 }

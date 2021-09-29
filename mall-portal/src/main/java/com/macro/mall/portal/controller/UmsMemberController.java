@@ -1,14 +1,17 @@
 package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.enums.MailTemplateType;
+import com.macro.mall.entity.XmsShopifyAuth;
 import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
 import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
+import com.macro.mall.portal.service.IXmsShopifyAuthService;
 import com.macro.mall.portal.service.UmsMemberService;
 import com.macro.mall.portal.util.SourcingUtils;
 import com.macro.mall.tools.bean.WelcomeMailTemplateBean;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -59,6 +63,8 @@ public class UmsMemberController {
     private EmailService emailService;
     @Autowired
     private MicroServiceConfig microServiceConfig;
+    @Autowired
+    private IXmsShopifyAuthService xmsShopifyAuthService;
 
     @ApiOperation("会员注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -68,7 +74,7 @@ public class UmsMemberController {
                                  @RequestParam String organizationname,
                                  @RequestParam String monthlyOrders, String uuid,
                                  @RequestParam Integer countryId) {
-        this.memberService.register(username, password, organizationname, monthlyOrders, 0,countryId);
+        this.memberService.register(username, password, organizationname, monthlyOrders, 0, countryId);
         String token = this.memberService.login(username, password);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
@@ -112,6 +118,39 @@ public class UmsMemberController {
         tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
         return CommonResult.success(tokenMap);
     }
+
+
+    @ApiOperation("会员Shopify登录")
+    @RequestMapping(value = "/loginWithShopify", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult loginWithShopify(@RequestParam String username,
+                                         @RequestParam String password, @RequestParam String shopifyName) {
+        String token = memberService.login(username, password);
+        if (token == null) {
+            return CommonResult.validateFailed("用户名或密码错误");
+        }
+
+        MemberDetails userinfo = (MemberDetails) memberService.loadUserByUsername(username);
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", token);
+        tokenMap.put("tokenHead", tokenHead);
+        tokenMap.put("mail", username);
+        tokenMap.put("sourcingCountryId", String.valueOf(userinfo.getUmsMember().getSourcingCountryId()));
+
+        // 绑定shopify到客户ID
+        this.memberService.updateShopifyInfo(userinfo.getUmsMember().getId(), shopifyName, 1);
+        UpdateWrapper<XmsShopifyAuth> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(XmsShopifyAuth::getMemberId, userinfo.getUmsMember().getId()).set(XmsShopifyAuth::getUpdateTime, new Date()).eq(XmsShopifyAuth::getShopName, shopifyName);
+        this.xmsShopifyAuthService.update(updateWrapper);
+
+        this.memberService.updateSecurityContext();
+
+        UmsMember currentMember = this.memberService.getById(userinfo.getUmsMember().getId());
+        tokenMap.put("nickName", currentMember.getNickname());
+        tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
+        return CommonResult.success(tokenMap);
+    }
+
 
     @ApiOperation("获取会员信息")
     @RequestMapping(value = "/info", method = RequestMethod.GET)
@@ -175,18 +214,18 @@ public class UmsMemberController {
         LOGGER.info("google login begin");
         ImmutablePair<String, String> pair = null;
         try {
-            if(StringUtils.isNotEmpty(idtokenstr)){
-                idtokenstr =idtokenstr.replaceAll("Bearer ","");
+            if (StringUtils.isNotEmpty(idtokenstr)) {
+                idtokenstr = idtokenstr.replaceAll("Bearer ", "");
             }
             pair = memberService.googleAuth(idtokenstr);
 
-            if(pair == null){
+            if (pair == null) {
                 return CommonResult.failed("mail get failed");
             }
 
             UmsMember userInfo = memberService.getByUsername(pair.getRight());
-            if (userInfo == null){
-                memberService.register(pair.getRight(), pair.getRight(), "", "", 1,36);
+            if (userInfo == null) {
+                memberService.register(pair.getRight(), pair.getRight(), "", "", 1, 36);
                 userInfo = memberService.getByUsername(pair.getRight());
             }
             String token = memberService.login(pair.getRight(), pair.getRight());
@@ -202,9 +241,9 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", pair.getRight());
-            if (userInfo == null){
+            if (userInfo == null) {
                 tokenMap.put("nickName", "");
-            }else{
+            } else {
                 tokenMap.put("nickName", userInfo.getNickname());
             }
 
@@ -232,17 +271,17 @@ public class UmsMemberController {
     @ApiOperation("facebook登录")
     @RequestMapping(value = "/facebookLogin", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult facebookAuth(@RequestParam("fToken") String fToken,@RequestParam("facebookId") String facebookId,@RequestParam("uuid") String uuid) {
+    public CommonResult facebookAuth(@RequestParam("fToken") String fToken, @RequestParam("facebookId") String facebookId, @RequestParam("uuid") String uuid) {
 
         LOGGER.info("facebook login begin");
         try {
-            FacebookPojo bean = memberService.facebookAuth(facebookId,fToken);
-            if(bean == null){
+            FacebookPojo bean = memberService.facebookAuth(facebookId, fToken);
+            if (bean == null) {
                 return CommonResult.failed("mail get failed");
             }
             UmsMember userInfo = memberService.getByUsername(bean.getEmail());
-            if(userInfo == null){
-                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2,36);
+            if (userInfo == null) {
+                memberService.register(bean.getEmail(), bean.getEmail(), "", "", 2, 36);
                 userInfo = memberService.getByUsername(bean.getEmail());
             }
             String token = memberService.login(bean.getEmail(), bean.getEmail());
@@ -257,9 +296,9 @@ public class UmsMemberController {
             tokenMap.put("token", token);
             tokenMap.put("tokenHead", tokenHead);
             tokenMap.put("mail", bean.getEmail());
-            if (userInfo == null){
+            if (userInfo == null) {
                 tokenMap.put("nickName", "");
-            }else{
+            } else {
                 tokenMap.put("nickName", userInfo.getNickname());
             }
             return CommonResult.success(tokenMap);
@@ -268,7 +307,6 @@ public class UmsMemberController {
             return CommonResult.failed("facebookLogin failed");
         }
     }
-
 
 
     @ApiOperation("修改客户信息")
@@ -313,7 +351,7 @@ public class UmsMemberController {
             redisUtil.hmsetObj(SourcingUtils.RETRIEVE_PASSWORD_KEY, uuid, userName, 60 * 60 * 48);
             // 发送邮件
 
-            String linkUrl = microServiceConfig.getMallPassActivate()+ "?userName=" + userName + "&uuid=" + uuid;
+            String linkUrl = microServiceConfig.getMallPassActivate() + "?userName=" + userName + "&uuid=" + uuid;
             WelcomeMailTemplateBean mailTemplateBean = new WelcomeMailTemplateBean();
             mailTemplateBean.setName(userName);
             mailTemplateBean.setSubject("retrievePassword");

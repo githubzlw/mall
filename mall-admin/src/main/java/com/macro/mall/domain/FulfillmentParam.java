@@ -23,4 +23,6 @@ public class FulfillmentParam {
 
     @ApiModelProperty("必填-运输公司")
     private String trackingCompany;
+
+    private Long memberId;
 }

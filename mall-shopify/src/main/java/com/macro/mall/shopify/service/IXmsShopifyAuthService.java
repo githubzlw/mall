@@ -18,6 +18,6 @@ public interface IXmsShopifyAuthService extends IService<XmsShopifyAuth> {
 
     HashMap<String, String> getAccessToken(String shopname, String code) throws IOException;
 
-    String getShopifyToken(String shopName);
+    String getShopifyToken(String shopName, Long memberId);
 
 }

@@ -94,12 +94,65 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
+    public UmsMember getByUsernameNoCache(String username) {
+        UmsMember member = null;
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andUsernameEqualTo(username);
+        List<UmsMember> memberList = memberMapper.selectByExample(example);
+        if (!CollectionUtils.isEmpty(memberList)) {
+            member = memberList.get(0);
+            return member;
+        }
+        return member;
+    }
+
+    @Override
     public UmsMember getById(Long id) {
         return memberMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public void register(String username, String password, String organizationname,String monthlyOrders,Integer loginType, Integer countryId) {
+//        //验证验证码
+//        if(!verifyAuthCode(authCode,telephone)){
+//            Asserts.fail("验证码错误");
+//        }
+        String telephone = username;
+        //如果用户用改email从我们网站上登录，提示该邮箱已使用,查询是否已有该用户
+        UmsMemberExample exampleSf = new UmsMemberExample();
+        exampleSf.createCriteria().andUsernameEqualTo(username);
+        exampleSf.createCriteria().andLoginTypeEqualTo(loginType);
+        List<UmsMember> umsMembersSf = memberMapper.selectByExample(exampleSf);
+        if (!CollectionUtils.isEmpty(umsMembersSf) && umsMembersSf.get(0).getLoginType() != 0) {
+            Asserts.fail("The email is used, please login with "+username);
+        }else if(!CollectionUtils.isEmpty(umsMembersSf) && umsMembersSf.get(0).getLoginType() == 0){
+            Asserts.fail("The email is used");
+        }
+
+        //没有该用户进行添加操作
+        UmsMember umsMember = new UmsMember();
+        umsMember.setUsername(username);
+        umsMember.setPhone(telephone);
+        umsMember.setPassword(passwordEncoder.encode(password));
+        umsMember.setCreateTime(new Date());
+        umsMember.setStatus(1);
+        //获取默认会员等级并设置
+        UmsMemberLevelExample levelExample = new UmsMemberLevelExample();
+        levelExample.createCriteria().andDefaultStatusEqualTo(1);
+        List<UmsMemberLevel> memberLevelList = memberLevelMapper.selectByExample(levelExample);
+        if (!CollectionUtils.isEmpty(memberLevelList)) {
+            umsMember.setMemberLevelId(memberLevelList.get(0).getId());
+        }
+        umsMember.setOrganizationname(organizationname);
+        umsMember.setMonthlyOrders(monthlyOrders);
+        umsMember.setLoginType(loginType);
+        umsMember.setCountryId(countryId);
+        memberMapper.insert(umsMember);
+        umsMember.setPassword(null);
+    }
+
+    @Override
+    public void registerNew(String username, String password, String organizationname,String monthlyOrders,Integer loginType, Integer countryId) {
 //        //验证验证码
 //        if(!verifyAuthCode(authCode,telephone)){
 //            Asserts.fail("验证码错误");

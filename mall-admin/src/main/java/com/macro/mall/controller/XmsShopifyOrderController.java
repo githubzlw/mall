@@ -66,7 +66,7 @@ public class XmsShopifyOrderController {
 
     @ApiOperation("shopify的物流信息")
     @RequestMapping(value = "/logisticsInformation", method = RequestMethod.POST)
-    public CommonResult logisticsInformation(Long orderNo, String shopifyName) {
+    public CommonResult logisticsInformation(Long orderNo, String shopifyName, Long memberId) {
 
         try {
             QueryWrapper<XmsShopifyFulfillment> queryWrapper = new QueryWrapper<>();
@@ -78,6 +78,7 @@ public class XmsShopifyOrderController {
 
                 param.put("shopifyName", shopifyName);
                 param.put("orders", String.valueOf(orderNo));
+                param.put("memberId", String.valueOf(memberId));
 
                 JSONObject jsonObject = this.urlUtil.postURL(this.urlConfig.getShopifyApiUrl() + "/getFulfillmentByShopifyName", param);
                 CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
@@ -111,6 +112,7 @@ public class XmsShopifyOrderController {
             param.put("orderNo", String.valueOf(fulfillmentParam.getOrderNo()));
             param.put("trackingNumber", fulfillmentParam.getTrackingNumber());
             param.put("trackingCompany", fulfillmentParam.getTrackingCompany());
+            param.put("memberId", String.valueOf(fulfillmentParam.getMemberId()));
 
             JSONObject jsonObject = this.urlUtil.postURL(this.urlConfig.getShopifyApiUrl() + "/createFulfillment", param);
             CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
@@ -120,6 +122,7 @@ public class XmsShopifyOrderController {
 
                 rmParam.put("shopifyName", fulfillmentParam.getShopifyName());
                 rmParam.put("orders", String.valueOf(fulfillmentParam.getOrderNo()));
+                rmParam.put("memberId", String.valueOf(fulfillmentParam.getMemberId()));
                 this.urlUtil.postURL(this.urlConfig.getShopifyApiUrl() + "/getFulfillmentByShopifyName", rmParam);
             }
             return commonResult;

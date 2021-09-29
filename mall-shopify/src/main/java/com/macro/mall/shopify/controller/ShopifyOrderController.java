@@ -50,7 +50,7 @@ public class ShopifyOrderController {
 
     @PostMapping("/getCountryByShopifyName")
     @ApiOperation("根据shopifyName获取国家数据")
-    public CommonResult getCountryByShopifyName(String shopifyName) {
+    public CommonResult getCountryByShopifyName(String shopifyName, Long memberId) {
         Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
 
         Map<String, String> map = new HashMap<>();
@@ -59,7 +59,7 @@ public class ShopifyOrderController {
             if (null != val && "success".equalsIgnoreCase(val.toString())) {
                 return CommonResult.success("this shop is execute!!");
             }
-            int total = this.shopifyUtils.getCountryByShopifyName(shopifyName);
+            int total = this.shopifyUtils.getCountryByShopifyName(shopifyName, memberId);
             map.put(shopifyName, "success");
             this.redisUtil.hmset(RedisUtil.GET_COUNTRY_BY_SHOPIFY_NAME, map, 60);
             return CommonResult.success(total);
@@ -73,12 +73,12 @@ public class ShopifyOrderController {
 
     @PostMapping("/getOrdersByShopifyName")
     @ApiOperation("根据shopifyName获取订单数据")
-    public CommonResult getOrdersByShopifyName(@RequestParam("shopifyName") String shopifyName) {
+    public CommonResult getOrdersByShopifyName(String shopifyName, Long memberId) {
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
         try {
-            Set<Long> orderList = this.shopifyUtils.getOrdersByShopifyName(shopifyName);
-            if(CollectionUtil.isNotEmpty(orderList)){
-                this.asyncTask.getShopifyImgByList(orderList, shopifyName);
+            Set<Long> orderList = this.shopifyUtils.getOrdersByShopifyName(shopifyName, memberId);
+            if (CollectionUtil.isNotEmpty(orderList)) {
+                this.asyncTask.getShopifyImgByList(orderList, shopifyName, memberId);
             }
 
             return CommonResult.success(orderList.size());
@@ -113,7 +113,7 @@ public class ShopifyOrderController {
             List<XmsShopifyOrderinfo> xmsShopifyOrderinfos = this.shopifyUtils.queryListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(xmsShopifyOrderinfos)) {
                 return CommonResult.failed("Cannot match OrderNo");
-            } else{
+            } else {
                 xmsShopifyOrderinfos.clear();
             }
 
@@ -154,7 +154,7 @@ public class ShopifyOrderController {
         FulfillmentStatusEnum anEnum = Arrays.stream(FulfillmentStatusEnum.values()).filter(e -> e.toString().toLowerCase().equalsIgnoreCase(orderParam.getFulfillmentStatus())).findFirst().orElse(null);
         Assert.notNull(anEnum, "fulfillment_status is null");
         try {
-            String updateOrder = this.shopifyUtils.updateOrder(orderParam.getOrderNo(), orderParam.getShopifyName(), anEnum);
+            String updateOrder = this.shopifyUtils.updateOrder(orderParam.getOrderNo(), orderParam.getShopifyName(), anEnum,orderParam.getMemberId());
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
@@ -176,7 +176,7 @@ public class ShopifyOrderController {
         Assert.isTrue(StrUtil.isNotBlank(orderParam.getNewFulfillAt()), "fulfillmentStatus is null");
 
         try {
-            String updateOrder = this.shopifyUtils.updateFulfillmentOrders(orderParam.getOrderNo(), orderParam.getShopifyName(), orderParam.getNewFulfillAt());
+            String updateOrder = this.shopifyUtils.updateFulfillmentOrders(orderParam.getOrderNo(), orderParam.getShopifyName(), orderParam.getNewFulfillAt(), orderParam.getMemberId());
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
@@ -191,23 +191,43 @@ public class ShopifyOrderController {
 
     @PostMapping("/getFulfillmentByShopifyName")
     @ApiOperation("获取运单数据")
-    public CommonResult getFulfillmentByShopifyName(String shopifyName, String orders) {
+    public CommonResult getFulfillmentByShopifyName(String shopifyName, String orders, Long memberId) {
 
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName is null");
         Assert.isTrue(StrUtil.isNotBlank(orders), "orders is null");
+        Assert.isTrue(null != memberId && memberId > 0, "orders is null");
 
         try {
             List<Long> orderNoList = new ArrayList<>();
-            Arrays.asList(orders.split(",")).forEach(e->  orderNoList.add(Long.parseLong(e)));
-            Set<Long> orderList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList);
-            if(CollectionUtil.isNotEmpty(orderList)){
-                this.asyncTask.getShopifyImgByList(orderList, shopifyName);
+            Arrays.asList(orders.split(",")).forEach(e -> orderNoList.add(Long.parseLong(e)));
+            Set<Long> orderList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList, memberId);
+            if (CollectionUtil.isNotEmpty(orderList)) {
+                this.asyncTask.getShopifyImgByList(orderList, shopifyName, memberId);
             }
             return CommonResult.success(1);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getFulfillmentByShopifyName,shopifyName[{}],error:", shopifyName, e);
             return CommonResult.failed("getFulfillmentByShopifyName,error:" + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/cancelOrderByShopifyName")
+    @ApiOperation("根据shopifyName取消订单")
+    public CommonResult cancelOrderByShopifyName(String shopifyName, String orderNo, Long memberId) {
+        Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
+        Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
+        try {
+            String order = this.shopifyUtils.cancelOrderByShopifyName(shopifyName, orderNo, memberId);
+            if (null != order && null != JSONObject.parseObject(order)) {
+                return CommonResult.success(JSONObject.parseObject(order));
+            }
+            return CommonResult.failed("cancelOrder error");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("cancelOrderByShopifyName, shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed(e.getMessage());
         }
     }
 

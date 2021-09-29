@@ -43,10 +43,10 @@ public class XmsShopifyAuthServiceImpl extends ServiceImpl<XmsShopifyAuthMapper,
      * @return
      */
     @Override
-    public String getShopifyToken(String shopName) {
+    public String getShopifyToken(String shopName, Long memberId) {
 
         QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+        queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName).eq(XmsShopifyAuth::getMemberId, memberId);
         XmsShopifyAuth shopifyAuth = xmsShopifyAuthMapper.selectOne(queryWrapper);
         return shopifyAuth.getAccessToken();
     }

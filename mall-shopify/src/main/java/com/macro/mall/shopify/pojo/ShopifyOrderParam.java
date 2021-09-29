@@ -22,4 +22,6 @@ public class ShopifyOrderParam {
     private String fulfillmentStatus;
     @ApiModelProperty("标记为准备履行的时间")
     private String newFulfillAt;
+
+    private  Long memberId;
 }

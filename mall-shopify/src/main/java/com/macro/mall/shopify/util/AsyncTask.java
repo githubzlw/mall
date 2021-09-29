@@ -52,9 +52,9 @@ public class AsyncTask {
      * @param shopifyName
      */
     @Async("taskExecutor")
-    public void getShopifyImgByList(Set<Long> pidSet, String shopifyName) {
+    public void getShopifyImgByList(Set<Long> pidSet, String shopifyName, Long memberId) {
         if (CollectionUtil.isNotEmpty(pidSet)) {
-            String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+            String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
             // 过滤错误的PID读取数据
 
             QueryWrapper<XmsShopifyPidImgError> imgErrorQueryWrapper = new QueryWrapper<>();

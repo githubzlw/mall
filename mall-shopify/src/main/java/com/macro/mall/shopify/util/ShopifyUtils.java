@@ -83,8 +83,14 @@ public class ShopifyUtils {
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private ZoneId zoneId = ZoneId.systemDefault();
 
-    public int getCountryByShopifyName(String shopifyName) {
-        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+    public String cancelOrderByShopifyName(String shopifyName, String orderNo, Long memberId){
+        String url = String.format(shopifyConfig.SHOPIFY_URI_PUT_CANCEL_ORDER, shopifyName, orderNo);
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
+        return this.shopifyRestTemplate.postForObject(url, accessToken, null);
+    }
+
+    public int getCountryByShopifyName(String shopifyName, Long memberId) {
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
         String url = String.format(shopifyConfig.SHOPIFY_URI_COUNTRIES_LIST, shopifyName);
         String json = this.shopifyRestTemplate.exchange(url, accessToken);
         int total = 0;
@@ -138,14 +144,14 @@ public class ShopifyUtils {
      * @param shopifyName
      * @return
      */
-    public Set<Long> getOrdersByShopifyName(String shopifyName) {
-        return this.getOrdersSingle(shopifyName);
+    public Set<Long> getOrdersByShopifyName(String shopifyName, Long memberId) {
+        return this.getOrdersSingle(shopifyName, memberId);
     }
 
 
-    public int getCollectionByShopifyName(String shopName) {
+    public int getCollectionByShopifyName(String shopName, Long memberId) {
 
-        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName, memberId);
         String url = String.format(shopifyConfig.SHOPIFY_URI_CUSTOM_COLLECTIONS, shopName);
         this.getSingleCollection(shopName, url, accessToken, "custom_collections");
         url = String.format(shopifyConfig.SHOPIFY_URI_SMART_COLLECTIONS, shopName);
@@ -201,7 +207,7 @@ public class ShopifyUtils {
 
     public int getProductsByShopifyName(String shopifyName, Long memberId, String userName) {
         if (StrUtil.isNotEmpty(shopifyName)) {
-            String token = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+            String token = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
             String url = String.format(shopifyConfig.SHOPIFY_URI_PRODUCTS, shopifyName);
             String json = this.shopifyRestTemplate.exchange(url, token);
             JSONObject jsonObject = JSONObject.parseObject(json);
@@ -322,7 +328,7 @@ public class ShopifyUtils {
      * @param statusEnum
      * @return
      */
-    public String updateOrder(long orderId, String shopifyName, FulfillmentStatusEnum statusEnum) {
+    public String updateOrder(long orderId, String shopifyName, FulfillmentStatusEnum statusEnum, Long memberId) {
         /**
          * shipped:已发货
          * partial: 部分
@@ -338,11 +344,11 @@ public class ShopifyUtils {
         //orderMap.put("note", statusEnum.toString().toLowerCase());
         param.put("order", orderMap);
 
-        String json = this.shopifyRestTemplate.put(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName), param);
+        String json = this.shopifyRestTemplate.put(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId), param);
         return json;
     }
 
-    public String updateFulfillmentOrders(long orderId, String shopifyName, String new_fulfill_at) {
+    public String updateFulfillmentOrders(long orderId, String shopifyName, String new_fulfill_at, Long memberId) {
         /**
          * shipped:已发货
          * partial: 部分
@@ -356,7 +362,7 @@ public class ShopifyUtils {
         orderMap.put("new_fulfill_at", new_fulfill_at);
         param.put("fulfillment_order", orderMap);
 
-        String json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName), param);
+        String json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId), param);
         return json;
     }
 
@@ -446,7 +452,7 @@ public class ShopifyUtils {
     }*/
     public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
-        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
+        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName(), fulfillmentParam.getMemberId());
         // 步骤1：查询订单以查看其订单项
         // get https://{shop}.myshopify.com/admin/api/2021-04/orders/{order_rest_id}.json
 
@@ -516,17 +522,17 @@ public class ShopifyUtils {
         param.put("fulfillment", fulfillmentMap);
 
         url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
-        json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName()), param);
+        json = this.shopifyRestTemplate.post(url, token , param);
         return json;
 
     }
 
 
-    public Set<Long> getFulfillmentByShopifyName(String shopifyName, List<Long> orderNoList) {
+    public Set<Long> getFulfillmentByShopifyName(String shopifyName, List<Long> orderNoList, Long memberId) {
 
         Set<Long> productList = new HashSet<>();
         if (CollectionUtil.isNotEmpty(orderNoList)) {
-            String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+            String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
             orderNoList.forEach(e -> {
                 List<XmsShopifyFulfillmentResult> fulfillmentByOrderNoList = this.getFulfillmentByOrderNo(shopifyName, e, shopifyToken);
                 if (CollectionUtil.isNotEmpty(fulfillmentByOrderNoList)) {
@@ -723,14 +729,14 @@ public class ShopifyUtils {
     }
 
 
-    public String deleteProduct(String[] idsList, String shopifyName) {
+    public String deleteProduct(String[] idsList, String shopifyName, Long memberId) {
 
         QueryWrapper<XmsCustomerProduct> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(XmsCustomerProduct::getId, Arrays.asList(idsList));
         List<XmsCustomerProduct> productList = this.customerProductService.list(queryWrapper);
         if (CollectionUtil.isNotEmpty(productList)) {
 
-            String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName);
+            String shopifyToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
 
             List<Long> idList = new ArrayList<>();
 
@@ -811,9 +817,9 @@ public class ShopifyUtils {
      * @param shopName
      * @return
      */
-    private OrdersWraper getOrders(String shopName) {
+    private OrdersWraper getOrders(String shopName, Long memberId) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
-        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName);
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName, memberId);
         String json = this.shopifyRestTemplate.exchange(url, accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
@@ -869,6 +875,8 @@ public class ShopifyUtils {
                     tempOrder.setFulfillmentStatus(e.getFulfillment_status());
                     tempOrder.setUpdatedAt(e.getUpdated_at());
                     tempOrder.setUpdateTime(new Date());
+                    tempOrder.setCancelledAt(e.getCancelled_at());
+                    tempOrder.setCancelReason(e.getCancel_reason());
                     updateList.add(tempOrder);
                     itemsMap.put(e.getId(), e);
                 }
@@ -913,14 +921,14 @@ public class ShopifyUtils {
         return productList;
     }
 
-    private Set<Long> getOrdersSingle(String shopifyName) {
+    private Set<Long> getOrdersSingle(String shopifyName, Long memberId) {
         Set<Long> list = new HashSet<>();
         if (StrUtil.isBlank(shopifyName)) {
             return list;
         }
         try {
 
-            OrdersWraper orders = this.getOrders(shopifyName);
+            OrdersWraper orders = this.getOrders(shopifyName, memberId);
             if (null != orders && CollectionUtil.isNotEmpty(orders.getOrders())) {
 
                 orders.getOrders().forEach(e -> list.add(e.getId()));

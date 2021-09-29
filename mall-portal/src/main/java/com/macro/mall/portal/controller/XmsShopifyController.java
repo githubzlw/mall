@@ -60,6 +60,8 @@ public class XmsShopifyController {
     @Autowired
     private UmsMemberService umsMemberService;
     @Autowired
+    private UmsMemberCacheService umsMemberCacheService;
+    @Autowired
     private IXmsShopifyOrderinfoService shopifyOrderinfoService;
 
     @Autowired
@@ -97,8 +99,6 @@ public class XmsShopifyController {
     @Autowired
     private IXmsShopifyFulfillmentItemService xmsShopifyFulfillmentItemService;
 
-    private Map<String, String> shopMap = new HashMap<>();
-
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
     public CommonResult authorization(@RequestParam("shopName") String shopName) {
@@ -107,7 +107,7 @@ public class XmsShopifyController {
             // 开放登录权限
 
             QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName).gt(XmsShopifyAuth::getMemberId, 0);
             List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
             if (CollectionUtil.isNotEmpty(list)) {
                 list.clear();
@@ -162,6 +162,7 @@ public class XmsShopifyController {
             }
         }
         Map<String, Object> rsMap = new HashMap<>();
+         String email = "";
         try {
             UmsMember currentMember = null;
             try {
@@ -171,6 +172,7 @@ public class XmsShopifyController {
             }
 
             rsMap.put("shopifyFlag", 0);
+            rsMap.put("password", "");
 
             Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + state, "clientId");
             // String clientId = this.shopMap.get(state);
@@ -213,41 +215,24 @@ public class XmsShopifyController {
                     if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
                         JSONObject shopifyUser = JSONObject.parseObject(commonResult.getData().toString()).getJSONObject("associated_user");
                         String userName = shopifyUser.getString("email");
-
-                        // 登录或者注册，
-                        currentMember = this.umsMemberService.getByUsername(userName);
+                        this.umsMemberCacheService.delMember(userName);
+                        // 没有注册，
+                        currentMember = this.umsMemberService.getByUsernameNoCache(userName);
                         if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
                             // 注册
-                            this.umsMemberService.register(userName, "123456", "shopifyEmail", "10000", 1, 36);
-                            token = this.umsMemberService.login(userName, "123456");
-                            currentMember = this.umsMemberService.getByUsername(userName);
+                            this.umsMemberService.registerNew(userName, "123456", "shopifyEmail", "10000", 0, 36);
+                            currentMember = this.umsMemberService.getByUsernameNoCache(userName);
+                            rsMap.put("password", "123456");
                         }
                     } else {
                         noLogin = false;
                     }
 
-                    // 绑定shopify到客户ID
-                    this.umsMemberService.updateShopifyInfo(currentMember.getId(), shop, 1);
-                    // shopify授权更新
-                    if (noLogin) {
-                        UpdateWrapper<XmsShopifyAuth> updateWrapper = new UpdateWrapper<>();
-                        updateWrapper.lambda().set(XmsShopifyAuth::getMemberId, currentMember.getId()).set(XmsShopifyAuth::getUpdateTime, new Date()).eq(XmsShopifyAuth::getShopName, shop);
-                        this.xmsShopifyAuthService.update(updateWrapper);
-                    }
-
-                    currentMember.setShopifyFlag(1);
-                    currentMember.setShopifyName(shop);
-
-
-                    this.umsMemberService.updateSecurityContext();
-
-                    this.shopMap.remove(state, clientId);
 
                     // 插入shopify的token
                     // ------------------
                     rsMap.put("shopifyName", shop);
                     rsMap.put("noLogin", noLogin ? 1 : 0);
-                    rsMap.put("token", token);
                     rsMap.put("mail", currentMember.getUsername());
                     rsMap.put("shopifyFlag", 1);
                     // ------------------
@@ -338,6 +323,7 @@ public class XmsShopifyController {
             if (CollectionUtil.isEmpty(list)) {
                 Map<String, String> param = new HashMap<>();
                 param.put("shopifyName", currentMember.getShopifyName());
+                param.put("memberId", String.valueOf(currentMember.getId()));
                 //请求数据
                 JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
                 if (jsonObject.containsKey("code") && 200 == jsonObject.getIntValue("code")) {
@@ -450,6 +436,7 @@ public class XmsShopifyController {
             Map<String, String> param = new HashMap<>();
 
             param.put("shopifyName", byId.getShopifyName());
+            param.put("memberId", String.valueOf(byId.getId()));
 
 
             //请求数据
@@ -514,6 +501,7 @@ public class XmsShopifyController {
             }
             Map<String, String> param = new HashMap<>();
             param.put("shopifyName", currentMember.getShopifyName());
+            param.put("memberId", String.valueOf(currentMember.getId()));
 
             //请求数据
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCollectionByShopifyName", param);
@@ -1197,6 +1185,65 @@ public class XmsShopifyController {
             return CommonResult.success(rsPage);
         } catch (Exception e) {
             log.error("getFulfillments,fulfillmentParam[{}],error", fulfillmentParam, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/createShopifyOrderAddress")
+    @ApiOperation("创建客户的shopify地址信息")
+    public CommonResult createShopifyOrderAddress(XmsShopifyOrderAddressParam shopifyOrderAddress) {
+
+        Assert.isTrue(null != shopifyOrderAddress, "shopifyOrderAddress null");
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        Assert.isTrue(null != currentMember && currentMember.getId() > 0, "currentMember null");
+
+        Assert.isTrue(null != shopifyOrderAddress.getOrderNo() && shopifyOrderAddress.getOrderNo() > 0, "orderNo null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getFirstName()), "FirstName null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getCountry()), "Country null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getProvince()), "Province null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getLastName()), "LastName null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getCity()), "City null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getZip()), "Zip null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress1()), "Address1 null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress2()), "Address2 null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getPhone()), "Phone null");
+
+
+        try {
+            XmsShopifyOrderAddress orderAddress = new XmsShopifyOrderAddress();
+            BeanUtil.copyProperties(shopifyOrderAddress, orderAddress);
+            orderAddress.setId(null);
+            this.xmsShopifyOrderAddressService.save(orderAddress);
+            return CommonResult.success(orderAddress);
+        } catch (Exception e) {
+            log.error("createShopifyOrderAddress,shopifyOrderAddress[{}],error", shopifyOrderAddress, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/cancelOrderByShopifyName")
+    @ApiOperation("根据shopifyName取消订单")
+    public CommonResult cancelOrderByShopifyName(String shopifyName, String orderNo) {
+
+        Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
+        Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
+
+        try {
+            UmsMember currentMember = this.umsMemberService.getCurrentMember();
+            Map<String, String> param = new HashMap<>();
+            param.put("shopifyName", shopifyName);
+            param.put("orderNo", orderNo);
+            param.put("memberId", String.valueOf(currentMember.getId()));
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/cancelOrderByShopifyName", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            if(200 == commonResult.getCode()){
+                 this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getOrdersByShopifyName", param);
+            }
+            return commonResult;
+        } catch (Exception e) {
+            log.error("cancelOrderByShopifyName,shopifyName[{}],orderNo[{}],error", shopifyName, orderNo, e);
             return CommonResult.failed(e.getMessage());
         }
     }
