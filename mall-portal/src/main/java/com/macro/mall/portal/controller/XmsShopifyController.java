@@ -117,7 +117,7 @@ public class XmsShopifyController {
             }
 
             String uuid = RandomUtil.randomString(32);
-            this.shopMap.put(shopName, uuid);
+            //this.shopMap.put(shopName, uuid);
             //请求授权
             JSONObject jsonObject = this.urlUtil.callUrlByGet(this.microServiceConfig.getShopifyUrl() + "/authuri?shop=" + shopName + "&uuid=" + uuid);
             CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
@@ -126,9 +126,10 @@ public class XmsShopifyController {
                 JSONObject dataJson = JSON.parseObject(commonResult.getData().toString());
                 if (dataJson != null) {
                     String clientId = dataJson.getString("id");
-                    System.err.println("clientId:" + clientId);
+                    System.err.println("--------------clientId:" + clientId);
                     String uri = dataJson.getString("uri");
-                    redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                    //redisUtil.hmsetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId", clientId, RedisUtil.EXPIRATION_TIME_1_DAY);
+                    this.shopMap.put(uuid, clientId);
                     return CommonResult.success(uri);
                 }
             }
@@ -146,12 +147,13 @@ public class XmsShopifyController {
     public CommonResult authCallback(String code, String hmac, String timestamp, String state, String shop, String host,
                                      HttpServletRequest request) {
 
+        Assert.isTrue(StrUtil.isNotBlank(state), "state null");
         log.info("code:{},hmac:{},timestamp:{},state:{},shop:{},host:{}", code, hmac, timestamp, state, shop, host);
         String redirectUrl = "redirect:/apa/shopifyBindResult.html";
 
         Map<String, String[]> parameters = request.getParameterMap();
         String data = null;
-        SortedSet<String> keys = new TreeSet<String>(parameters.keySet());
+        SortedSet<String> keys = new TreeSet<>(parameters.keySet());
         for (String key : keys) {
             if (!key.equals("hmac") && !key.equals("signature")) {
                 if (data == null) {
@@ -172,9 +174,10 @@ public class XmsShopifyController {
 
             rsMap.put("shopifyFlag", 0);
 
-            Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + this.shopMap.get(shop), "clientId");
+            // Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + this.shopMap.get(state), "clientId");
+            String clientId = this.shopMap.get(state);
 
-            if (null == clientId || StringUtils.isBlank(clientId.toString()) || StringUtils.isBlank(shop)) {
+            if (null == clientId || StringUtils.isBlank(clientId) || StringUtils.isBlank(shop)) {
                 rsMap.put("result", "Please input shop name to authorize");
                 redirectUrl = "redirect:/apa/product-shopify.html";
                 rsMap.put("redirectUrl", redirectUrl);
@@ -183,7 +186,7 @@ public class XmsShopifyController {
 
 
             shop = shop.replace(ShopifyConfig.SHOPIFY_COM, "");
-            SecretKeySpec keySpec = new SecretKeySpec(clientId.toString().getBytes(), ShopifyConfig.HMAC_ALGORITHM);
+            SecretKeySpec keySpec = new SecretKeySpec(clientId.getBytes(), ShopifyConfig.HMAC_ALGORITHM);
             Mac mac = Mac.getInstance(ShopifyConfig.HMAC_ALGORITHM);
             mac.init(keySpec);
             byte[] rawHmac = mac.doFinal(data.getBytes());
@@ -237,6 +240,8 @@ public class XmsShopifyController {
 
 
                     this.umsMemberService.updateSecurityContext();
+
+                    this.shopMap.remove(state, clientId);
 
                     // 插入shopify的token
                     // ------------------
