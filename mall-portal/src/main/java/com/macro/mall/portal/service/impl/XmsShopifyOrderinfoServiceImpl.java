@@ -136,7 +136,8 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
             } else {
                 orderComb.setAddressInfo(tempOrderAddress);
             }
-
+            // https://busysell-test.myshopify.com/admin/orders/4053447803073
+            orderComb.setShopifyOrderUrl("https://" + orderComb.getShopifyName() + ".myshopify.com/admin/orders/" + orderComb.getOrderNo());
             combList.add(orderComb);
         }
 

@@ -163,7 +163,12 @@ public class XmsShopifyController {
         }
         Map<String, Object> rsMap = new HashMap<>();
         try {
-            UmsMember currentMember = this.umsMemberService.getCurrentMember();
+            UmsMember currentMember = null;
+            try {
+                currentMember = this.umsMemberService.getCurrentMember();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             rsMap.put("shopifyFlag", 0);
 
@@ -200,6 +205,7 @@ public class XmsShopifyController {
                 CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
                 if (commonResult.getCode() == 200) {
 
+                    log.info("authCallback,commonResult:[{}]", commonResult);
                     // 如果是没有登录的情况下，获取客户的邮箱，进行登录，然后绑定数据
                     if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
                         JSONObject shopifyUser = JSONObject.parseObject(commonResult.getData().toString()).getJSONObject("associated_user");

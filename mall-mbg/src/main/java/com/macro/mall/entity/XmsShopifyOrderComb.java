@@ -18,4 +18,5 @@ public class XmsShopifyOrderComb extends XmsShopifyOrderinfo {
 
     private Long totalQuantity;
     private String userName;
+    private String shopifyOrderUrl;
 }
