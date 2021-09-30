@@ -229,6 +229,13 @@ public class XmsShopifyController {
                     }
 
 
+                    if (!noLogin) {
+                        this.umsMemberService.updateShopifyInfo(currentMember.getId(), shop, 1);
+                        currentMember.setShopifyFlag(1);
+                        currentMember.setShopifyName(shop);
+                        this.umsMemberService.updateSecurityContext();
+                    }
+
                     // 插入shopify的token
                     // ------------------
                     rsMap.put("shopifyName", shop);
