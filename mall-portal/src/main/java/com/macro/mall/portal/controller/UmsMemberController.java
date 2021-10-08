@@ -127,7 +127,8 @@ public class UmsMemberController {
     @ApiOperation("会员Shopify登录")
     @RequestMapping(value = "/loginWithShopify", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult loginWithShopify(@RequestParam String username, @RequestParam String shopifyName, @RequestParam String uuid) {
+    public CommonResult loginWithShopify(@RequestParam String username, @RequestParam String password,
+                                         @RequestParam String shopifyName, @RequestParam String uuid) {
         Assert.isTrue(StrUtil.isNotBlank(username), "username null");
         //Assert.isTrue(StrUtil.isNotBlank(password),"password null");
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
@@ -139,7 +140,12 @@ public class UmsMemberController {
             return CommonResult.validateFailed("Uuid is invalid");
         }
 
-        String token = memberService.loginNoPassWord(username);
+        String token;
+        if (StrUtil.isNotBlank(password)) {
+            token = memberService.login(username, password);
+        } else {
+            token = memberService.loginNoPassWord(username);
+        }
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
