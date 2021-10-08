@@ -490,7 +490,7 @@ public class XmsShopifyController {
             UmsMember byId = this.umsMemberService.getById(currentMember.getId());
             if (StrUtil.isNotBlank(byId.getShopifyName())) {
                 QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("shop_name", byId.getShopifyName());
+                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, byId.getShopifyName()).eq(XmsShopifyAuth::getMemberId, byId.getId());
                 this.xmsShopifyAuthService.remove(queryWrapper);
                 this.umsMemberService.updateShopifyInfo(byId.getId(), "", 0);
             }
