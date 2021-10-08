@@ -162,7 +162,7 @@ public class XmsShopifyController {
             }
         }
         Map<String, Object> rsMap = new HashMap<>();
-         String email = "";
+        String email = "";
         try {
             UmsMember currentMember = null;
             try {
@@ -229,8 +229,13 @@ public class XmsShopifyController {
                         noLogin = false;
                     }
 
-
+                    Long memberId = currentMember.getId();
                     if (!noLogin) {
+                        // 优先删除其他的授权token
+                        QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+                        queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shop).notIn(XmsShopifyAuth::getUuid, state).nested(wrapper -> wrapper.eq(XmsShopifyAuth::getMemberId, 0).or().eq(XmsShopifyAuth::getMemberId, memberId));
+                        this.xmsShopifyAuthService.remove(queryWrapper);
+
                         this.umsMemberService.updateShopifyInfo(currentMember.getId(), shop, 1);
                         currentMember.setShopifyFlag(1);
                         currentMember.setShopifyName(shop);
