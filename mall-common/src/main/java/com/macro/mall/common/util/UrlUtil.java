@@ -48,6 +48,7 @@ public class UrlUtil {
 
     /**
      * get调用（有重试机制，默认15次重试，每次1秒）
+     *
      * @param url
      * @return
      * @throws IOException
@@ -64,6 +65,7 @@ public class UrlUtil {
 
     /**
      * call url by retry times
+     *
      * @param url
      * @param request
      * @return
@@ -127,6 +129,7 @@ public class UrlUtil {
 
     /**
      * Post调用
+     *
      * @param url
      * @param params
      * @return
@@ -152,6 +155,27 @@ public class UrlUtil {
                 .build();
 
         return executeCall(url, request);
+    }
+
+
+    public JSONObject postUrlByToken(String url, String token, Map<String, String> params) throws IOException {
+
+        JSONObject json;
+        // Create okhttp3 form body builder.
+        FormBody.Builder bodyBuilder = new FormBody.Builder();
+
+        // Add form parameters
+        params.forEach((k, v) -> {
+            if (v != null) bodyBuilder.add(k, v);
+        });
+
+        Request request = new Request.Builder().url(url).
+                addHeader("X-Shopify-Access-Token", token).post(bodyBuilder.build()).build();
+
+        Response response = clientLongTime.newCall(request).execute();
+        json = JSONObject.parseObject(response.body().string());
+        response.body().close();
+        return json;
     }
 
     /**

@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -83,10 +84,26 @@ public class ShopifyUtils {
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private ZoneId zoneId = ZoneId.systemDefault();
 
-    public String cancelOrderByShopifyName(String shopifyName, String orderNo, Long memberId){
+    public JSONObject cancelOrderByShopifyName(String shopifyName, String orderNo, Long memberId) throws IOException {
         String url = String.format(shopifyConfig.SHOPIFY_URI_PUT_CANCEL_ORDER, shopifyName, orderNo);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
-        return this.shopifyRestTemplate.postForObject(url, accessToken, null);
+        Map<String, String> params = new HashMap<>();
+        params.put("reason", "cancelOrder");
+        // reason
+        return this.shopifyRestTemplate.postMap(url, accessToken, params);
+    }
+
+    public void getSingleOrder(String shopifyName, String orderNo, Long memberId) {
+        String url = String.format(shopifyConfig.SHOPIFY_URI_GET_SINGLE_ORDER, shopifyName, orderNo);
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
+
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
+        Orders order = JSONObject.parseObject(JSONObject.parseObject(json).getString("order"), Orders.class);
+        OrdersWraper ordersWraper = new OrdersWraper();
+        List<Orders> orders = new ArrayList<>();
+        orders.add(order);
+        ordersWraper.setOrders(orders);
+        this.genShopifyOrderInfo(shopifyName, ordersWraper);
     }
 
     public int getCountryByShopifyName(String shopifyName, Long memberId) {
@@ -522,7 +539,7 @@ public class ShopifyUtils {
         param.put("fulfillment", fulfillmentMap);
 
         url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
-        json = this.shopifyRestTemplate.post(url, token , param);
+        json = this.shopifyRestTemplate.post(url, token, param);
         return json;
 
     }

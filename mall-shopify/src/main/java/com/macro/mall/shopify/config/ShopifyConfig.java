@@ -84,5 +84,8 @@ public class ShopifyConfig {
     @Value("${shopify.uri_put_cancel_order}")
     public String SHOPIFY_URI_PUT_CANCEL_ORDER;
 
+    @Value("${shopify.uri_get_single_order}")
+    public String SHOPIFY_URI_GET_SINGLE_ORDER;
+
 
 }

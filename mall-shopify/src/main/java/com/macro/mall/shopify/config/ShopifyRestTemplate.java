@@ -2,6 +2,7 @@ package com.macro.mall.shopify.config;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.macro.mall.common.util.UrlUtil;
 import com.macro.mall.shopify.exception.ShopifyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +26,8 @@ import java.util.Map;
 @Slf4j
 @Service
 public class ShopifyRestTemplate {
+
+    private UrlUtil urlUtil = UrlUtil.getInstance();
 
 
     @Autowired
@@ -44,6 +48,7 @@ public class ShopifyRestTemplate {
 
     /**
      * postForEntity
+     *
      * @param shopname
      * @param code
      * @return
@@ -63,7 +68,7 @@ public class ShopifyRestTemplate {
             HashMap<String, String> result = new ObjectMapper().readValue(response.getBody(), HashMap.class);
             return result;
         } catch (IOException e) {
-            log.error("postForEntity",e);
+            log.error("postForEntity", e);
             throw new ShopifyException("1001", "postForEntity error");
         }
 
@@ -71,6 +76,7 @@ public class ShopifyRestTemplate {
 
     /**
      * postForObject
+     *
      * @param uri
      * @param token
      * @param json
@@ -78,7 +84,7 @@ public class ShopifyRestTemplate {
      */
     public String postForObject(String uri, String token, String json) {
 
-        log.info("uri:[{}] token:[{}]  json:[{}]",uri,token,json);
+        log.info("uri:[{}] token:[{}]  json:[{}]", uri, token, json);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Shopify-Access-Token", token);
@@ -87,13 +93,15 @@ public class ShopifyRestTemplate {
         try {
             return restTemplate.postForObject(uri, requestEntity, String.class);
         } catch (Exception e) {
-            log.error("postForObject",e);
+            log.error("postForObject", e);
             throw e;
         }
 
     }
+
     /**
      * deleteForObject
+     *
      * @param uri
      * @return
      */
@@ -108,13 +116,14 @@ public class ShopifyRestTemplate {
             restTemplate.delete(uri);
             return 1;
         } catch (Exception e) {
-            log.error("postForObject",e);
+            log.error("postForObject", e);
             throw e;
         }
     }
 
     /**
      * exchange
+     *
      * @param uri
      * @param token
      * @return
@@ -136,15 +145,15 @@ public class ShopifyRestTemplate {
         }
     }
 
-    public String get(String uri, String token){
+    public String get(String uri, String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Shopify-Access-Token", token);
         HttpEntity entity = new HttpEntity(headers);
         String params = null;
         ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class, params);
-        if(response.getStatusCode().is2xxSuccessful()){
+        if (response.getStatusCode().is2xxSuccessful()) {
             return response.getBody();
-        } else{
+        } else {
             log.error("exchange,uri[{}],token[{}],error!!", uri, token);
         }
         return null;
@@ -153,6 +162,7 @@ public class ShopifyRestTemplate {
 
     /**
      * getObject
+     *
      * @param uri
      * @return
      */
@@ -172,6 +182,7 @@ public class ShopifyRestTemplate {
 
     /**
      * postObject
+     *
      * @param uri
      * @param json
      * @return
@@ -193,16 +204,17 @@ public class ShopifyRestTemplate {
 
     /**
      * getShopName
+     *
      * @param shop
      * @return
      */
-    public String getShopName(String shop){
-        Assert.notNull(shop,"shop must not be null");
-        return shop.substring(0, shop.indexOf(".")-1);
+    public String getShopName(String shop) {
+        Assert.notNull(shop, "shop must not be null");
+        return shop.substring(0, shop.indexOf(".") - 1);
     }
 
 
-    public String put(String uri, String token, Map<String,Object> param) {
+    public String put(String uri, String token, Map<String, Object> param) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Shopify-Access-Token", token);
@@ -218,7 +230,7 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("put",e);
+            log.error("put", e);
             throw new ShopifyException("1003", "put error");
         }
     }
@@ -238,13 +250,13 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("put",e);
+            log.error("put", e);
             throw new ShopifyException("1003", "put error");
         }
     }
 
 
-    public String post(String uri, String token, Map<String,Object> param) {
+    public String post(String uri, String token, Map<String, Object> param) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Shopify-Access-Token", token);
@@ -255,9 +267,22 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("post",e);
+            log.error("post", e);
             throw new ShopifyException("1003", "post error");
         }
+    }
+
+    public JSONObject postMap(String uri, String token, Map<String, String> params) throws IOException {
+
+       /* HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Shopify-Access-Token", token);
+        *//*headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));*//*
+
+        HttpEntity<String> entity = new HttpEntity<>("{}", headers);
+        Object postForEntity = restTemplate.postForObject(uri, entity, Object.class, jsonObject);
+        return JSONObject.parseObject(postForEntity.toString());*/
+        return urlUtil.postUrlByToken(uri, token, params);
     }
 
 }

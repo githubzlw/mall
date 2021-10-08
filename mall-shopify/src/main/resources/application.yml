@@ -34,6 +34,7 @@ shopify:
   uri_put_custom_collections: https://%s.myshopify.com/admin/api/2021-04/custom_collections/%s.json
   uri_put_smart_collections: https://%s.myshopify.com/admin/api/2021-04/smart_collections/%s/order.json
   uri_put_cancel_order: https://%s.myshopify.com/admin/api/2021-04/orders/%s/cancel.json
+  uri_get_single_order: https://%s.myshopify.com/admin/api/2021-04/orders/%s.json
 
 
 

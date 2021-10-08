@@ -1244,11 +1244,10 @@ public class XmsShopifyController {
             param.put("orderNo", orderNo);
             param.put("memberId", String.valueOf(currentMember.getId()));
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/cancelOrderByShopifyName", param);
-            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
-            if(200 == commonResult.getCode()){
+            /*if(200 == commonResult.getCode()){
                  this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getOrdersByShopifyName", param);
-            }
-            return commonResult;
+            }*/
+            return JSON.toJavaObject(jsonObject, CommonResult.class);
         } catch (Exception e) {
             log.error("cancelOrderByShopifyName,shopifyName[{}],orderNo[{}],error", shopifyName, orderNo, e);
             return CommonResult.failed(e.getMessage());

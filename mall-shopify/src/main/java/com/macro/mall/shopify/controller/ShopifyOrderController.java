@@ -2,6 +2,7 @@ package com.macro.mall.shopify.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
@@ -219,9 +220,11 @@ public class ShopifyOrderController {
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
         Assert.isTrue(StrUtil.isNotBlank(orderNo), "orderNo null");
         try {
-            String order = this.shopifyUtils.cancelOrderByShopifyName(shopifyName, orderNo, memberId);
-            if (null != order && null != JSONObject.parseObject(order)) {
-                return CommonResult.success(JSONObject.parseObject(order));
+            JSONObject map = this.shopifyUtils.cancelOrderByShopifyName(shopifyName, orderNo, memberId);
+            if (null != map && map.size() > 0) {
+                // 重新获取下状态
+                this.shopifyUtils.getSingleOrder(shopifyName, orderNo, memberId);
+                return CommonResult.success(map);
             }
             return CommonResult.failed("cancelOrder error");
         } catch (Exception e) {
