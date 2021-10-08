@@ -409,12 +409,12 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         }
         ProductWraper productWraper = new ProductWraper();
         productWraper.setProduct(product);
-        productWraper = this.addProduct(shopname, productWraper, goods.getPid());
+        productWraper = this.addProduct(shopname, productWraper, goods.getPid(), memberId);
 
         if (productWraper != null && productWraper.getProduct() != null) {
 
             // 如果有collectionId则绑定数据
-            this.dealShopifyCollections(wrap, productWraper);
+            this.dealShopifyCollections(wrap, productWraper, memberId);
 
             // 铺货完成后，绑定店铺数据信息，方便下单后对应ID获取我们产 品ID
             shopifyBean.setShopifyPid(String.valueOf(productWraper.getProduct().getId()));
@@ -432,11 +432,11 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
     }
 
 
-    private void dealShopifyCollections(ProductRequestWrap wrap, ProductWraper productWraper) {
+    private void dealShopifyCollections(ProductRequestWrap wrap, ProductWraper productWraper, Long memberId) {
         try {
             // 如果有collectionId则绑定数据
             QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
-            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname());
+            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname()).eq(XmsShopifyAuth::getMemberId, memberId);;
             XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(authQueryWrapper);
             String token = shopifyAuth.getAccessToken();
 
@@ -670,7 +670,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
      * @param productWraper
      * @return
      */
-    public ProductWraper addProduct(String shopName, ProductWraper productWraper, String productId) {
+    public ProductWraper addProduct(String shopName, ProductWraper productWraper, String productId, Long memberId) {
 
         Assert.notNull(productWraper, "product object is null");
         LOGGER.info("shopName:[{}] productWraper:[{}]", shopName, productWraper);
@@ -684,7 +684,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             // 判断是否 已经铺货
 
             QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName);
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName).eq(XmsShopifyAuth::getMemberId, memberId);
             XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(queryWrapper);
             String token = shopifyAuth.getAccessToken();
 
