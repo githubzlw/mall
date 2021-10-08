@@ -106,13 +106,13 @@ public class XmsShopifyController {
         try {
             // 开放登录权限
 
-            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            /*QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopName).gt(XmsShopifyAuth::getMemberId, 0);
             List<XmsShopifyAuth> list = xmsShopifyAuthService.list(queryWrapper);
             if (CollectionUtil.isNotEmpty(list)) {
                 list.clear();
                 return CommonResult.existing("Already bind shop");
-            }
+            }*/
 
             String uuid = RandomUtil.randomString(32);
             //this.shopMap.put(shopName, uuid);
@@ -198,6 +198,7 @@ public class XmsShopifyController {
                 Map<String, String> mapParam = Maps.newHashMap();
                 mapParam.put("shop", shop);
                 mapParam.put("code", code);
+                mapParam.put("uuid", state);
                 if (null == currentMember || null == currentMember.getId() || currentMember.getId() <= 0) {
                     mapParam.put("userId", "0");
                 } else {
@@ -242,6 +243,7 @@ public class XmsShopifyController {
                     rsMap.put("noLogin", noLogin ? 1 : 0);
                     rsMap.put("mail", currentMember.getUsername());
                     rsMap.put("shopifyFlag", 1);
+                    rsMap.put("uuid", state);
                     // ------------------
                     // rsMap.put("redirectUrl", redirectUrl);
                     return CommonResult.success(JSONObject.toJSONString(rsMap));

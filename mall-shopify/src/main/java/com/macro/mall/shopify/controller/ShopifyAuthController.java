@@ -45,6 +45,7 @@ public class ShopifyAuthController {
     public CommonResult authGetToken(
             @ApiParam(name = "code", value = "shopify返回的code", required = true) String code,
             @ApiParam(name = "shop", value = "shopify店铺名", required = true) String shop,
+            @ApiParam(name = "uuid", value = "uuid", required = true) String uuid,
             @ApiParam(name = "userId", value = "客户ID", required = true) String userId) {
 
         log.info("code:{},shop:{}", code, shop);
@@ -69,10 +70,13 @@ public class ShopifyAuthController {
             shopifyAuth.setAccessToken(accessToken);
             shopifyAuth.setMemberId(Long.parseLong(userId));
             shopifyAuth.setShopJson(JSONObject.toJSONString(result));
+            shopifyAuth.setUuid(uuid);
 
             map.put(key, "success");
             this.redisUtil.hmset(RedisUtil.AUTH_GET_TOKEN, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
             this.xmsShopifyAuthService.save(shopifyAuth);
+
+            //result.put("shopifyId", String.valueOf(shopifyAuth.getId()));
             return CommonResult.success(result);
 
         } catch (Exception e) {

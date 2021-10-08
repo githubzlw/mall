@@ -1,6 +1,8 @@
 package com.macro.mall.portal.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.common.enums.MailTemplateType;
@@ -9,6 +11,7 @@ import com.macro.mall.model.UmsMember;
 import com.macro.mall.model.UmsMemberExample;
 import com.macro.mall.portal.cache.RedisUtil;
 import com.macro.mall.portal.config.MicroServiceConfig;
+import com.macro.mall.portal.config.ShopifyConfig;
 import com.macro.mall.portal.domain.FacebookPojo;
 import com.macro.mall.portal.domain.MemberDetails;
 import com.macro.mall.portal.service.IXmsShopifyAuthService;
@@ -25,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -123,9 +127,19 @@ public class UmsMemberController {
     @ApiOperation("会员Shopify登录")
     @RequestMapping(value = "/loginWithShopify", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResult loginWithShopify(@RequestParam String username,
-                                         @RequestParam String password, @RequestParam String shopifyName) {
-        String token = memberService.login(username, password);
+    public CommonResult loginWithShopify(@RequestParam String username, @RequestParam String shopifyName, @RequestParam String uuid) {
+        Assert.isTrue(StrUtil.isNotBlank(username), "username null");
+        //Assert.isTrue(StrUtil.isNotBlank(password),"password null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
+        Assert.isTrue(StrUtil.isNotBlank(uuid), "uuid null");
+
+        Object clientId = redisUtil.hmgetObj(ShopifyConfig.SHOPIFY_KEY + uuid, "clientId");
+
+        if (null == clientId || StringUtils.isBlank(clientId.toString())) {
+            return CommonResult.validateFailed("Uuid is invalid");
+        }
+
+        String token = memberService.loginNoPassWord(username);
         if (token == null) {
             return CommonResult.validateFailed("用户名或密码错误");
         }
@@ -138,9 +152,14 @@ public class UmsMemberController {
         tokenMap.put("sourcingCountryId", String.valueOf(userinfo.getUmsMember().getSourcingCountryId()));
 
         // 绑定shopify到客户ID
+
+        QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getUuid, uuid).nested(wrapper -> wrapper.eq(XmsShopifyAuth::getMemberId, 0).or().eq(XmsShopifyAuth::getMemberId, userinfo.getUmsMember().getId()));
+        this.xmsShopifyAuthService.remove(queryWrapper);
+
         this.memberService.updateShopifyInfo(userinfo.getUmsMember().getId(), shopifyName, 1);
         UpdateWrapper<XmsShopifyAuth> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().set(XmsShopifyAuth::getMemberId, userinfo.getUmsMember().getId()).set(XmsShopifyAuth::getUpdateTime, new Date()).eq(XmsShopifyAuth::getShopName, shopifyName);
+        updateWrapper.lambda().set(XmsShopifyAuth::getMemberId, userinfo.getUmsMember().getId()).set(XmsShopifyAuth::getUpdateTime, new Date()).eq(XmsShopifyAuth::getShopName, shopifyName).eq(XmsShopifyAuth::getUuid, uuid);
         this.xmsShopifyAuthService.update(updateWrapper);
 
         this.memberService.updateSecurityContext();

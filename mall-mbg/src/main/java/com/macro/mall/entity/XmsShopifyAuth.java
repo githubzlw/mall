@@ -28,7 +28,7 @@ public class XmsShopifyAuth implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     private String shopName;
 
@@ -45,5 +45,7 @@ public class XmsShopifyAuth implements Serializable {
     private Long memberId;
 
     private String shopJson;
+
+    private String uuid;
 
 }
