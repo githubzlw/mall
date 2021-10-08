@@ -1,7 +1,9 @@
 package com.macro.mall.shopify.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.macro.mall.common.api.CommonResult;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,19 +65,36 @@ public class ShopifyAuthController {
             String accessToken = result.get("access_token");
             String scope = result.get("scope");
 
-            XmsShopifyAuth shopifyAuth = new XmsShopifyAuth();
-            shopifyAuth.setCreateTime(new Date());
-            shopifyAuth.setUpdateTime(new Date());
-            shopifyAuth.setShopName(shop);
-            shopifyAuth.setScope(scope);
-            shopifyAuth.setAccessToken(accessToken);
-            shopifyAuth.setMemberId(Long.parseLong(userId));
-            shopifyAuth.setShopJson(JSONObject.toJSONString(result));
-            shopifyAuth.setUuid(uuid);
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shop).nested(wrapper -> wrapper.eq(XmsShopifyAuth::getMemberId, 0).or().eq(XmsShopifyAuth::getMemberId, userId));
+
+            List<XmsShopifyAuth> list = this.xmsShopifyAuthService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                // 判断有值的，更新值
+                XmsShopifyAuth shopifyAuth = list.get(0);
+                shopifyAuth.setUpdateTime(new Date());
+                shopifyAuth.setScope(scope);
+                shopifyAuth.setAccessToken(accessToken);
+                shopifyAuth.setMemberId(Long.parseLong(userId));
+                shopifyAuth.setShopJson(JSONObject.toJSONString(result));
+                shopifyAuth.setUuid(uuid);
+                this.xmsShopifyAuthService.updateById(shopifyAuth);
+            } else {
+                XmsShopifyAuth shopifyAuth = new XmsShopifyAuth();
+                shopifyAuth.setCreateTime(new Date());
+                shopifyAuth.setUpdateTime(new Date());
+                shopifyAuth.setShopName(shop);
+                shopifyAuth.setScope(scope);
+                shopifyAuth.setAccessToken(accessToken);
+                shopifyAuth.setMemberId(Long.parseLong(userId));
+                shopifyAuth.setShopJson(JSONObject.toJSONString(result));
+                shopifyAuth.setUuid(uuid);
+                this.xmsShopifyAuthService.save(shopifyAuth);
+            }
 
             map.put(key, "success");
             this.redisUtil.hmset(RedisUtil.AUTH_GET_TOKEN, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
-            this.xmsShopifyAuthService.save(shopifyAuth);
+
 
             //result.put("shopifyId", String.valueOf(shopifyAuth.getId()));
             return CommonResult.success(result);
@@ -104,7 +124,7 @@ public class ShopifyAuthController {
             if (UrlUtil.getInstance().isAccessURL(shopUrl)) {
                 String authUri = shopUrl + "/admin/oauth/authorize?client_id="
                         + shopifyConfig.SHOPIFY_CLIENT_ID + "&scope=" + shopifyConfig.SHOPIFY_SCOPE + "&redirect_uri="
-                        + shopifyConfig.SHOPIFY_REDIRECT_URI + "&grant_options[]=per-user&state=" + uuid ;
+                        + shopifyConfig.SHOPIFY_REDIRECT_URI + "&grant_options[]=per-user&state=" + uuid;
                 map.put(shop, "success");
                 this.redisUtil.hmset(RedisUtil.AUTH_URI, map, RedisUtil.EXPIRATION_TIME_1_HOURS);
                 return CommonResult.success(new Gson().toJson(
