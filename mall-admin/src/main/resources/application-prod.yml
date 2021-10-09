@@ -33,3 +33,12 @@ ali1688api:
   API_HOST: http://api-gw.onebound.cn/
   API_KEY: tel13564700983
   API_SECRET: 20191107
+
+winit:
+  api:
+    key: kairong008@qq.com
+    platform: importt_fba
+    client_id: NZHMOTC3ZJQTM2QYNI00OWQYLWJMZGETNDK1NMNMYZBMMDFL
+    client_sign: OTM0OTVHZDITY2ZINS00ZDY1LTG3YTKTNDRMOGY2NDG5OWQYMTM0OTYYMDCXMZE3NDY3MJQ=
+    token: 426471AA3B3C5957CCCDD17044B2632E
+    url: https://openapi.winit.com.cn/openapi/service

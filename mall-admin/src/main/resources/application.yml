@@ -60,6 +60,7 @@ secure:
       - /product/saveShopifyProduct
       - /order/updateOrderState
       - /xmsOrder/**
+      - /xmsWinit/**
 
 aliyun:
   oss:
