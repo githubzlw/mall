@@ -30,6 +30,8 @@ public class XmsShopifyCollections implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    private Long memberId;
+
     private String shopName;
 
     private Long collectionsId;

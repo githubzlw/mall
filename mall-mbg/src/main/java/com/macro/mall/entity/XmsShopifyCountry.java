@@ -30,6 +30,8 @@ public class XmsShopifyCountry implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    private Long memberId;
+
     @ApiModelProperty(value = "店铺名称")
     private String shopifyName;
 
