@@ -16,11 +16,13 @@ import java.util.List;
 @ApiModel("运单的订单信息")
 public class FulfillmentOrder {
     private Long orderId;
+    private String ourOrderNo;
     private String shopifyName;
     private String shipmentStatus;
 
     private String trackingCompany;
     private String trackingNumber;
+    private String trackingNumberUrl;
     private String createdAt;
     private String updatedAt;
 

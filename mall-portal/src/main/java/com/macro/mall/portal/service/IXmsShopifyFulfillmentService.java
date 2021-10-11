@@ -17,4 +17,6 @@ public interface IXmsShopifyFulfillmentService extends IService<XmsShopifyFulfil
 
     Page<XmsShopifyFulfillment> list(FulfillmentParam fulfillmentParam);
 
+    int getFulfillmentStatistics(FulfillmentParam fulfillmentParam);
+
 }

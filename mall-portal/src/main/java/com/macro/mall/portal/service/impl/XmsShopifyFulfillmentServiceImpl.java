@@ -50,8 +50,31 @@ public class XmsShopifyFulfillmentServiceImpl extends ServiceImpl<XmsShopifyFulf
             LocalDate plusDays = dateTime.plusDays(1);
             lambdaQuery.lt(XmsShopifyFulfillment::getUpdateTm, plusDays.format(dateTimeFormatter) + " 00:00:00");
         }
-
+        if(StrUtil.isNotBlank(fulfillmentParam.getStatus())){
+            lambdaQuery.eq(XmsShopifyFulfillment::getStatus, fulfillmentParam.getStatus());
+        }
+        if(StrUtil.isNotBlank(fulfillmentParam.getShipmentStatus())){
+            lambdaQuery.eq(XmsShopifyFulfillment::getShipmentStatus, fulfillmentParam.getShipmentStatus());
+        }
         lambdaQuery.orderByDesc(XmsShopifyFulfillment::getUpdateTm);
         return this.xmsShopifyFulfillmentMapper.selectPage(page, lambdaQuery);
+    }
+
+
+    @Override
+    public int getFulfillmentStatistics(FulfillmentParam fulfillmentParam){
+
+        LambdaQueryWrapper<XmsShopifyFulfillment> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.eq(XmsShopifyFulfillment::getShopifyName, fulfillmentParam.getShopifyName());
+        if (StrUtil.isNotBlank(fulfillmentParam.getTrackingNumber())) {
+            lambdaQuery.eq(XmsShopifyFulfillment::getTrackingNumber, fulfillmentParam.getTrackingNumber());
+        }
+        if(StrUtil.isNotBlank(fulfillmentParam.getStatus())){
+            lambdaQuery.eq(XmsShopifyFulfillment::getStatus, fulfillmentParam.getStatus());
+        }
+        if(StrUtil.isNotBlank(fulfillmentParam.getShipmentStatus())){
+            lambdaQuery.eq(XmsShopifyFulfillment::getShipmentStatus, fulfillmentParam.getShipmentStatus());
+        }
+        return this.xmsShopifyFulfillmentMapper.selectCount(lambdaQuery);
     }
 }

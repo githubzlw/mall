@@ -280,6 +280,7 @@ public class ProductUtils {
             // 插入商品
             int productMaxId = this.pmsProductService.create(productParam);
             xmsSourcingList.setProductId((long) productMaxId);
+            xmsSourcingList.setAddProductFlag(1);
             // 插入sourcing
             this.xmsSourcingListMapper.insert(xmsSourcingList);
             // 更新shopify

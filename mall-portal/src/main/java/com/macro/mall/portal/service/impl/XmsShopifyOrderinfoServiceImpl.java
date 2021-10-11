@@ -70,6 +70,8 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         }
         if (StrUtil.isBlank(orderinfoParam.getBeginTime())) {
             orderinfoParam.setBeginTime(null);
+        } else {
+            orderinfoParam.setBeginTime(orderinfoParam.getBeginTime().substring(0, 10) + " 00:00:00");
         }
         if (StrUtil.isBlank(orderinfoParam.getEndTime())) {
             orderinfoParam.setEndTime(null);
@@ -77,7 +79,7 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate dateTime = LocalDate.parse(orderinfoParam.getEndTime().substring(0, 10), dateTimeFormatter);
             LocalDate plusDays = dateTime.plusDays(1);
-            orderinfoParam.setEndTime(plusDays.format(dateTimeFormatter));
+            orderinfoParam.setEndTime(plusDays.format(dateTimeFormatter) + " 00:00:00");
         }
         PageHelper.startPage(orderinfoParam.getPageNum(), orderinfoParam.getPageSize());
 

@@ -97,7 +97,11 @@ public class XmsYouLiveProductController {
             if (CollectionUtil.isNotEmpty(productPage.getRecords())) {
                 productPage.getRecords().forEach(e -> {
                     e.setShopifyJson(null);
-                    e.setShopifyProductUrl(String.format(SourcingUtils.SHOPIFY_PRODUCT_URL, currentMember.getShopifyName(), e.getShopifyProductId()));
+                    if (StrUtil.isNotBlank(currentMember.getShopifyName())) {
+                        e.setShopifyProductUrl(String.format(SourcingUtils.SHOPIFY_PRODUCT_URL, currentMember.getShopifyName(), e.getShopifyProductId()));
+                    } else {
+                        e.setShopifyProductUrl("");
+                    }
                     if (StrUtil.isEmpty(e.getAddress())) {
                         e.setAddress("");
                     }

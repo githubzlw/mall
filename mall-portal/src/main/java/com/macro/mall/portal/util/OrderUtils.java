@@ -57,7 +57,6 @@ public class OrderUtils {
     private XmsPaymentMapper xmsPaymentMapper;
 
 
-
     /**
      * 支付成功后更新订单状态和库存状态
      *
@@ -203,7 +202,7 @@ public class OrderUtils {
             orderResult.setTotalFreight(generateParam.getTotalFreight());
 
             this.orderMapper.insert(order);
-            orderItemList.forEach(e-> e.setOrderId(order.getId()));
+            orderItemList.forEach(e -> e.setOrderId(order.getId()));
             this.orderItemDao.insertList(orderItemList);
 
             // 进行库存的数据更新
@@ -253,10 +252,11 @@ public class OrderUtils {
 
     /**
      * 生成发货订单，订单状态直接入库，不需要支付
+     *
      * @param generateParam
      */
     @Transactional
-    public GenerateOrderResult generateDeliveryOrder(GenerateOrderParam generateParam){
+    public GenerateOrderResult generateDeliveryOrder(GenerateOrderParam generateParam) {
         synchronized (generateParam.getCurrentMember().getId()) {
             GenerateOrderResult orderResult = new GenerateOrderResult();
             double productCost = 0;// 商品金额
@@ -354,13 +354,13 @@ public class OrderUtils {
             orderResult.setProductCost(productCost);
             orderResult.setTotalFreight(generateParam.getTotalFreight());
 
-            if(payAmount == 0){
+            if (payAmount == 0) {
                 //直接标记入库
                 order.setStatus(2);
             }
             this.orderMapper.insert(order);
             orderResult.setOrderNoId(order.getId());
-            orderItemList.forEach(e-> e.setOrderId(order.getId()));
+            orderItemList.forEach(e -> e.setOrderId(order.getId()));
             this.orderItemDao.insertList(orderItemList);
 
             // 如果是库存，进行库存处理：每次都是插入库存，方便处理
@@ -446,6 +446,14 @@ public class OrderUtils {
             subStr = subStr.substring(0, subStr.indexOf(":")).trim();
             return preStr + subStr + r.ints(1001, 9999).findFirst().getAsInt();
         }
+    }
+
+    public List<OmsOrder> queryByList(List<String> shopifyOrderList) {
+
+
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andShopifyOrderNoIn(shopifyOrderList);
+        return this.orderMapper.selectByExample(example);
     }
 
 }

@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -1038,14 +1040,78 @@ public class XmsShopifyController {
     }
 
 
+    @GetMapping(value = "/getFulfillmentStatistics")
+    @ApiOperation("获取运单统计")
+    public CommonResult getFulfillmentStatistics(FulfillmentParam fulfillmentParam) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
+            fulfillmentParam.setShopifyName(currentMember.getShopifyName());
+            Map<String, Integer> rsMap = new HashMap<>();
+            // beginTime
+            if (StrUtil.isNotEmpty(fulfillmentParam.getBeginTime())) {
+                fulfillmentParam.setBeginTime(fulfillmentParam.getBeginTime().substring(0, 10) + " 00:00:00");
+            }
+            // endTime
+            if (StrUtil.isNotEmpty(fulfillmentParam.getEndTime())) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate dateTime = LocalDate.parse(fulfillmentParam.getEndTime().substring(0, 10), dateTimeFormatter);
+                LocalDate plusDays = dateTime.plusDays(1);
+                fulfillmentParam.setEndTime(plusDays.format(dateTimeFormatter) + " 00:00:00");
+            }
+
+            // all
+            fulfillmentParam.setShipmentStatus(null);
+            int allCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("allCount", allCount);
+
+            // in transit出运中 pickup 待收货 delivered已签收 expired超期 undelivered未收到 other其他
+            fulfillmentParam.setShipmentStatus("in transit");
+            int inTransitCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("inTransitCount", inTransitCount);
+
+            fulfillmentParam.setShipmentStatus("pickup");
+            int pickupCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("pickupCount", pickupCount);
+
+
+            fulfillmentParam.setShipmentStatus("delivered");
+            int deliveredCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("deliveredCount", deliveredCount);
+
+            fulfillmentParam.setShipmentStatus("expired");
+            int expiredCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("expiredCount", expiredCount);
+
+            fulfillmentParam.setShipmentStatus("undelivered");
+            int undeliveredCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("undeliveredCount", undeliveredCount);
+
+            fulfillmentParam.setShipmentStatus("other");
+            int otherCount = this.xmsShopifyFulfillmentService.getFulfillmentStatistics(fulfillmentParam);
+            rsMap.put("otherCount", otherCount);
+
+            return CommonResult.success(rsMap);
+        } catch (Exception e) {
+            log.error("getFulfillmentStatistics,,error", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
     private Page<FulfillmentOrder> genNeedFulfillmentOrderResult(Page<XmsShopifyFulfillment> tempPage, FulfillmentParam fulfillmentParam) {
 
         // 1.整合全部的订单数据，获取订单地址和订单详情信息
 
         List<Long> orderNoList = new ArrayList<>();
+        List<String> tempNoList = new ArrayList<>();
         List<FulfillmentOrder> fulfillmentOrderList = new ArrayList<>();
         tempPage.getRecords().forEach(e -> {
             orderNoList.add(e.getOrderId());
+            tempNoList.add(String.valueOf(e.getOrderId()));
             FulfillmentOrder tempRs = new FulfillmentOrder();
             BeanUtil.copyProperties(e, tempRs);
             if (StrUtil.isBlank(tempRs.getShipmentStatus())) {
@@ -1065,6 +1131,10 @@ public class XmsShopifyController {
         detailsWrapper.lambda().in(XmsShopifyOrderDetails::getOrderNo, orderNoList);
         List<XmsShopifyOrderDetails> detailsList = this.xmsShopifyOrderDetailsService.list(detailsWrapper);
         Map<Long, List<XmsShopifyOrderDetails>> dtMap = detailsList.stream().collect(Collectors.groupingBy(XmsShopifyOrderDetails::getOrderNo));
+
+        QueryWrapper<OmsOrder> orderQueryWrapper = new QueryWrapper<>();
+        orderQueryWrapper.lambda().in(OmsOrder::getShopifyOrderNo, orderNoList);
+
 
         Map<Long, List<ShopifyOrderDetailsShort>> shortMap = new HashMap<>();
         dtMap.forEach((k, v) -> {
@@ -1086,11 +1156,22 @@ public class XmsShopifyController {
         dtMap.clear();
         detailsList.clear();
 
+        List<OmsOrder> omsOrders = this.orderUtils.queryByList(tempNoList);
+        Map<Long, String> tempMap = new HashMap<>();
+        if (CollectionUtil.isNotEmpty(omsOrders)) {
+            omsOrders.forEach(e -> tempMap.put(Long.parseLong(e.getShopifyOrderNo()), e.getOrderSn()));
+            omsOrders.clear();
+        }
+
         // 2.组合 运单，订单地址，订单详情  数据
         fulfillmentOrderList.forEach(e -> {
             e.setOrderAddress(addressMap.get(e.getOrderId()));
             e.setItemList(shortMap.get(e.getOrderId()));
+            e.setOurOrderNo(tempMap.getOrDefault(e.getOrderId(), ""));
+            e.setTrackingNumberUrl(StrUtil.isNotBlank(e.getTrackingNumber()) ? "https://www.17track.net/en#nums=" + e.getTrackingNumber() : "");
         });
+
+        tempMap.clear();
 
         addressMap.clear();
         shortMap.clear();
@@ -1261,5 +1342,30 @@ public class XmsShopifyController {
         }
     }
 
+
+    @GetMapping(value = "/checkShopifySourcingStatus")
+    @ApiOperation("检查在shopify的商品sourcingList的状态")
+    public CommonResult checkShopifySourcingStatus(Long sourcingId, Long productId) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        Assert.isTrue(null != sourcingId && sourcingId > 0, "sourcingId null");
+        Assert.isTrue(null != productId && productId > 0, "productId null");
+        try {
+            XmsSourcingList byId = this.xmsSourcingListService.getById(sourcingId);
+            if (null == byId) {
+                return CommonResult.validateFailed("no this data");
+            }
+            if (null == byId.getStatus() || 2 != byId.getStatus()) {
+                return CommonResult.validateFailed("The data is not processed properly");
+            }
+            if (!productId.equals(byId.getProductId())) {
+                return CommonResult.validateFailed("Pid mismatch");
+            }
+            return CommonResult.success("OYX");
+        } catch (Exception e) {
+            log.error("checkShopifySourcingStatus,sourcingId[{}],productId[{}],error", sourcingId, productId, e);
+            return CommonResult.failed("checkShopifySourcingStatus error!");
+        }
+    }
 
 }

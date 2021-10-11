@@ -23,6 +23,10 @@ public class FulfillmentParam {
     private String shopifyName;
     private String title;
     private String country;
+    private String status;
+
+    @ApiModelProperty("状态:in transit出运中 pickup 待收货 delivered已签收 expired超期 undelivered未收到 other其他")
+    private String shipmentStatus;
 
     private Integer pageNum;
     private Integer pageSize;

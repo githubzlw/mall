@@ -73,5 +73,7 @@ public class XmsShopifyFulfillment implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
+    private String ourOrderNo;
+
 
 }
