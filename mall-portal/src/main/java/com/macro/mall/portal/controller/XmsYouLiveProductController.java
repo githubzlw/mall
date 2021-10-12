@@ -243,6 +243,7 @@ public class XmsYouLiveProductController {
                 Map<String, String> param = new HashMap<>();
                 param.put("idList", sb.substring(1));
                 param.put("shopifyName", currentMember.getShopifyName());
+                param.put("memberId", String.valueOf(currentMember.getId()));
                 JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/deleteProduct", param);
                 b = null != jsonObject && jsonObject.containsKey("code") && jsonObject.getIntValue("code") == 200;
                 if (b) {
