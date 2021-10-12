@@ -117,10 +117,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     public ProductWraper pushProductWFW(ProductRequestWrap wrap, Long memberId) throws ShopifyException {
         //验证是否已经铺货过
-        ProductWraper productWraper = checkPush(wrap.getShopname(), wrap.getPid());
+        /*ProductWraper productWraper = checkPush(wrap.getShopname(), wrap.getPid());
         if (productWraper != null) {
             return productWraper;
-        }
+        }*/
         // 产品信息数据查询
         QueryWrapper<XmsPmsProductEdit> editQueryWrapper = new QueryWrapper<>();
         editQueryWrapper.lambda().eq(XmsPmsProductEdit::getProductId, Long.valueOf(wrap.getPid()))

@@ -1,5 +1,6 @@
 package com.macro.mall.dto;
 
+import com.macro.mall.model.ProductSkuSaveEdit;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
@@ -20,5 +21,12 @@ public class PmsProductResult extends PmsProductParam {
     @ApiModelProperty("已经铺货的shopifyID")
     private String shopifyPid;
     @ApiModelProperty("已经铺货的skuCode")
-    private List<String> skuCodes;
+    private List<ProductSkuSaveEdit> skuList;
+
+    private String collectionId;
+    private String productType;
+    private String productTags;
+
+
+
 }

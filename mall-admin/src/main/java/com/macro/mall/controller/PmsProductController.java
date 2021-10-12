@@ -15,9 +15,11 @@ import com.macro.mall.dto.PmsProductQueryParam;
 import com.macro.mall.dto.PmsProductResult;
 import com.macro.mall.entity.XmsChromeUpload;
 import com.macro.mall.entity.XmsCustomerProduct;
+import com.macro.mall.entity.XmsProductSaveEdit;
 import com.macro.mall.entity.XmsShopifyPidInfo;
 import com.macro.mall.model.PmsProduct;
 import com.macro.mall.model.PmsSkuStock;
+import com.macro.mall.model.ProductSkuSaveEdit;
 import com.macro.mall.service.*;
 import com.macro.mall.util.ProductUtils;
 import io.swagger.annotations.Api;
@@ -53,6 +55,8 @@ public class PmsProductController {
     private IXmsCustomerProductService xmsCustomerProductService;
     @Resource
     private IXmsShopifyPidInfoService xmsShopifyPidInfoService;
+    @Autowired
+    private IXmsProductSaveEditService xmsProductSaveEditService;
 
     @ApiOperation("创建商品")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -90,22 +94,30 @@ public class PmsProductController {
                     .eq(XmsShopifyPidInfo::getPid, id);
             XmsShopifyPidInfo one = this.xmsShopifyPidInfoService.getOne(queryWrapper);
 
+            productResult.setCollectionId("");
+            productResult.setProductTags("");
+            productResult.setProductType("");
+
             if (null != one) {
-                PmsProductResult editInfo = productService.getCustomUpdateInfo(id, memberId);
-                if (CollectionUtil.isNotEmpty(editInfo.getSkuStockList())) {
-                    List<String> collect = editInfo.getSkuStockList().stream().map(PmsSkuStock::getSkuCode).collect(Collectors.toList());
-                    productResult.setSkuCodes(collect);
+                // PmsProductResult editInfo = this.productService.getCustomUpdateInfo(id, memberId);
+
+                QueryWrapper<XmsProductSaveEdit> saveEditQueryWrapper = new QueryWrapper<>();
+                saveEditQueryWrapper.lambda().eq(XmsProductSaveEdit::getProductId, id).eq(XmsProductSaveEdit::getMemberId, memberId);
+                XmsProductSaveEdit saveEditServiceOne = this.xmsProductSaveEditService.getOne(saveEditQueryWrapper);
+
+                if (null == saveEditServiceOne || StrUtil.isBlank(saveEditServiceOne.getSkuJson())) {
+                    productResult.setSkuList(new ArrayList<>());
                 } else {
-                    productResult.setSkuCodes(new ArrayList<>());
+                    productResult.setSkuList(JSONArray.parseArray(saveEditServiceOne.getSkuJson(), ProductSkuSaveEdit.class));
                 }
                 productResult.setShopifyPid(one.getShopifyPid());
             } else {
                 productResult.setShopifyPid("");
-                productResult.setSkuCodes(new ArrayList<>());
+                productResult.setSkuList(new ArrayList<>());
             }
         } else {
             productResult.setShopifyPid("");
-            productResult.setSkuCodes(new ArrayList<>());
+            productResult.setSkuList(new ArrayList<>());
         }
         return CommonResult.success(productResult);
     }
