@@ -290,6 +290,7 @@ public class XmsSourcingController {
         Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        // Assert.isTrue(null != currentMember && null != currentMember.getId() && currentMember.getId() > 0, "currentMember null");
         try {
             // 检查数据是否存在
             XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingProductParam.getSourcingId());
@@ -326,6 +327,7 @@ public class XmsSourcingController {
                     one = new XmsProductSaveEdit();
                     one.setCreateTime(new Date());
                     one.setProductId(sourcingProductParam.getProductId());
+                    one.setMemberId(currentMember.getId());
                 }
 
                 // 保存sku的数据
@@ -333,7 +335,6 @@ public class XmsSourcingController {
                 one.setCollectionId(sourcingProductParam.getCollectionId());
                 one.setProductTags(sourcingProductParam.getProductTags());
                 one.setProductType(sourcingProductParam.getProductType());
-
 
                 // 如果存在，则进行更新处理，sku查询是否重复处理
                 if (CollectionUtil.isNotEmpty(list)) {
@@ -346,7 +347,6 @@ public class XmsSourcingController {
                     pmsProductEdit.setUpdateTime(new Date());
                     this.xmsPmsProductEditService.updateById(pmsProductEdit);
 
-                    one.setMemberId(currentMember.getId());
                     one.setProductJson(JSONObject.toJSONString(pmsProductEdit));
                 } else {
                     // 如果不存在，则进行插入处理
