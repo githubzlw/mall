@@ -16,25 +16,25 @@ mybatis-plus:
 
 shopify:
   uri_oauth: https://%s.myshopify.com/admin/oauth/access_token
-  uri_products: https://%s.myshopify.com/admin/api/2021-04/products.json
-  uri_put_products: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
-  uri_delete_products: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
-  uri_delete: https://%s.myshopify.com/admin/api/2021-04/products/%s.json
-  uri_orders: https://%s.myshopify.com/admin/api/2021-04/orders.json?status=any
+  uri_products: https://%s.myshopify.com/admin/api/2021-07/products.json
+  uri_put_products: https://%s.myshopify.com/admin/api/2021-07/products/%s.json
+  uri_delete_products: https://%s.myshopify.com/admin/api/2021-07/products/%s.json
+  uri_delete: https://%s.myshopify.com/admin/api/2021-07/products/%s.json
+  uri_orders: https://%s.myshopify.com/admin/api/2021-07/orders.json?status=any
   uri_put_orders: https://%s.myshopify.com/admin/api/unstable/orders/%s.json
-  uri_post_fulfillment_orders: https://%s.myshopify.com/admin/api/2021-04/orders/%s/fulfillments.json
-  uri_post_fulfillment_service: https://%s.myshopify.com/admin/api/2021-04/fulfillments.json
-  uri_query_orders: https://%s.myshopify.com/admin/api/2021-04/orders/%s.json
-  uri_query_variants: https://%s.myshopify.com/admin/api/2021-04/variants/%s.json
-  uri_query_inventory_levels: https://%s.myshopify.com/admin/api/2021-04/inventory_levels.json?inventory_item_ids=%s
-  uri_custom_collections: https://%s.myshopify.com/admin/api/2021-04/custom_collections.json
-  uri_smart_collections: https://%s.myshopify.com/admin/api/2021-04/smart_collections.json
-  uri_products_imgs: https://%s.myshopify.com/admin/api/2021-04/products/%s/images.json
-  uri_countries_list: https://%s.myshopify.com/admin/api/2021-04/countries.json
-  uri_put_custom_collections: https://%s.myshopify.com/admin/api/2021-04/custom_collections/%s.json
-  uri_put_smart_collections: https://%s.myshopify.com/admin/api/2021-04/smart_collections/%s/order.json
-  uri_put_cancel_order: https://%s.myshopify.com/admin/api/2021-04/orders/%s/cancel.json
-  uri_get_single_order: https://%s.myshopify.com/admin/api/2021-04/orders/%s.json
+  uri_post_fulfillment_orders: https://%s.myshopify.com/admin/api/2021-07/orders/%s/fulfillments.json
+  uri_post_fulfillment_service: https://%s.myshopify.com/admin/api/2021-07/fulfillments.json
+  uri_query_orders: https://%s.myshopify.com/admin/api/2021-07/orders/%s.json
+  uri_query_variants: https://%s.myshopify.com/admin/api/2021-07/variants/%s.json
+  uri_query_inventory_levels: https://%s.myshopify.com/admin/api/2021-07/inventory_levels.json?inventory_item_ids=%s
+  uri_custom_collections: https://%s.myshopify.com/admin/api/2021-07/custom_collections.json
+  uri_smart_collections: https://%s.myshopify.com/admin/api/2021-07/smart_collections.json
+  uri_products_imgs: https://%s.myshopify.com/admin/api/2021-07/products/%s/images.json
+  uri_countries_list: https://%s.myshopify.com/admin/api/2021-07/countries.json
+  uri_put_custom_collections: https://%s.myshopify.com/admin/api/2021-07/custom_collections/%s.json
+  uri_put_smart_collections: https://%s.myshopify.com/admin/api/2021-07/smart_collections/%s/order.json
+  uri_put_cancel_order: https://%s.myshopify.com/admin/api/2021-07/orders/%s/cancel.json
+  uri_get_single_order: https://%s.myshopify.com/admin/api/2021-07/orders/%s.json
 
 
 
