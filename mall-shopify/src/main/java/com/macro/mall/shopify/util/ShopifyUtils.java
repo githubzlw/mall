@@ -947,8 +947,7 @@ public class ShopifyUtils {
 
             OrdersWraper orders = this.getOrders(shopifyName, memberId);
             if (null != orders && CollectionUtil.isNotEmpty(orders.getOrders())) {
-
-                orders.getOrders().forEach(e -> list.add(e.getId()));
+                orders.getOrders().stream().filter(e -> CollectionUtil.isNotEmpty(e.getLine_items())).forEach(e -> e.getLine_items().forEach(el -> list.add(el.getProduct_id())));
                 // 执行插入数据
                 this.genShopifyOrderInfo(shopifyName, orders);
             }

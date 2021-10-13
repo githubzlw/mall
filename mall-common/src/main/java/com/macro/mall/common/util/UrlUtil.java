@@ -104,8 +104,12 @@ public class UrlUtil {
             throw new IOException("call url is not successful");
         }
 
-        return response.body() != null ?
-                JSON.parseObject(response.body().string()) : null;
+        if(response.body() == null){
+            return null;
+        }
+        String rs = response.body().string();
+        response.body().close();
+        return JSON.parseObject(rs);
     }
 
     public JSONObject postFile(File originFile, String paramFileName, String accessUrl) throws IOException {

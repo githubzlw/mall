@@ -20,6 +20,7 @@ public class FulfillmentParam {
     @ApiModelProperty("运单号")
     private String trackingNumber;
 
+    @ApiModelProperty("必填-shopify店铺名称")
     private String shopifyName;
     private String title;
     private String country;
@@ -30,4 +31,13 @@ public class FulfillmentParam {
 
     private Integer pageNum;
     private Integer pageSize;
+
+
+    @ApiModelProperty("必填-shopify订单号")
+    private Long orderNo;
+
+    @ApiModelProperty("必填-运输公司")
+    private String trackingCompany;
+
+    private Long memberId;
 }

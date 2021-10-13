@@ -224,6 +224,7 @@ public class AsyncTask {
 
             String url = String.format(this.shopifyConfig.SHOPIFY_URI_PRODUCTS_IMGS, shopifyName, pid);
 
+            System.err.println(url);
             String json = this.shopifyRestTemplate.get(url, accessToken);
             if (null != json) {
                 JSONObject jsonObject = JSONObject.parseObject(json);
