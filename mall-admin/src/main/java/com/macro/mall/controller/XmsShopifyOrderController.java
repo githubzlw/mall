@@ -113,6 +113,8 @@ public class XmsShopifyOrderController {
             param.put("trackingNumber", fulfillmentParam.getTrackingNumber());
             param.put("trackingCompany", fulfillmentParam.getTrackingCompany());
             param.put("memberId", String.valueOf(fulfillmentParam.getMemberId()));
+            param.put("notifyCustomer", String.valueOf(fulfillmentParam.isNotifyCustomer()));
+            param.put("message", fulfillmentParam.getMessage());
 
             JSONObject jsonObject = this.urlUtil.postURL(this.urlConfig.getShopifyApiUrl() + "/createFulfillment", param);
             CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);

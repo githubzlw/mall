@@ -122,7 +122,7 @@ public class ShopifyOrderController {
             if (CollectionUtil.isEmpty(detailsList)) {
                 return CommonResult.failed("Cannot match Details List");
             }
-            String updateOrder = this.shopifyUtils.createFulfillmentOrders(detailsList, fulfillmentParam, anElse);
+            String updateOrder = this.shopifyUtils.createFulfillmentOrders(fulfillmentParam, anElse);
 
             detailsList.clear();
             if (StrUtil.isNotEmpty(updateOrder)) {
@@ -132,7 +132,7 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("createFulfillment fulfillmentParam:[{}],error:", fulfillmentParam, e);
-            return CommonResult.failed("fulfillmentParam:[{" + JSONObject.toJSONString(fulfillmentParam) + "}]" + ",error:" + e.getMessage());
+            return CommonResult.failed("createFulfillment,error");
         }
     }
 

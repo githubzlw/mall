@@ -467,7 +467,7 @@ public class ShopifyUtils {
         return json;
 
     }*/
-    public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
+    public String createFulfillmentOrders(FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
         String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName(), fulfillmentParam.getMemberId());
         // 步骤1：查询订单以查看其订单项
@@ -481,18 +481,21 @@ public class ShopifyUtils {
 
         // 寻找还未设置运单的商品
 
-        JSONArray flItemListIds = new JSONArray();
+        List<Map<String, Object>> line_itemsList = new ArrayList<>();
         if (null != itemsArray && itemsArray.size() > 0) {
             for (int i = 0; i < itemsArray.size(); i++) {
                 JSONObject tempCl = itemsArray.getJSONObject(i);
                 if (StrUtil.isNotBlank(tempCl.getString("fulfillment_status")) && "fulfilled".equalsIgnoreCase(tempCl.getString("fulfillment_status"))) {
                     continue;
                 }
-                flItemListIds.add(tempCl.getLongValue("id"));
+                Map<String, Object> tempItem = new HashMap<>();
+                tempItem.put("id", tempCl.getLongValue("id"));
+                tempItem.put("quantity", tempCl.getLongValue("quantity"));
+                line_itemsList.add(tempItem);
             }
         }
 
-        if (flItemListIds.size() == 0) {
+        if (line_itemsList.size() == 0) {
             return null;
         }
 
@@ -500,45 +503,66 @@ public class ShopifyUtils {
 
         /**
          * {
-         *   "fulfillment": {
-         *     "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
-         *     "tracking_company": "Jack Black's Pack, Stack and Track",
-         *     "line_items": [
-         *       {
-         *         "id": 466157049
-         *       },
-         *       {
-         *         "id": 518995019
-         *       },
-         *       {
-         *         "id": 703073504
-         *       }
-         *     ]
-         *   }
+         *     "fulfillment":{
+         *         "message":"The package was shipped this morning.",
+         *         "notify_customer":false,
+         *         "tracking_info":{
+         *             "number":1562678,
+         *             "url":"https:\/\/www.my-shipping-company.com",
+         *             "company":"my-shipping-company"
+         *         },
+         *         "line_items_by_fulfillment_order":[
+         *             {
+         *                 "fulfillment_order_id":1046000817,
+         *                 "fulfillment_order_line_items":[
+         *                     {
+         *                         "id":1058737553,
+         *                         "quantity":1
+         *                     }
+         *                 ]
+         *             }
+         *         ]
+         *     }
          * }
          */
         Map<String, Object> param = new HashMap<>();
 
         Map<String, Object> fulfillmentMap = new HashMap<>();
-        //fulfillmentMap.put("location_id", location_id);
-        fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
-        /*JSONArray jsonArray = new JSONArray();
-        jsonArray.add(anElse.getName() + fulfillmentParam.getTrackingNumber());*/
-        fulfillmentMap.put("tracking_url", anElse.getName() + fulfillmentParam.getTrackingNumber());
-        //fulfillmentMap.put("tracking_url", anElse.getUrl());
+        if (StrUtil.isBlank(fulfillmentParam.getMessage())) {
+            fulfillmentMap.put("message", "The package was shipped this morning.");
+        } else {
+            fulfillmentMap.put("message", fulfillmentParam.getMessage());
+        }
 
-        List<Map<String, Object>> line_itemsList = new ArrayList<>();
-        detailsList.forEach(e -> {
-            Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("id", e.getLineItemId());
-            line_itemsList.add(itemMap);
-        });
+        fulfillmentMap.put("notify_customer", fulfillmentParam.isNotifyCustomer());
 
-        fulfillmentMap.put("line_items", line_itemsList);
+        Map<String, Object> trackingInfoMap = new HashMap<>();
+        trackingInfoMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
+        if(StrUtil.isBlank(fulfillmentParam.getTrackingCompany())){
+            trackingInfoMap.put("tracking_url", anElse.getUrl() + fulfillmentParam.getTrackingNumber());
+        } else{
+            trackingInfoMap.put("tracking_url", fulfillmentParam.getTrackingCompany());
+        }
+
+        if (StrUtil.isBlank(fulfillmentParam.getTrackingCompany())) {
+            trackingInfoMap.put("company", "Other Carriers");
+        } else {
+            trackingInfoMap.put("company", fulfillmentParam.getTrackingCompany());
+        }
+        fulfillmentMap.put("tracking_info", trackingInfoMap);
+
+        Map<String, Object> line_items_by_fulfillment_order = new HashMap<>();
+        line_items_by_fulfillment_order.put("fulfillment_order_id", fulfillmentParam.getOrderNo());
+        line_items_by_fulfillment_order.put("fulfillment_order_line_items", line_itemsList);
+        List<Map<String, Object>> orderList = new ArrayList<>();
+        orderList.add(line_items_by_fulfillment_order);
+        fulfillmentMap.put("line_items_by_fulfillment_order", orderList);
+
 
         param.put("fulfillment", fulfillmentMap);
 
-        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_SERVICE, fulfillmentParam.getShopifyName());
+        System.err.println(JSONObject.toJSONString(param));
         json = this.shopifyRestTemplate.post(url, token, param);
         return json;
 

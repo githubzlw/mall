@@ -25,4 +25,10 @@ public class FulfillmentParam {
     private String trackingCompany;
 
     private Long memberId;
+
+    @ApiModelProperty("是否通知客户")
+    private boolean notifyCustomer;
+
+    @ApiModelProperty("运单消息")
+    private String message;
 }

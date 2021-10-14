@@ -89,6 +89,7 @@ public class XmsYouLiveProductController {
             productParam.setTitle(title);
             productParam.setMemberId(currentMember.getId());
             productParam.setUsername(currentMember.getUsername());
+            productParam.setShopifyName(currentMember.getShopifyName());
             productParam.setImportFlag(importFlag);
             if (StrUtil.isNotBlank(shopifyPids)) {
                 productParam.setShopifyPidList(new ArrayList<>(Arrays.asList(shopifyPids.split(","))));

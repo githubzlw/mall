@@ -14,10 +14,10 @@ import lombok.Getter;
 public enum  LogisticsCompanyEnum {
 
 
-    DHL(1,"DHL","https://www.dhl.com/cn-zh/home.html"),
+    DHL(1,"DHL","https://www.dhl.com/global-en/home/search.html"),
     CNE(2,"CNE","https://www.cne.com/"),
-    FEDEX(2,"FedEx","https://www.cne.com/"),
-    COMMON(3,"common","https://www.17track.net/en#nums=");
+    FEDEX(3,"FedEx","https://www.fedex.com/"),
+    COMMON(4,"common","https://www.17track.net/en#nums=");
 
 
     private int code;

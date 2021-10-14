@@ -37,7 +37,8 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
 
         Page<XmsCustomerProduct> page = new Page<>(productParam.getPageNum(), productParam.getPageSize());
         LambdaQueryWrapper<XmsCustomerProduct> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.eq(XmsCustomerProduct::getMemberId, productParam.getMemberId());
+        lambdaQuery.eq(XmsCustomerProduct::getMemberId, productParam.getMemberId())
+        .eq(XmsCustomerProduct::getShopifyName, productParam.getShopifyName());
         if (StrUtil.isNotBlank(productParam.getTitle())) {
             lambdaQuery.like(XmsCustomerProduct::getTitle, productParam.getTitle());
         }
