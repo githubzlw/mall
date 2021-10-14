@@ -84,9 +84,6 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "国家id")
     private Integer countryId;
 
-    @ApiModelProperty(value = "国家名称")
-    private String countryName;
-
     @ApiModelProperty(value = "sourcing运输方式  1进FBA, 2 进客户门点, 3 CIF")
     private Integer sourcingTypeOfShipping;
 
@@ -122,6 +119,9 @@ public class UmsMember implements Serializable {
 
     @ApiModelProperty(value = "sourcing amazon的fba地址")
     private String sourcingFbaWarehouse;
+
+    @ApiModelProperty(value = "发货使用的logo地址")
+    private String logoUrl;
 
     private static final long serialVersionUID = 1L;
 
@@ -437,12 +437,12 @@ public class UmsMember implements Serializable {
         this.sourcingFbaWarehouse = sourcingFbaWarehouse;
     }
 
-    public String getCountryName() {
-        return countryName;
+    public String getLogoUrl() {
+        return logoUrl;
     }
 
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
     @Override
@@ -490,6 +490,7 @@ public class UmsMember implements Serializable {
         sb.append(", sourcingPricePs=").append(sourcingPricePs);
         sb.append(", sourcingCifPort=").append(sourcingCifPort);
         sb.append(", sourcingFbaWarehouse=").append(sourcingFbaWarehouse);
+        sb.append(", logoUrl=").append(logoUrl);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

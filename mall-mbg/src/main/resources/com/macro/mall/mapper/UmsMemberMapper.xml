@@ -41,6 +41,7 @@
     <result column="sourcing_price_ps" jdbcType="VARCHAR" property="sourcingPricePs" />
     <result column="sourcing_cif_port" jdbcType="VARCHAR" property="sourcingCifPort" />
     <result column="sourcing_fba_warehouse" jdbcType="VARCHAR" property="sourcingFbaWarehouse" />
+    <result column="logo_url" jdbcType="VARCHAR" property="logoUrl" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -107,7 +108,7 @@
     balance, shopify_name, shopify_flag, guided_flag, country_id, sourcing_type_of_shipping, 
     sourcing_choose_type, sourcing_country_name, sourcing_country_id, sourcing_state_name, 
     sourcing_custom_type, sourcing_order_quantity, sourcing_remark, sourcing_prc_flag, 
-    sourcing_price_ps, sourcing_cif_port, sourcing_fba_warehouse
+    sourcing_price_ps, sourcing_cif_port, sourcing_fba_warehouse, logo_url
   </sql>
   <select id="selectByExample" parameterType="com.macro.mall.model.UmsMemberExample" resultMap="BaseResultMap">
     select
@@ -156,7 +157,7 @@
       sourcing_state_name, sourcing_custom_type, 
       sourcing_order_quantity, sourcing_remark, 
       sourcing_prc_flag, sourcing_price_ps, sourcing_cif_port, 
-      sourcing_fba_warehouse)
+      sourcing_fba_warehouse, logo_url)
     values (#{memberLevelId,jdbcType=BIGINT}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{nickname,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, 
       #{createTime,jdbcType=TIMESTAMP}, #{icon,jdbcType=VARCHAR}, #{gender,jdbcType=INTEGER}, 
@@ -170,7 +171,7 @@
       #{sourcingStateName,jdbcType=VARCHAR}, #{sourcingCustomType,jdbcType=VARCHAR}, 
       #{sourcingOrderQuantity,jdbcType=INTEGER}, #{sourcingRemark,jdbcType=VARCHAR}, 
       #{sourcingPrcFlag,jdbcType=INTEGER}, #{sourcingPricePs,jdbcType=VARCHAR}, #{sourcingCifPort,jdbcType=VARCHAR}, 
-      #{sourcingFbaWarehouse,jdbcType=VARCHAR})
+      #{sourcingFbaWarehouse,jdbcType=VARCHAR}, #{logoUrl,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.macro.mall.model.UmsMember">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -292,6 +293,9 @@
       <if test="sourcingFbaWarehouse != null">
         sourcing_fba_warehouse,
       </if>
+      <if test="logoUrl != null">
+        logo_url,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="memberLevelId != null">
@@ -407,6 +411,9 @@
       </if>
       <if test="sourcingFbaWarehouse != null">
         #{sourcingFbaWarehouse,jdbcType=VARCHAR},
+      </if>
+      <if test="logoUrl != null">
+        #{logoUrl,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -536,6 +543,9 @@
       <if test="record.sourcingFbaWarehouse != null">
         sourcing_fba_warehouse = #{record.sourcingFbaWarehouse,jdbcType=VARCHAR},
       </if>
+      <if test="record.logoUrl != null">
+        logo_url = #{record.logoUrl,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -581,7 +591,8 @@
       sourcing_prc_flag = #{record.sourcingPrcFlag,jdbcType=INTEGER},
       sourcing_price_ps = #{record.sourcingPricePs,jdbcType=VARCHAR},
       sourcing_cif_port = #{record.sourcingCifPort,jdbcType=VARCHAR},
-      sourcing_fba_warehouse = #{record.sourcingFbaWarehouse,jdbcType=VARCHAR}
+      sourcing_fba_warehouse = #{record.sourcingFbaWarehouse,jdbcType=VARCHAR},
+      logo_url = #{record.logoUrl,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -703,6 +714,9 @@
       <if test="sourcingFbaWarehouse != null">
         sourcing_fba_warehouse = #{sourcingFbaWarehouse,jdbcType=VARCHAR},
       </if>
+      <if test="logoUrl != null">
+        logo_url = #{logoUrl,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -745,7 +759,8 @@
       sourcing_prc_flag = #{sourcingPrcFlag,jdbcType=INTEGER},
       sourcing_price_ps = #{sourcingPricePs,jdbcType=VARCHAR},
       sourcing_cif_port = #{sourcingCifPort,jdbcType=VARCHAR},
-      sourcing_fba_warehouse = #{sourcingFbaWarehouse,jdbcType=VARCHAR}
+      sourcing_fba_warehouse = #{sourcingFbaWarehouse,jdbcType=VARCHAR},
+      logo_url = #{logoUrl,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

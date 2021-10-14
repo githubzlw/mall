@@ -511,4 +511,17 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             this.memberCacheService.setMember(usm);
     }
 
+
+    @Override
+    public void setLogo(UmsMember umsUp) {
+        this.memberMapper.updateByPrimaryKeySelective(umsUp);
+
+        UmsMember usm = this.memberMapper.selectByPrimaryKey(getCurrentMember().getId());
+        MemberDetails userDetails = new MemberDetails(usm);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            this.memberCacheService.delMember(usm.getId());
+            this.memberCacheService.setMember(usm);
+    }
+
 }

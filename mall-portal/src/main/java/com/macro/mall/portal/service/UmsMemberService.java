@@ -122,4 +122,6 @@ public interface UmsMemberService {
     void updateSecurityContext();
 
     void setOtherInfo(UmsMember umsMember);
+
+    void setLogo(UmsMember ums);
 }

@@ -481,4 +481,24 @@ public class UmsMemberController {
         }
     }
 
+
+    @ApiOperation("设置logo")
+    @RequestMapping(value = "/setLogo", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult setLogo(String logoUrl) {
+        Assert.isTrue(StrUtil.isNotBlank(logoUrl), "logoUrl null");
+        UmsMember currentMember = this.memberService.getCurrentMember();
+        try {
+            UmsMember byUsername = new UmsMember();
+            byUsername.setId(currentMember.getId());
+            byUsername.setLogoUrl(logoUrl);
+            this.memberService.setLogo(byUsername);
+            return CommonResult.success(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("setLogo,currentMember[{}],logoUrl[{}],error:", logoUrl, logoUrl, e);
+            return CommonResult.failed("setLogo error");
+        }
+    }
+
 }
