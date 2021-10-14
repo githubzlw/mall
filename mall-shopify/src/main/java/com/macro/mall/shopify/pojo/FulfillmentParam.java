@@ -31,4 +31,7 @@ public class FulfillmentParam {
 
     @ApiModelProperty("运单消息")
     private String message;
+
+    @ApiModelProperty("位置Id")
+    private String locationId;
 }

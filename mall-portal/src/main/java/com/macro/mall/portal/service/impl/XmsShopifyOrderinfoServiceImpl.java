@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.common.api.CommonPage;
@@ -127,6 +128,11 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
         for (XmsShopifyOrderinfo omsOrder : orderinfoList) {
             XmsShopifyOrderComb orderComb = new XmsShopifyOrderComb();
             BeanUtil.copyProperties(omsOrder, orderComb);
+            if (StrUtil.isBlank(orderComb.getTrackNo())) {
+                orderComb.setTrackNo("");
+            } else if (orderComb.getTrackNo().startsWith(",")) {
+                orderComb.setTrackNo(orderComb.getTrackNo().substring(1));
+            }
             List<XmsShopifyOrderDetails> relatedItemList = detailsList.stream().filter(item -> item.getOrderNo().equals(orderComb.getOrderNo())).collect(Collectors.toList());
             orderComb.setDetailsList(relatedItemList);
             long sum = relatedItemList.stream().mapToLong(XmsShopifyOrderDetails::getQuantity).sum();
@@ -180,7 +186,7 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
             list.forEach(e -> imgMap.put(Long.parseLong(e.getShopifyPid()), e.getImg()));
             shortMap.forEach((k, v) -> {
                 if (CollectionUtil.isNotEmpty(v)) {
-                    v.forEach(cl -> cl.setMainImg(imgMap.getOrDefault(cl.getProductId(), "")) );
+                    v.forEach(cl -> cl.setMainImg(imgMap.getOrDefault(cl.getProductId(), "")));
                 }
             });
             pdIdList.clear();
@@ -190,9 +196,9 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
     }
 
     @Override
-    public void dealItemImg(List<FulfillmentOrderItem> itemList){
+    public void dealItemImg(List<FulfillmentOrderItem> itemList) {
         Set<Long> pdIdList = new HashSet<>();
-        itemList.forEach(e-> pdIdList.add(e.getProductId()) );
+        itemList.forEach(e -> pdIdList.add(e.getProductId()));
 
         if (CollectionUtil.isNotEmpty(pdIdList)) {
             QueryWrapper<XmsShopifyPidImg> pidImgWrapper = new QueryWrapper<>();
@@ -207,7 +213,28 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
             list.clear();
             imgMap.clear();
         }
+    }
 
+    @Override
+    public int setTrackNo(Long orderNo, String trackNo) {
+
+        QueryWrapper<XmsShopifyOrderinfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(XmsShopifyOrderinfo::getOrderNo, orderNo);
+        XmsShopifyOrderinfo xmsShopifyOrderinfo = this.xmsShopifyOrderinfoMapper.selectOne(queryWrapper);
+        if (null != xmsShopifyOrderinfo) {
+            if (StrUtil.isBlank(xmsShopifyOrderinfo.getTrackNo())) {
+                xmsShopifyOrderinfo.setTrackNo("," + trackNo);
+            } else if (!xmsShopifyOrderinfo.getTrackNo().contains("," + trackNo)) {
+                xmsShopifyOrderinfo.setTrackNo(xmsShopifyOrderinfo.getTrackNo() + "," + trackNo);
+            }
+            xmsShopifyOrderinfo.setUpdateTime(new Date());
+            UpdateWrapper<XmsShopifyOrderinfo> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().set(XmsShopifyOrderinfo::getTrackNo, xmsShopifyOrderinfo.getTrackNo())
+                    .set(XmsShopifyOrderinfo::getUpdateTime, new Date())
+                    .eq(XmsShopifyOrderinfo::getId, xmsShopifyOrderinfo.getId());
+            return this.xmsShopifyOrderinfoMapper.update(null, updateWrapper);
+        }
+        return 0;
     }
 
 }

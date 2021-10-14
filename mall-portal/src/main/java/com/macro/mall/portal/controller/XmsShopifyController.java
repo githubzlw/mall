@@ -100,6 +100,8 @@ public class XmsShopifyController {
     private IXmsShopifyFulfillmentService xmsShopifyFulfillmentService;
     @Autowired
     private IXmsShopifyFulfillmentItemService xmsShopifyFulfillmentItemService;
+    @Autowired
+    private IXmsShopifyLocationService xmsShopifyLocationService;
 
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
@@ -1368,6 +1370,42 @@ public class XmsShopifyController {
         }
     }
 
+    @GetMapping(value = "/getLocationList")
+    @ApiOperation("获取店铺的location列表")
+    public CommonResult getLocationList() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
+
+            QueryWrapper<XmsShopifyLocation> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyLocation::getMemberId, currentMember.getId())
+                    .eq(XmsShopifyLocation::getShopifyName, currentMember.getShopifyName());
+
+            List<XmsShopifyLocation> list = this.xmsShopifyLocationService.list(queryWrapper);
+
+            if (CollectionUtil.isEmpty(list)) {
+                Map<String, String> param = new HashMap<>();
+
+                param.put("shopifyName", currentMember.getShopifyName());
+                param.put("memberId", String.valueOf(currentMember.getId()));
+
+                //请求数据
+                JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getLocationByShopifyName", param);
+                CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+                if (null != commonResult && commonResult.getCode() == 200) {
+                    list = this.xmsShopifyLocationService.list(queryWrapper);
+                }
+            }
+            return CommonResult.success(list);
+        } catch (Exception e) {
+            log.error("getLocationList,currentMember[{}],error", currentMember, e);
+            return CommonResult.failed("getLocationList error!");
+        }
+    }
+
 
     @ApiOperation("shopify的物流信息")
     @RequestMapping(value = "/logisticsInformation", method = RequestMethod.POST)
@@ -1420,8 +1458,52 @@ public class XmsShopifyController {
             param.put("trackingNumber", fulfillmentParam.getTrackingNumber());
             param.put("trackingCompany", fulfillmentParam.getTrackingCompany());
             param.put("memberId", String.valueOf(currentMember.getId()));
+            param.put("locationId", fulfillmentParam.getLocationId());
 
             JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/createFulfillment", param);
+            CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
+            if (null != commonResult && commonResult.getCode() == 200) {
+
+                // 执行成功后，再查询一次
+                Map<String, String> rmParam = new HashMap<>();
+
+                rmParam.put("shopifyName", currentMember.getShopifyName());
+                rmParam.put("orders", String.valueOf(fulfillmentParam.getOrderNo()));
+                rmParam.put("memberId", String.valueOf(currentMember.getId()));
+                this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getFulfillmentByShopifyName", rmParam);
+            }
+            return commonResult;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("createFulfillment fulfillmentParam:[{}],error:", fulfillmentParam, e);
+            return CommonResult.failed("createFulfillment" + ",error!");
+        }
+    }
+
+    @PostMapping("/createFulfillment2")
+    @ApiOperation("创建履行订单2")
+    public CommonResult createFulfillment2(FulfillmentParam fulfillmentParam) {
+
+        Assert.notNull(fulfillmentParam, "fulfillmentParam is null");
+        Assert.isTrue(null != fulfillmentParam.getOrderNo() && fulfillmentParam.getOrderNo() > 0, "orderNo is null");
+        Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingNumber()), "trackingNumber is null");
+        // Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingCompany()), "trackingCompany is null");
+
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+
+            Map<String, String> param = new HashMap<>();
+
+            param.put("shopifyName", currentMember.getShopifyName());
+            param.put("orderNo", String.valueOf(fulfillmentParam.getOrderNo()));
+            param.put("trackingNumber", fulfillmentParam.getTrackingNumber());
+            param.put("trackingCompany", fulfillmentParam.getTrackingCompany());
+            param.put("memberId", String.valueOf(currentMember.getId()));
+            param.put("notifyCustomer", String.valueOf(fulfillmentParam.isNotifyCustomer()));
+            param.put("message", fulfillmentParam.getMessage());
+
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/createFulfillment2", param);
             CommonResult commonResult = JSON.toJavaObject(jsonObject, CommonResult.class);
             if (null != commonResult && commonResult.getCode() == 200) {
                 // 执行成功后，再查询一次

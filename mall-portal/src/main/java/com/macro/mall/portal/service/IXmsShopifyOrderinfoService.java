@@ -32,4 +32,6 @@ public interface IXmsShopifyOrderinfoService extends IService<XmsShopifyOrderinf
 
    void dealItemImg(List<FulfillmentOrderItem> itemList);
 
+   int setTrackNo(Long orderNo, String trackNo);
+
 }

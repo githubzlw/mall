@@ -149,5 +149,7 @@ public class XmsShopifyOrderinfo implements Serializable {
     @ApiModelProperty(value = "生成的我司订单号ID")
     private Long ourOrderId;
 
+    @ApiModelProperty(value = "物流单号")
+    private String trackNo;
 
 }

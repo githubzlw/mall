@@ -19,4 +19,6 @@ public interface IXmsShopifyOrderinfoService extends IService<XmsShopifyOrderinf
 
     List<XmsShopifyOrderinfo> queryListByOrderNo(Long orderNo);
 
+    int setTrackNo(Long orderNo, String trackNo);
+
 }

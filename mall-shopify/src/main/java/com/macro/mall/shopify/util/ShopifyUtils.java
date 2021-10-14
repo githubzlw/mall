@@ -26,6 +26,7 @@ import com.macro.mall.shopify.pojo.orders.Shipping_address;
 import com.macro.mall.shopify.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -80,6 +81,8 @@ public class ShopifyUtils {
     private XmsCustomerProductMapper xmsCustomerProductMapper;
     @Resource
     private XmsCustomerSkuStockMapper xmsCustomerSkuStockMapper;
+    @Autowired
+    private IXmsShopifyLocationService xmsShopifyLocationService;
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private ZoneId zoneId = ZoneId.systemDefault();
@@ -155,13 +158,76 @@ public class ShopifyUtils {
         return total;
     }
 
+    public int getLocationByShopifyName(String shopifyName, Long memberId) {
+        String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
+        String url = String.format(shopifyConfig.SHOPIFY_URI_GET_LOCATION, shopifyName);
+        String json = this.shopifyRestTemplate.exchange(url, accessToken);
+        int total = 0;
+        if (null != json) {
+            JSONArray jsonArray = JSONObject.parseObject(json).getJSONArray("locations");
+            if (null != jsonArray && jsonArray.size() > 0) {
+                List<XmsShopifyLocation> list = new ArrayList<>();
+                Map<String, XmsShopifyLocation> locationMap = new HashMap<>();
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    XmsShopifyLocation shopifyLocation = new XmsShopifyLocation();
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    shopifyLocation.setLocationId(jsonObject.getString("id"));
+                    shopifyLocation.setName(jsonObject.getString("name"));
+                    shopifyLocation.setLocationJson(jsonObject.toJSONString());
+                    shopifyLocation.setMemberId(memberId);
+                    shopifyLocation.setCreateTime(new Date());
+                    shopifyLocation.setUpdateTime(new Date());
+                    shopifyLocation.setShopifyName(shopifyName);
+                    locationMap.put(shopifyLocation.getLocationId(), shopifyLocation);
+                    list.add(shopifyLocation);
+                }
+                QueryWrapper<XmsShopifyLocation> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyLocation::getShopifyName, shopifyName).eq(XmsShopifyLocation::getMemberId, memberId);
+                List<XmsShopifyLocation> hasList = this.xmsShopifyLocationService.list(queryWrapper);
+                List<XmsShopifyLocation> insertList = new ArrayList<>();
+                List<XmsShopifyLocation> updateList = new ArrayList<>();
+                if (CollectionUtil.isNotEmpty(hasList)) {
+                    hasList.forEach(e -> {
+                        if (locationMap.containsKey(e.getLocationId())) {
+                            XmsShopifyLocation tempLocal = locationMap.get(e.getLocationId());
+                            e.setName(tempLocal.getName());
+                            e.setLocationJson(tempLocal.getLocationJson());
+                            e.setUpdateTime(new Date());
+                            updateList.add(e);
+                        } else {
+                            insertList.add(e);
+                        }
+                    });
+                } else {
+                    insertList.addAll(list);
+                }
+                total = list.size();
+                if (CollectionUtil.isNotEmpty(insertList)) {
+                    this.xmsShopifyLocationService.saveBatch(insertList);
+                    insertList.clear();
+                }
+                if (CollectionUtil.isNotEmpty(updateList)) {
+                    this.xmsShopifyLocationService.updateBatchById(updateList);
+                    updateList.clear();
+                }
+
+                list.clear();
+                locationMap.clear();
+                hasList.clear();
+                insertList.clear();
+
+            }
+        }
+        return total;
+    }
+
     /**
      * 根据shopify的店铺名称获取订单信息
      *
      * @param shopifyName
      * @return
      */
-    public Set<Long> getOrdersByShopifyName(String shopifyName, Long memberId) {
+    public Map<String, Set<Long>> getOrdersByShopifyName(String shopifyName, Long memberId) {
         return this.getOrdersSingle(shopifyName, memberId);
     }
 
@@ -525,6 +591,8 @@ public class ShopifyUtils {
          *     }
          * }
          */
+        /*
+        第一种创建方式
         Map<String, Object> param = new HashMap<>();
 
         Map<String, Object> fulfillmentMap = new HashMap<>();
@@ -558,10 +626,123 @@ public class ShopifyUtils {
         orderList.add(line_items_by_fulfillment_order);
         fulfillmentMap.put("line_items_by_fulfillment_order", orderList);
 
+        param.put("fulfillment", fulfillmentMap);*/
+
+        // 第二种创建方式
+
+        Map<String, Object> param = new HashMap<>();
+
+        Map<String, Object> fulfillmentMap = new HashMap<>();
+        fulfillmentMap.put("location_id", fulfillmentParam.getLocationId());
+        fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
+        List<String> urls = new ArrayList<>();
+        urls.add(anElse.getUrl() + fulfillmentParam.getTrackingNumber());
+        fulfillmentMap.put("tracking_urls", urls);
+        param.put("fulfillment", fulfillmentMap);
+        param.put("notify_customer", fulfillmentParam.isNotifyCustomer());
+
+
+        //url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_SERVICE, fulfillmentParam.getShopifyName());
+        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        System.err.println(JSONObject.toJSONString(param));
+        json = this.shopifyRestTemplate.post(url, token, param);
+        return json;
+
+    }
+
+    public String createFulfillmentOrders2(FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
+
+        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName(), fulfillmentParam.getMemberId());
+        // 步骤1：查询订单以查看其订单项
+        // get https://{shop}.myshopify.com/admin/api/2021-04/orders/{order_rest_id}.json
+
+        String url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
+        String json = this.shopifyRestTemplate.exchange(url, token);
+        JSONObject orderJson = JSONObject.parseObject(json);
+        // 获取variant_id
+        JSONArray itemsArray = orderJson.getJSONObject("order").getJSONArray("line_items");
+
+        // 寻找还未设置运单的商品
+
+        List<Map<String, Object>> line_itemsList = new ArrayList<>();
+        if (null != itemsArray && itemsArray.size() > 0) {
+            for (int i = 0; i < itemsArray.size(); i++) {
+                JSONObject tempCl = itemsArray.getJSONObject(i);
+                if (StrUtil.isNotBlank(tempCl.getString("fulfillment_status")) && "fulfilled".equalsIgnoreCase(tempCl.getString("fulfillment_status"))) {
+                    continue;
+                }
+                Map<String, Object> tempItem = new HashMap<>();
+                tempItem.put("id", tempCl.getLongValue("id"));
+                tempItem.put("quantity", tempCl.getLongValue("quantity"));
+                line_itemsList.add(tempItem);
+            }
+        }
+
+        if (line_itemsList.size() == 0) {
+            return null;
+        }
+
+        //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
+
+        /**
+         * {
+         *     "fulfillment":{
+         *         "message":"The package was shipped this morning.",
+         *         "notify_customer":false,
+         *         "tracking_info":{
+         *             "number":1562678,
+         *             "url":"https:\/\/www.my-shipping-company.com",
+         *             "company":"my-shipping-company"
+         *         },
+         *         "line_items_by_fulfillment_order":[
+         *             {
+         *                 "fulfillment_order_id":1046000817,
+         *                 "fulfillment_order_line_items":[
+         *                     {
+         *                         "id":1058737553,
+         *                         "quantity":1
+         *                     }
+         *                 ]
+         *             }
+         *         ]
+         *     }
+         * }
+         */
+        // 第一种创建方式
+        Map<String, Object> param = new HashMap<>();
+
+        Map<String, Object> fulfillmentMap = new HashMap<>();
+        if (StrUtil.isBlank(fulfillmentParam.getMessage())) {
+            fulfillmentMap.put("message", "The package was shipped this morning.");
+        } else {
+            fulfillmentMap.put("message", fulfillmentParam.getMessage());
+        }
+
+        fulfillmentMap.put("notify_customer", fulfillmentParam.isNotifyCustomer());
+
+        Map<String, Object> trackingInfoMap = new HashMap<>();
+        trackingInfoMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
+        trackingInfoMap.put("tracking_url", anElse.getUrl() + fulfillmentParam.getTrackingNumber());
+
+        if (StrUtil.isBlank(fulfillmentParam.getTrackingCompany())) {
+            trackingInfoMap.put("company", "Other Carriers");
+        } else {
+            trackingInfoMap.put("company", fulfillmentParam.getTrackingCompany());
+        }
+        fulfillmentMap.put("tracking_info", trackingInfoMap);
+
+        Map<String, Object> line_items_by_fulfillment_order = new HashMap<>();
+        line_items_by_fulfillment_order.put("fulfillment_order_id", fulfillmentParam.getOrderNo());
+        line_items_by_fulfillment_order.put("fulfillment_order_line_items", line_itemsList);
+        List<Map<String, Object>> orderList = new ArrayList<>();
+        orderList.add(line_items_by_fulfillment_order);
+        fulfillmentMap.put("line_items_by_fulfillment_order", orderList);
 
         param.put("fulfillment", fulfillmentMap);
 
+
         url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_SERVICE, fulfillmentParam.getShopifyName());
+
         System.err.println(JSONObject.toJSONString(param));
         json = this.shopifyRestTemplate.post(url, token, param);
         return json;
@@ -569,7 +750,7 @@ public class ShopifyUtils {
     }
 
 
-    public Set<Long> getFulfillmentByShopifyName(String shopifyName, List<Long> orderNoList, Long memberId) {
+    public Set<Long> getFulfillmentByShopifyName(String shopifyName, Set<Long> orderNoList, Long memberId) {
 
         Set<Long> productList = new HashSet<>();
         if (CollectionUtil.isNotEmpty(orderNoList)) {
@@ -583,6 +764,8 @@ public class ShopifyUtils {
         }
         return productList;
     }
+
+
 
     private Set<Long> checkAndSaveFulfillmentResult(XmsShopifyFulfillmentResult fulfillment) {
 
@@ -607,9 +790,16 @@ public class ShopifyUtils {
                 shopifyFulfillment.setTrackingUrl(fulfillment.getTrackingUrl());
                 shopifyFulfillment.setTrackingUrls(fulfillment.getTrackingUrls());
                 this.shopifyFulfillmentService.updateById(shopifyFulfillment);
+
+                // 更新shopify
+                this.shopifyOrderinfoService.setTrackNo(shopifyFulfillment.getOrderId(), fulfillment.getTrackingNumber());
             } else {
                 this.shopifyFulfillmentService.save(fulfillment);
+                // 更新shopify
+                this.shopifyOrderinfoService.setTrackNo(fulfillment.getOrderId(), fulfillment.getTrackingNumber());
             }
+
+
             if (CollectionUtil.isNotEmpty(fulfillment.getItemList())) {
                 QueryWrapper<XmsShopifyFulfillmentItem> itemQueryWrapper = new QueryWrapper<>();
                 itemQueryWrapper.lambda().eq(XmsShopifyFulfillmentItem::getFulfillmentId, fulfillment.getFulfillmentId());
@@ -837,6 +1027,10 @@ public class ShopifyUtils {
         return null;
     }
 
+    public int setTrackNo(Long orderNo, String trackNo) {
+        return this.shopifyOrderinfoService.setTrackNo(orderNo, trackNo);
+    }
+
 
     private boolean singleDeleteProduct(String shopifyName, Long shopifyPid, String shopifyToken) {
         try {
@@ -962,16 +1156,21 @@ public class ShopifyUtils {
         return productList;
     }
 
-    private Set<Long> getOrdersSingle(String shopifyName, Long memberId) {
-        Set<Long> list = new HashSet<>();
+    private Map<String, Set<Long>> getOrdersSingle(String shopifyName, Long memberId) {
+        Map<String, Set<Long>> rsMap = new HashMap<>();
+        Set<Long> pidList = new HashSet<>();
+        Set<Long> orderList = new HashSet<>();
         if (StrUtil.isBlank(shopifyName)) {
-            return list;
+            return rsMap;
         }
         try {
 
             OrdersWraper orders = this.getOrders(shopifyName, memberId);
             if (null != orders && CollectionUtil.isNotEmpty(orders.getOrders())) {
-                orders.getOrders().stream().filter(e -> CollectionUtil.isNotEmpty(e.getLine_items())).forEach(e -> e.getLine_items().forEach(el -> list.add(el.getProduct_id())));
+                orders.getOrders().stream().filter(e -> CollectionUtil.isNotEmpty(e.getLine_items())).forEach(e -> e.getLine_items().forEach(el -> pidList.add(el.getProduct_id())));
+
+                orders.getOrders().forEach(e-> orderList.add(e.getId()) );
+
                 // 执行插入数据
                 this.genShopifyOrderInfo(shopifyName, orders);
             }
@@ -979,7 +1178,9 @@ public class ShopifyUtils {
             e.printStackTrace();
             log.error("getOrdersSingle,shopifyName[{}],error:", shopifyName, e);
         }
-        return list;
+        rsMap.put("pidList", pidList);
+        rsMap.put("orderList", orderList);
+        return rsMap;
     }
 
     private String getShopifyProductUrl(String shopifyName, Long productId) {

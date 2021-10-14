@@ -37,6 +37,7 @@ public class RedisUtil {
     public static final String GET_COLLECTION_BY_SHOPIFY_NAME = "busysell:getCollectionByShopifyName:";
     public static final String GET_PRODUCTS_BY_SHOPIFY_NAME = "busysell:getProductsByShopifyName:";
     public static final String ADD_PRODUCT = "busysell:addProduct:";
+    public static final String GET_LOCATION_BY_SHOPIFY_NAME = "busysell:getLocationByShopifyName:";
 
 
     private final StringRedisTemplate stringRedisTemplate;

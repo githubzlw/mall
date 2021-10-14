@@ -87,5 +87,8 @@ public class ShopifyConfig {
     @Value("${shopify.uri_get_single_order}")
     public String SHOPIFY_URI_GET_SINGLE_ORDER;
 
+    @Value("${shopify.uri_get_location}")
+    public String SHOPIFY_URI_GET_LOCATION;
+
 
 }

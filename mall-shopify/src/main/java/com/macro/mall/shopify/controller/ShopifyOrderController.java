@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -77,12 +78,24 @@ public class ShopifyOrderController {
     public CommonResult getOrdersByShopifyName(String shopifyName, Long memberId) {
         Assert.isTrue(StrUtil.isNotBlank(shopifyName), "shopifyName null");
         try {
-            Set<Long> orderList = this.shopifyUtils.getOrdersByShopifyName(shopifyName, memberId);
-            if (CollectionUtil.isNotEmpty(orderList)) {
-                this.asyncTask.getShopifyImgByList(orderList, shopifyName, memberId);
-            }
+            Map<String, Set<Long>> orderMap = this.shopifyUtils.getOrdersByShopifyName(shopifyName, memberId);
 
-            return CommonResult.success(orderList.size());
+            Set<Long> orderNoList = orderMap.get("orderList");
+
+            Set<Long> pidList = new HashSet<>();
+            if (CollectionUtil.isNotEmpty(orderMap.get("pidList"))) {
+                pidList.addAll(orderMap.get("pidList"));
+            }
+            if (CollectionUtil.isNotEmpty(orderNoList)) {
+                Set<Long> tempList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList, memberId);
+                if (CollectionUtil.isNotEmpty(tempList)) {
+                    pidList.addAll(tempList);
+                }
+            }
+            if (CollectionUtil.isNotEmpty(pidList)) {
+                this.asyncTask.getShopifyImgByList(pidList, shopifyName, memberId);
+            }
+            return CommonResult.success(pidList.size());
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getOrdersByShopifyName, shopifyName[{}],error:", shopifyName, e);
@@ -99,6 +112,7 @@ public class ShopifyOrderController {
         Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getShopifyName()), "shopifyName is null");
         Assert.isTrue(null != fulfillmentParam.getOrderNo() && fulfillmentParam.getOrderNo() > 0, "orderNo is null");
         Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingNumber()), "trackingNumber is null");
+        Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getLocationId()), "locationId is null");
         //Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingCompany()), "trackingCompany is null");
 
 
@@ -108,8 +122,6 @@ public class ShopifyOrderController {
             if (null == anElse) {
                 return CommonResult.failed("Cannot match company name");
             }*/
-
-            LogisticsCompanyEnum anElse = LogisticsCompanyEnum.COMMON;
 
             List<XmsShopifyOrderinfo> xmsShopifyOrderinfos = this.shopifyUtils.queryListByOrderNo(fulfillmentParam.getOrderNo());
             if (CollectionUtil.isEmpty(xmsShopifyOrderinfos)) {
@@ -122,10 +134,49 @@ public class ShopifyOrderController {
             if (CollectionUtil.isEmpty(detailsList)) {
                 return CommonResult.failed("Cannot match Details List");
             }
-            String updateOrder = this.shopifyUtils.createFulfillmentOrders(fulfillmentParam, anElse);
+            String updateOrder = this.shopifyUtils.createFulfillmentOrders(fulfillmentParam, LogisticsCompanyEnum.COMMON);
 
             detailsList.clear();
             if (StrUtil.isNotEmpty(updateOrder)) {
+                this.shopifyUtils.setTrackNo(fulfillmentParam.getOrderNo(), fulfillmentParam.getTrackingNumber());
+                return CommonResult.success(JSONObject.parseObject(updateOrder));
+            }
+            return CommonResult.success(updateOrder);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("createFulfillment fulfillmentParam:[{}],error:", fulfillmentParam, e);
+            return CommonResult.failed("createFulfillment,error");
+        }
+    }
+
+
+    @PostMapping("/createFulfillment2")
+    @ApiOperation("创建履行订单2")
+    public CommonResult createFulfillment2(FulfillmentParam fulfillmentParam) {
+
+        Assert.notNull(fulfillmentParam, "fulfillmentParam is null");
+        Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getShopifyName()), "shopifyName is null");
+        Assert.isTrue(null != fulfillmentParam.getOrderNo() && fulfillmentParam.getOrderNo() > 0, "orderNo is null");
+        Assert.isTrue(StrUtil.isNotBlank(fulfillmentParam.getTrackingNumber()), "trackingNumber is null");
+
+
+        try {
+            List<XmsShopifyOrderinfo> xmsShopifyOrderinfos = this.shopifyUtils.queryListByOrderNo(fulfillmentParam.getOrderNo());
+            if (CollectionUtil.isEmpty(xmsShopifyOrderinfos)) {
+                return CommonResult.failed("Cannot match OrderNo");
+            } else {
+                xmsShopifyOrderinfos.clear();
+            }
+
+            List<XmsShopifyOrderDetails> detailsList = this.shopifyUtils.queryDetailsListByOrderNo(fulfillmentParam.getOrderNo());
+            if (CollectionUtil.isEmpty(detailsList)) {
+                return CommonResult.failed("Cannot match Details List");
+            }
+            String updateOrder = this.shopifyUtils.createFulfillmentOrders2(fulfillmentParam, LogisticsCompanyEnum.COMMON);
+
+            detailsList.clear();
+            if (StrUtil.isNotEmpty(updateOrder)) {
+                this.shopifyUtils.setTrackNo(fulfillmentParam.getOrderNo(), fulfillmentParam.getTrackingNumber());
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
             return CommonResult.success(updateOrder);
@@ -155,7 +206,7 @@ public class ShopifyOrderController {
         FulfillmentStatusEnum anEnum = Arrays.stream(FulfillmentStatusEnum.values()).filter(e -> e.toString().toLowerCase().equalsIgnoreCase(orderParam.getFulfillmentStatus())).findFirst().orElse(null);
         Assert.notNull(anEnum, "fulfillment_status is null");
         try {
-            String updateOrder = this.shopifyUtils.updateOrder(orderParam.getOrderNo(), orderParam.getShopifyName(), anEnum,orderParam.getMemberId());
+            String updateOrder = this.shopifyUtils.updateOrder(orderParam.getOrderNo(), orderParam.getShopifyName(), anEnum, orderParam.getMemberId());
             if (StrUtil.isNotEmpty(updateOrder)) {
                 return CommonResult.success(JSONObject.parseObject(updateOrder));
             }
@@ -199,11 +250,10 @@ public class ShopifyOrderController {
         Assert.isTrue(null != memberId && memberId > 0, "orders is null");
 
         try {
-            List<Long> orderNoList = new ArrayList<>();
-            Arrays.asList(orders.split(",")).forEach(e -> orderNoList.add(Long.parseLong(e)));
-            Set<Long> orderList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList, memberId);
-            if (CollectionUtil.isNotEmpty(orderList)) {
-                this.asyncTask.getShopifyImgByList(orderList, shopifyName, memberId);
+            Set<Long> orderNoList = Arrays.stream(orders.split(",")).map(Long::parseLong).collect(Collectors.toSet());
+            Set<Long> pidList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList, memberId);
+            if (CollectionUtil.isNotEmpty(pidList)) {
+                this.asyncTask.getShopifyImgByList(pidList, shopifyName, memberId);
             }
             return CommonResult.success(1);
         } catch (Exception e) {
@@ -230,6 +280,29 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("cancelOrderByShopifyName, shopifyName[{}],error:", shopifyName, e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/getLocationByShopifyName")
+    @ApiOperation("根据shopifyName获取位置数据")
+    public CommonResult getLocationByShopifyName(String shopifyName, Long memberId) {
+        Assert.isTrue(StrUtil.isNotEmpty(shopifyName), "shopifyName null");
+
+        Map<String, String> map = new HashMap<>();
+        try {
+            Object val = this.redisUtil.hmgetObj(RedisUtil.GET_LOCATION_BY_SHOPIFY_NAME, shopifyName);
+            if (null != val && "success".equalsIgnoreCase(val.toString())) {
+                return CommonResult.success("this shop is execute!!");
+            }
+            int total = this.shopifyUtils.getLocationByShopifyName(shopifyName, memberId);
+            map.put(shopifyName, "success");
+            this.redisUtil.hmset(RedisUtil.GET_LOCATION_BY_SHOPIFY_NAME, map, 60);
+            return CommonResult.success(total);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCountryByShopifyName, shopifyName[{}],error:", shopifyName, e);
             return CommonResult.failed(e.getMessage());
         }
     }
