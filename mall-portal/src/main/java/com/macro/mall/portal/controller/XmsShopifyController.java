@@ -359,20 +359,50 @@ public class XmsShopifyController {
 
     @ApiOperation("shopify的Country列表")
     @RequestMapping(value = "/countryList", method = RequestMethod.GET)
-    public CommonResult countryList() {
+    public CommonResult countryList(String flag) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if (StrUtil.isNotBlank(flag)) {
+                this.getCountryByShopifyName();
+            }
             QueryWrapper<XmsShopifyCountry> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, currentMember.getShopifyName());
+            queryWrapper.lambda().eq(XmsShopifyCountry::getShopifyName, currentMember.getShopifyName())
+                    .eq(XmsShopifyCountry::getMemberId, currentMember.getId());
             List<XmsShopifyCountry> list = xmsShopifyCountryService.list(queryWrapper);
-            if (CollectionUtil.isNotEmpty(list)) {
-                list.forEach(e -> e.setProvinces(null));
+            if (CollectionUtil.isEmpty(list) && StrUtil.isBlank(flag)) {
+                this.getCountryByShopifyName();
+                list = xmsShopifyCountryService.list(queryWrapper);
             }
             return CommonResult.success(list);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("countryList,currentMember[{}],error:", currentMember, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
+    @ApiOperation("获取shopify的Country列表")
+    @RequestMapping(value = "/getCountryByShopifyName", method = RequestMethod.GET)
+    public CommonResult getCountryByShopifyName() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+            if (StrUtil.isEmpty(byId.getShopifyName()) || 0 == byId.getShopifyFlag()) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
+            Map<String, String> param = new HashMap<>();
+            param.put("shopifyName", byId.getShopifyName());
+            param.put("memberId", String.valueOf(byId.getId()));
+
+            //请求数据
+            JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/getCountryByShopifyName", param);
+            return JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCountryByShopifyName,currentMember[{}],error:", currentMember, e);
             return CommonResult.failed("query failed");
         }
     }

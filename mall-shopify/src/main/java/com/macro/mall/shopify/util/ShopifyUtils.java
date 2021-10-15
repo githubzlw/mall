@@ -140,6 +140,7 @@ public class ShopifyUtils {
                 if (CollectionUtil.isNotEmpty(hasList)) {
                     hasList.forEach(e -> {
                         if (!set.contains(e.getCountryId())) {
+                            e.setMemberId(memberId);
                             insertList.add(e);
                         }
                     });

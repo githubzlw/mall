@@ -111,10 +111,12 @@ public class XmsSourcingController {
                     if (StrUtil.isEmpty(e.getCost())) {
                         e.setCost("");
                     }
+                    if(StrUtil.isNotBlank(e.getImages())){
+                        e.setImages(e.getImages().split(",")[0]);
+                    }
                     if (null == e.getChooseType() || e.getChooseType() == 0) {
                         // 如果没有设置ChooseType，则使用客户默认带过来的数据
                         e.setChooseType(currentMember.getSourcingChooseType());
-
                         e.setTypeOfShipping(currentMember.getSourcingTypeOfShipping());
                         e.setCountryName(currentMember.getSourcingCountryName());
                         e.setCountryId(currentMember.getSourcingCountryId());
