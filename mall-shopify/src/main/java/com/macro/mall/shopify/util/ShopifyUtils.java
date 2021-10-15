@@ -140,15 +140,19 @@ public class ShopifyUtils {
                 if (CollectionUtil.isNotEmpty(hasList)) {
                     hasList.forEach(e -> {
                         if (!set.contains(e.getCountryId())) {
-                            e.setMemberId(memberId);
                             insertList.add(e);
                         }
                     });
                 } else {
+
                     insertList.addAll(list);
                 }
                 total = list.size();
-                this.xmsShopifyCountryService.saveBatch(insertList);
+                if (CollectionUtil.isNotEmpty(insertList)) {
+                    insertList.forEach(e -> e.setMemberId(memberId));
+                    this.xmsShopifyCountryService.saveBatch(insertList);
+                }
+
                 list.clear();
                 set.clear();
                 hasList.clear();
@@ -767,7 +771,6 @@ public class ShopifyUtils {
     }
 
 
-
     private Set<Long> checkAndSaveFulfillmentResult(XmsShopifyFulfillmentResult fulfillment) {
 
         Set<Long> productList = new HashSet<>();
@@ -1172,7 +1175,7 @@ public class ShopifyUtils {
             if (null != orders && CollectionUtil.isNotEmpty(orders.getOrders())) {
                 orders.getOrders().stream().filter(e -> CollectionUtil.isNotEmpty(e.getLine_items())).forEach(e -> e.getLine_items().forEach(el -> pidList.add(el.getProduct_id())));
 
-                orders.getOrders().forEach(e-> orderList.add(e.getId()) );
+                orders.getOrders().forEach(e -> orderList.add(e.getId()));
 
                 // 执行插入数据
                 this.genShopifyOrderInfo(shopifyName, orders, memberId);
