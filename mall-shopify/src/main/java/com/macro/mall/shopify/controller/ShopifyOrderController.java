@@ -93,6 +93,7 @@ public class ShopifyOrderController {
                 }
             }
             if (CollectionUtil.isNotEmpty(pidList)) {
+                System.err.println("getOrdersByShopifyName pid:" + JSONObject.toJSONString(pidList));
                 this.asyncTask.getShopifyImgByList(pidList, shopifyName, memberId);
             }
             return CommonResult.success(pidList.size());
