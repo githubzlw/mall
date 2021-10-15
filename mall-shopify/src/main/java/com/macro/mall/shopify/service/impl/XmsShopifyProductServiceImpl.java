@@ -853,7 +853,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                         nameSet.clear();
                     }
                 }
-                product.put("options", newOptions);
+                if(newOptions.size() > 0){
+                    product.put("options", newOptions);
+                }
+
 
                 // 4.设置tags
                 if (StrUtil.isNotBlank(saveProduct.getTags())) {
