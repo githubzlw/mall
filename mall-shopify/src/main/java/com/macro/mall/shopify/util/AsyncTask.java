@@ -109,10 +109,12 @@ public class AsyncTask {
     private Set<Long> tryGetNewPidImg(String accessToken, String shopifyName, Set<Long> filterSet) {
         Set<Long> delaySet = new HashSet<>();
 
+
         List<String> sucList = new ArrayList<>();
         if (filterSet.size() > 0) {
             // 过滤后，挨个读取图片信息
             filterSet.forEach(e -> {
+                System.err.println("accessToken:" + accessToken + ",pid:" + e);
                 boolean b = this.loopGainImg(e, accessToken, shopifyName);
                 if (b) {
                     sucList.add(String.valueOf(e));
