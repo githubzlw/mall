@@ -41,4 +41,6 @@ public class XmsShopifyOrderinfoParam {
     @ApiModelProperty(value = "发货订单状态 0:Awaiting Payment, 5:Incoming Orders,4:Shipped,6:Canceled")
     private Integer deliverOrderStatus;
 
+    private Long memberId;
+
 }

@@ -282,6 +282,7 @@ public class XmsShopifyController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             orderinfoParam.setShopifyName(currentMember.getShopifyName());
+            orderinfoParam.setMemberId(currentMember.getId());
             CommonPage<XmsShopifyOrderComb> list = this.shopifyOrderinfoService.list(orderinfoParam);
             return CommonResult.success(list);
         } catch (Exception e) {

@@ -106,7 +106,7 @@ public class ShopifyUtils {
         List<Orders> orders = new ArrayList<>();
         orders.add(order);
         ordersWraper.setOrders(orders);
-        this.genShopifyOrderInfo(shopifyName, ordersWraper);
+        this.genShopifyOrderInfo(shopifyName, ordersWraper, memberId);
     }
 
     public int getCountryByShopifyName(String shopifyName, Long memberId) {
@@ -1082,7 +1082,7 @@ public class ShopifyUtils {
      * @param shopifyName
      * @param orders
      */
-    private Set<Long> genShopifyOrderInfo(String shopifyName, OrdersWraper orders) {
+    private Set<Long> genShopifyOrderInfo(String shopifyName, OrdersWraper orders, Long memberId) {
         Set<Long> productList = new HashSet<>();
 
 
@@ -1119,6 +1119,7 @@ public class ShopifyUtils {
             if (CollectionUtil.isNotEmpty(updateList)) {
                 for (XmsShopifyOrderinfo orderInfo : updateList) {
                     try {
+                        orderInfo.setMemberId(memberId);
                         this.shopifyOrderinfoService.saveOrUpdate(orderInfo);
                         if (itemsMap.containsKey(orderInfo.getOrderNo())) {
                             productList.addAll(this.dealDetailsAndAddress(itemsMap.get(orderInfo.getOrderNo())));
@@ -1143,6 +1144,7 @@ public class ShopifyUtils {
                     orderInfo.setShopify_name(shopifyName);
                     // shopifyOrderMapper.insertOrderInfoSingle(orderInfo);
                     XmsShopifyOrderinfo xmsShopifyOrderinfo = this.genXmsShopifyOrderinfo(orderInfo);
+                    xmsShopifyOrderinfo.setMemberId(memberId);
                     this.shopifyOrderinfoService.save(xmsShopifyOrderinfo);
 
                     productList.addAll(this.dealDetailsAndAddress(orderInfo));
@@ -1172,7 +1174,7 @@ public class ShopifyUtils {
                 orders.getOrders().forEach(e-> orderList.add(e.getId()) );
 
                 // 执行插入数据
-                this.genShopifyOrderInfo(shopifyName, orders);
+                this.genShopifyOrderInfo(shopifyName, orders, memberId);
             }
         } catch (Exception e) {
             e.printStackTrace();

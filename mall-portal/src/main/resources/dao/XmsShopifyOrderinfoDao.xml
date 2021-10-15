@@ -58,6 +58,7 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="fulfillment_service_id" jdbcType="BIGINT" property="fulfillmentServiceId" />
+    <result column="member_id" jdbcType="BIGINT" property="memberId" />
   </resultMap>
 
 
@@ -65,7 +66,7 @@
         select distinct a.* from xms_shopify_orderinfo a
         left join xms_shopify_order_details b on a.order_no = b.order_no
         left join xms_shopify_order_address c on a.order_no = c.order_no
-        where shopify_name = #{shopifyName}
+        where shopify_name = #{shopifyName} and a.member_id = #{memberId,jdbcType=BIGINT}
         <if test="beginTime != null">
             and date(a.created_at) >= date(#{beginTime})
         </if>
@@ -87,7 +88,7 @@
         select distinct a.* from xms_shopify_orderinfo a
         left join xms_shopify_order_details b on a.order_no = b.order_no
         left join xms_shopify_order_address c on a.order_no = c.order_no
-        where shopify_name = #{shopifyName}
+        where shopify_name = #{shopifyName} and a.member_id = #{memberId,jdbcType=BIGINT}
         <if test="beginTime != null">
             and date(a.created_at) >= date(#{beginTime})
         </if>
