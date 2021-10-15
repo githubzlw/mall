@@ -123,6 +123,16 @@ public class UmsMember implements Serializable {
     @ApiModelProperty(value = "发货使用的logo地址")
     private String logoUrl;
 
+    private String countryName;
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
