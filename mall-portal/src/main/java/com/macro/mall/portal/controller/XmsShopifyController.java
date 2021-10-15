@@ -1021,6 +1021,7 @@ public class XmsShopifyController {
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress1()), "Address1 null");
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress2()), "Address2 null");
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getPhone()), "Phone null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getName()), "Name null");
 
 
         try {
@@ -1034,7 +1035,8 @@ public class XmsShopifyController {
                     .set(XmsShopifyOrderAddress::getZip, shopifyOrderAddress.getZip())
                     .set(XmsShopifyOrderAddress::getAddress1, shopifyOrderAddress.getAddress1())
                     .set(XmsShopifyOrderAddress::getAddress2, shopifyOrderAddress.getAddress2())
-                    .set(XmsShopifyOrderAddress::getPhone, shopifyOrderAddress.getPhone());
+                    .set(XmsShopifyOrderAddress::getPhone, shopifyOrderAddress.getPhone())
+                    .set(XmsShopifyOrderAddress::getName, shopifyOrderAddress.getName());
             boolean b = this.xmsShopifyOrderAddressService.update(null, updateWrapper);
             return CommonResult.success(b);
         } catch (Exception e) {
@@ -1336,6 +1338,7 @@ public class XmsShopifyController {
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress1()), "Address1 null");
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getAddress2()), "Address2 null");
         Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getPhone()), "Phone null");
+        Assert.isTrue(StrUtil.isNotBlank(shopifyOrderAddress.getName()), "Name null");
 
 
         try {

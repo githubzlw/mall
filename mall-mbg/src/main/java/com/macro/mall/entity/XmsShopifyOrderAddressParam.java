@@ -28,4 +28,5 @@ public class XmsShopifyOrderAddressParam {
 
     private String address2;
     private Long orderNo;
+    private String name;
 }
