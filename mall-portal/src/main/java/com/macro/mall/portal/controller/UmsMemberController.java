@@ -120,6 +120,7 @@ public class UmsMemberController {
         }
         tokenMap.put("nickName", currentMember.getNickname());
         tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
+        tokenMap.put("logoUrl", currentMember.getLogoUrl());
         return CommonResult.success(tokenMap);
     }
 
@@ -173,6 +174,7 @@ public class UmsMemberController {
         UmsMember currentMember = this.memberService.getById(userinfo.getUmsMember().getId());
         tokenMap.put("nickName", currentMember.getNickname());
         tokenMap.put("guidedFlag", String.valueOf(currentMember.getGuidedFlag()));
+        tokenMap.put("logoUrl", currentMember.getLogoUrl());
         return CommonResult.success(tokenMap);
     }
 
