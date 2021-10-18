@@ -119,7 +119,7 @@ public class ShopifyRestTemplate {
             return restTemplate.postForObject(uri, requestEntity, String.class);
         } catch (Exception e) {
             log.error("postForObject", e);
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "postForObject error");
@@ -188,7 +188,7 @@ public class ShopifyRestTemplate {
             return response.getBody();
         } catch (Exception e) {
             e.printStackTrace();
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "get error");
@@ -268,7 +268,7 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("put", e);
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "put error");
@@ -294,7 +294,7 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("put", e);
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "put error");
@@ -318,7 +318,7 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("put", e);
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "put error");
@@ -339,7 +339,7 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("post", e);
-            if (e.getMessage().contains("Invalid API key or access token")) {
+            if (e.getMessage().contains("Invalid API key or access token") || e.getMessage().contains("401 Unauthorized")) {
                 throw new AccessTokenException("1004", "Invalid token");
             } else {
                 throw new ShopifyException("1003", "post error");
