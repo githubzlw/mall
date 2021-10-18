@@ -111,7 +111,7 @@ public class XmsSourcingController {
                     if (StrUtil.isEmpty(e.getCost())) {
                         e.setCost("");
                     }
-                    if(StrUtil.isNotBlank(e.getImages())){
+                    if (StrUtil.isNotBlank(e.getImages())) {
                         e.setImages(e.getImages().split(",")[0]);
                     }
                     if (null == e.getChooseType() || e.getChooseType() == 0) {
@@ -292,7 +292,6 @@ public class XmsSourcingController {
         Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
-        // Assert.isTrue(null != currentMember && null != currentMember.getId() && currentMember.getId() > 0, "currentMember null");
         try {
             // 检查数据是否存在
             XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingProductParam.getSourcingId());
@@ -300,13 +299,13 @@ public class XmsSourcingController {
                 return CommonResult.validateFailed("No data available");
             }
 
-            List<ProductSkuSaveEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), ProductSkuSaveEdit.class);
+            List<XmsPmsSkuStockEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), XmsPmsSkuStockEdit.class);
             if (CollectionUtil.isEmpty(stockEditList)) {
                 return CommonResult.validateFailed("No sku available");
             }
             StringBuffer skuSb = new StringBuffer();
             stockEditList.forEach(e -> {
-                //e.setMemberId(currentMember.getId());
+                e.setMemberId(currentMember.getId());
                 skuSb.append(",").append(e.getSkuCode());
             });
 
@@ -345,7 +344,37 @@ public class XmsSourcingController {
                     // productId = pmsProductEdit.getId();
                     productId = sourcingProductParam.getProductId();
                     pmsProductEdit.setName(sourcingProductParam.getName());
+                    // 处理sku数据
+                    QueryWrapper<XmsPmsSkuStockEdit> skuEditWrapper = new QueryWrapper<>();
+                    skuEditWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, sourcingProductParam.getProductId());
+                    List<XmsPmsSkuStockEdit> editList = this.xmsPmsSkuStockEditService.list(skuEditWrapper);
+                    if (CollectionUtil.isNotEmpty(editList)) {
+                        Map<String, XmsPmsSkuStockEdit> skuStockEditMap = new HashMap<>();
+                        editList.forEach(e -> skuStockEditMap.put(e.getSkuCode(), e));
 
+                        List<XmsPmsSkuStockEdit> updateList = stockEditList.stream().filter(e -> skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+                        List<XmsPmsSkuStockEdit> insertList = stockEditList.stream().filter(e -> !skuStockEditMap.containsKey(e.getSkuCode())).collect(Collectors.toList());
+
+                        if (CollectionUtil.isNotEmpty(updateList)) {
+                            updateList.forEach(e -> {
+                                e.setId(skuStockEditMap.get(e.getSkuCode()).getId());
+                                e.setSpData(skuStockEditMap.get(e.getSkuCode()).getSpData());
+                                e.setPrice(skuStockEditMap.get(e.getSkuCode()).getPrice());
+                            });
+                            this.xmsPmsSkuStockEditService.saveOrUpdateBatch(updateList);
+                            updateList.clear();
+                        }
+
+                        if (CollectionUtil.isNotEmpty(insertList)) {
+                            this.xmsPmsSkuStockEditService.saveBatch(insertList);
+                            insertList.clear();
+                        }
+
+                        editList.clear();
+                    } else {
+                        this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+                        stockEditList.clear();
+                    }
                     pmsProductEdit.setUpdateTime(new Date());
                     this.xmsPmsProductEditService.updateById(pmsProductEdit);
 
@@ -359,11 +388,15 @@ public class XmsSourcingController {
                     pmsProductEdit.setMemberId(currentMember.getId());
                     pmsProductEdit.setWeight(sourcingProductParam.getWeight());
                     pmsProductEdit.setUpdateTime(new Date());
+
+                    one.setProductJson(JSONObject.toJSONString(pmsProductEdit));
+
                     this.xmsPmsProductEditService.save(pmsProductEdit);
                     // productId = pmsProductEdit.getId();
                     productId = sourcingProductParam.getProductId();
-
-                    one.setProductJson(JSONObject.toJSONString(pmsProductEdit));
+                    // 插入sku数据
+                    this.xmsPmsSkuStockEditService.saveBatch(stockEditList);
+                    stockEditList.clear();
                 }
 
                 // 保存日志信息

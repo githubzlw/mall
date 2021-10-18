@@ -864,14 +864,14 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                 // 6.组合PID数据 title和body_html
                 product.put("id", xmsShopifyPidInfo.getShopifyPid());
                 product.put("title", productWraper.getProduct().getTitle());
-                if (StrUtil.isNotBlank(productWraper.getProduct().getBody_html())) {
+                /*if (StrUtil.isNotBlank(productWraper.getProduct().getBody_html())) {
                     product.put("body_html", productWraper.getProduct().getBody_html());
-                }
+                }*/
 
                 // 7.完整更新
                 saveObject.put("product", product);
 
-                returnJson = this.shopifyRestTemplate.put(String.format(config.SHOPIFY_URI_PUT_PRODUCTS, shopName, xmsShopifyPidInfo.getShopifyPid()), token, saveObject);
+                returnJson = this.shopifyRestTemplate.putJson(String.format(config.SHOPIFY_URI_PUT_PRODUCTS, shopName, xmsShopifyPidInfo.getShopifyPid()), token, saveObject);
                 result = gson.fromJson(returnJson, ProductWraper.class);
             } else {
                 returnJson = this.shopifyRestTemplate.postForObject(String.format(config.SHOPIFY_URI_PRODUCTS, shopName), token, json);
