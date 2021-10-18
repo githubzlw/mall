@@ -2,27 +2,24 @@ package com.macro.mall.shopify.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.entity.XmsShopifyOrderDetails;
 import com.macro.mall.entity.XmsShopifyOrderinfo;
 import com.macro.mall.shopify.cache.RedisUtil;
+import com.macro.mall.shopify.exception.AccessTokenException;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
 import com.macro.mall.shopify.pojo.ShopifyOrderParam;
-import com.macro.mall.shopify.util.AsyncTask;
 import com.macro.mall.shopify.util.ShopifyUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,9 +44,6 @@ public class ShopifyOrderController {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Resource
-    private AsyncTask asyncTask;
-
     @PostMapping("/getCountryByShopifyName")
     @ApiOperation("根据shopifyName获取国家数据")
     public CommonResult getCountryByShopifyName(String shopifyName, Long memberId) {
@@ -68,7 +62,10 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getCountryByShopifyName, shopifyName[{}],error:", shopifyName, e);
-            return CommonResult.failed(e.getMessage());
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("getCountryByShopifyName error!");
         }
     }
 
@@ -94,13 +91,16 @@ public class ShopifyOrderController {
             }
             if (CollectionUtil.isNotEmpty(pidList)) {
                 System.err.println("getOrdersByShopifyName pid:" + JSONObject.toJSONString(pidList));
-                this.asyncTask.getShopifyImgByList(pidList, shopifyName, memberId);
+                this.shopifyUtils.getShopifyImgByList(pidList, shopifyName, memberId);
             }
             return CommonResult.success(pidList.size());
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getOrdersByShopifyName, shopifyName[{}],error:", shopifyName, e);
-            return CommonResult.failed(e.getMessage());
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("getOrdersByShopifyName error!");
         }
     }
 
@@ -146,6 +146,9 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("createFulfillment fulfillmentParam:[{}],error:", fulfillmentParam, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
             return CommonResult.failed("createFulfillment,error");
         }
     }
@@ -184,6 +187,9 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("createFulfillment fulfillmentParam:[{}],error:", fulfillmentParam, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
             return CommonResult.failed("createFulfillment,error");
         }
     }
@@ -215,6 +221,9 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("putOrdersStatus,orderParam[{}],error:", orderParam, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
             return CommonResult.failed("putOrdersStatus," + JSONObject.toJSONString(orderParam) + ",error:" + e.getMessage());
         }
     }
@@ -237,6 +246,9 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("updateFulfillmentOrders,orderParam[{}],error:", orderParam, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
             return CommonResult.failed("updateFulfillmentOrders," + JSONObject.toJSONString(orderParam) + ",error:" + e.getMessage());
         }
     }
@@ -254,12 +266,15 @@ public class ShopifyOrderController {
             Set<Long> orderNoList = Arrays.stream(orders.split(",")).map(Long::parseLong).collect(Collectors.toSet());
             Set<Long> pidList = this.shopifyUtils.getFulfillmentByShopifyName(shopifyName, orderNoList, memberId);
             if (CollectionUtil.isNotEmpty(pidList)) {
-                this.asyncTask.getShopifyImgByList(pidList, shopifyName, memberId);
+                this.shopifyUtils.getShopifyImgByList(pidList, shopifyName, memberId);
             }
             return CommonResult.success(1);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getFulfillmentByShopifyName,shopifyName[{}],error:", shopifyName, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
             return CommonResult.failed("getFulfillmentByShopifyName,error:" + e.getMessage());
         }
     }
@@ -281,7 +296,10 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("cancelOrderByShopifyName, shopifyName[{}],error:", shopifyName, e);
-            return CommonResult.failed(e.getMessage());
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("cancelOrderByShopifyName error!");
         }
     }
 
@@ -304,7 +322,10 @@ public class ShopifyOrderController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getCountryByShopifyName, shopifyName[{}],error:", shopifyName, e);
-            return CommonResult.failed(e.getMessage());
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("getCountryByShopifyName error!");
         }
     }
 

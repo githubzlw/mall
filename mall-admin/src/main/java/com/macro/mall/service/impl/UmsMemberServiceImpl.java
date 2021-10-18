@@ -59,5 +59,27 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return umsMemberList;
     }
 
+    @Override
+    public Long getListCount() {
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andShopifyNameIsNotNull();
+        return umsMemberMapper.countByExample(example);
+    }
+
+    @Override
+    public List<UmsMember> getListByLimit(Integer pageSize, Integer pageNum) {
+        PageHelper.startPage(pageNum, pageSize);
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andShopifyNameIsNotNull();
+        return umsMemberMapper.selectByExample(example);
+    }
+
+    @Override
+    public List<UmsMember> getByList(List<Long> list) {
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andIdIn(list);
+        return umsMemberMapper.selectByExample(example);
+    }
+
 
 }

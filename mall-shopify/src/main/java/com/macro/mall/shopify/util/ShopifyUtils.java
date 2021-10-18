@@ -7,6 +7,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.google.gson.Gson;
 import com.macro.mall.common.util.BigDecimalUtil;
 import com.macro.mall.entity.*;
@@ -19,6 +23,7 @@ import com.macro.mall.shopify.config.ShopifyRestTemplate;
 import com.macro.mall.shopify.pojo.FulfillmentParam;
 import com.macro.mall.shopify.pojo.FulfillmentStatusEnum;
 import com.macro.mall.shopify.pojo.LogisticsCompanyEnum;
+import com.macro.mall.shopify.pojo.ShopifyTaskBean;
 import com.macro.mall.shopify.pojo.orders.Line_items;
 import com.macro.mall.shopify.pojo.orders.Orders;
 import com.macro.mall.shopify.pojo.orders.OrdersWraper;
@@ -36,6 +41,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -79,13 +85,94 @@ public class ShopifyUtils {
     private IXmsShopifyFulfillmentItemService shopifyFulfillmentItemService;
     @Resource
     private XmsCustomerProductMapper xmsCustomerProductMapper;
-    @Resource
-    private XmsCustomerSkuStockMapper xmsCustomerSkuStockMapper;
     @Autowired
     private IXmsShopifyLocationService xmsShopifyLocationService;
+    @Resource
+    private IXmsShopifyPidImgService xmsShopifyPidImgService;
+
+    @Resource
+    private IXmsShopifyPidImgErrorService xmsShopifyPidImgErrorService;
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private ZoneId zoneId = ZoneId.systemDefault();
+
+
+    /**
+     * 异步获取全部的shopify相关信息
+     *
+     * @param list
+     */
+    @Async("taskExecutor")
+    public void getAllShopifyInfo(List<ShopifyTaskBean> list) {
+        list.forEach(this::singleGetAllShopifyInfo);
+
+    }
+
+    private void singleGetAllShopifyInfo(ShopifyTaskBean taskBean) {
+        // country、tags、collection、type、location
+        try {
+            this.getCountryByShopifyName(taskBean.getShopifyName(), taskBean.getMemberId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCountryByShopifyName,taskBean[{}],error:", taskBean, e);
+        }
+
+        try {
+            this.getLocationByShopifyName(taskBean.getShopifyName(), taskBean.getMemberId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getLocationByShopifyName,taskBean[{}],error:", taskBean, e);
+        }
+        try {
+            this.getCollectionByShopifyName(taskBean.getShopifyName(), taskBean.getMemberId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCollectionByShopifyName,taskBean[{}],error:", taskBean, e);
+        }
+
+
+        // 1.优先获取产品数据
+        try {
+            this.getProductsByShopifyName(taskBean.getShopifyName(), taskBean.getMemberId(), taskBean.getUserName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getProductsByShopifyName,taskBean[{}],error:", taskBean, e);
+        }
+
+
+        // 2.获取订单数据
+        Set<Long> orderNoList = new HashSet<>();
+        Set<Long> pidList = new HashSet<>();
+        try {
+            Map<String, Set<Long>> orderMap = this.getOrdersByShopifyName(taskBean.getShopifyName(), taskBean.getMemberId());
+            orderNoList.addAll(orderMap.get("orderList"));
+            if (CollectionUtil.isNotEmpty(orderMap.get("pidList"))) {
+                pidList.addAll(orderMap.get("pidList"));
+            }
+            if (CollectionUtil.isNotEmpty(pidList)) {
+                System.err.println("getOrdersByShopifyName pid:" + JSONObject.toJSONString(pidList));
+                this.getShopifyImgByList(pidList, taskBean.getShopifyName(), taskBean.getMemberId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getOrdersByShopifyName,taskBean[{}],error:", taskBean, e);
+        } finally {
+            pidList.clear();
+        }
+        // 3.获取运单数据
+        try {
+            if (CollectionUtil.isNotEmpty(orderNoList)) {
+                Set<Long> tempList = this.getFulfillmentByShopifyName(taskBean.getShopifyName(), orderNoList, taskBean.getMemberId());
+                if (CollectionUtil.isNotEmpty(tempList)) {
+                    pidList.addAll(tempList);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getCollectionByShopifyName,taskBean[{}],error:", taskBean, e);
+        }
+    }
+
 
     public JSONObject cancelOrderByShopifyName(String shopifyName, String orderNo, Long memberId) throws IOException {
         String url = String.format(shopifyConfig.SHOPIFY_URI_PUT_CANCEL_ORDER, shopifyName, orderNo);
@@ -241,13 +328,13 @@ public class ShopifyUtils {
 
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName, memberId);
         String url = String.format(shopifyConfig.SHOPIFY_URI_CUSTOM_COLLECTIONS, shopName);
-        this.getSingleCollection(shopName, url, accessToken, "custom_collections");
+        this.getSingleCollection(shopName, url, accessToken, "custom_collections", memberId);
         url = String.format(shopifyConfig.SHOPIFY_URI_SMART_COLLECTIONS, shopName);
-        this.getSingleCollection(shopName, url, accessToken, "smart_collections");
+        this.getSingleCollection(shopName, url, accessToken, "smart_collections", memberId);
         return 2;
     }
 
-    private void getSingleCollection(String shopName, String url, String accessToken, String keyName) {
+    private void getSingleCollection(String shopName, String url, String accessToken, String keyName, Long memberId) {
 
         // custom_collections , smart_collections
         String json = this.shopifyRestTemplate.exchange(url, accessToken);
@@ -280,6 +367,7 @@ public class ShopifyUtils {
                 Set<Long> coIdSet = new HashSet<>();
                 hasList.forEach(e -> coIdSet.add(e.getCollectionsId()));
                 List<XmsShopifyCollections> collect = list.stream().filter(e -> !coIdSet.contains(e.getCollectionsId())).collect(Collectors.toList());
+                collect.forEach(e -> e.setMemberId(memberId));
                 if (CollectionUtil.isNotEmpty(collect)) {
                     xmsShopifyCollectionsService.saveBatch(collect);
                     collect.clear();
@@ -287,6 +375,7 @@ public class ShopifyUtils {
                 coIdSet.clear();
                 hasList.clear();
             } else {
+                list.forEach(e -> e.setMemberId(memberId));
                 xmsShopifyCollectionsService.saveBatch(list);
                 list.clear();
             }
@@ -348,7 +437,30 @@ public class ShopifyUtils {
                 if (null == customerProduct.getProductId()) {
                     customerProduct.setProductId(0L);
                 }
+
                 this.customerProductService.save(customerProduct);
+
+                if (StrUtil.isNotBlank(customerProduct.getImg())) {
+                    //插入或者更新pidImgs
+                    QueryWrapper<XmsShopifyPidImg> imgQueryWrapper = new QueryWrapper<>();
+                    imgQueryWrapper.lambda().eq(XmsShopifyPidImg::getShopifyName, shopifyName)
+                            .eq(XmsShopifyPidImg::getShopifyPid, customerProduct.getShopifyProductId());
+                    XmsShopifyPidImg one = this.xmsShopifyPidImgService.getOne(imgQueryWrapper);
+                    if (null == one) {
+                        one = new XmsShopifyPidImg();
+                        one.setShopifyName(shopifyName);
+                        one.setShopifyPid(String.valueOf(customerProduct.getShopifyProductId()));
+                        one.setImgInfo(customerProduct.getShopifyJson());
+                        one.setImg(customerProduct.getImg());
+                        one.setCreateTime(new Date());
+                        this.xmsShopifyPidImgService.save(one);
+                    } else {
+                        one.setImgInfo(customerProduct.getShopifyJson());
+                        one.setImg(customerProduct.getImg());
+                        this.xmsShopifyPidImgService.updateById(one);
+                    }
+                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -454,90 +566,7 @@ public class ShopifyUtils {
         return json;
     }
 
-    /*public String createFulfillmentOrders(List<XmsShopifyOrderDetails> detailsList, FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
-        String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName());
-        // 步骤1：查询订单以查看其订单项
-        // get https://{shop}.myshopify.com/admin/api/2021-04/orders/{order_rest_id}.json
-
-        String url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
-        String json = this.shopifyRestTemplate.exchange(url, token);
-        JSONObject orderJson = JSONObject.parseObject(json);
-        // 获取variant_id
-        JSONArray itemsArray = orderJson.getJSONObject("order").getJSONArray("line_items");
-
-        //步骤2. https://{shop}.myshopify.com/admin/api/2021-04/variants/{variant_rest_id}.json
-
-        String variant_id = itemsArray.getJSONObject(0).getString("variant_id");
-        if(StrUtil.isBlank(variant_id)){
-            return null;
-        }
-        url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_VARIANTS, fulfillmentParam.getShopifyName(), variant_id);
-        json = this.shopifyRestTemplate.exchange(url, token);
-
-        // 获取inventory_item_ids
-        JSONObject variantJson = JSONObject.parseObject(json);
-        long inventory_item_id = variantJson.getJSONObject("variant").getLongValue("inventory_item_id");
-
-        // 第3步https://{shop}.myshopify.com/admin/api/2021-04/inventory_levels.json?inventory_item_ids={inventory_item_rest_id}
-
-        url = String.format(shopifyConfig.SHOPIFY_URI_QUERY_INVENTORY_LEVELS, fulfillmentParam.getShopifyName(), inventory_item_id);
-        json = this.shopifyRestTemplate.exchange(url, token);
-        JSONObject inventoryLevelsJson = JSONObject.parseObject(json);
-        JSONArray inventoryLevelsArray = inventoryLevelsJson.getJSONArray("inventory_levels");
-        // String location_id = inventoryLevelsArray.getJSONObject(0).getString("inventory_item_id");
-        String location_id = inventoryLevelsArray.getJSONObject(0).getString("location_id");
-
-        //第4步post https://{shop}.myshopify.com/admin/api/2021-04/orders/{orders_rest_id}/fulfillments.json
-
-
-        */
-
-    /**
-     * {
-     * "fulfillment": {
-     * "tracking_url": "http://www.packagetrackr.com/track/somecarrier/1234567",
-     * "tracking_company": "Jack Black's Pack, Stack and Track",
-     * "line_items": [
-     * {
-     * "id": 466157049
-     * },
-     * {
-     * "id": 518995019
-     * },
-     * {
-     * "id": 703073504
-     * }
-     * ]
-     * }
-     * }
-     *//*
-        Map<String, Object> param = new HashMap<>();
-
-        Map<String, Object> fulfillmentMap = new HashMap<>();
-        fulfillmentMap.put("location_id", location_id);
-        fulfillmentMap.put("tracking_number", fulfillmentParam.getTrackingNumber());
-        *//*JSONArray jsonArray = new JSONArray();
-        jsonArray.add(anElse.getName() + fulfillmentParam.getTrackingNumber());*//*
-        fulfillmentMap.put("tracking_url", anElse.getName() + fulfillmentParam.getTrackingNumber());
-        //fulfillmentMap.put("tracking_url", anElse.getUrl());
-
-        List<Map<String, Object>> line_itemsList = new ArrayList<>();
-        detailsList.forEach(e -> {
-            Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("id", e.getLineItemId());
-            line_itemsList.add(itemMap);
-        });
-
-        fulfillmentMap.put("line_items", line_itemsList);
-
-        param.put("fulfillment", fulfillmentMap);
-
-        url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, fulfillmentParam.getShopifyName(), fulfillmentParam.getOrderNo());
-        json = this.shopifyRestTemplate.post(url, this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName()), param);
-        return json;
-
-    }*/
     public String createFulfillmentOrders(FulfillmentParam fulfillmentParam, LogisticsCompanyEnum anElse) {
 
         String token = this.xmsShopifyAuthService.getShopifyToken(fulfillmentParam.getShopifyName(), fulfillmentParam.getMemberId());
@@ -768,6 +797,60 @@ public class ShopifyUtils {
             });
         }
         return productList;
+    }
+
+
+    /**
+     * 读取商品的图片信息
+     *
+     * @param pidSet
+     * @param shopifyName
+     */
+    @Async("taskExecutor")
+    public void getShopifyImgByList(Set<Long> pidSet, String shopifyName, Long memberId) {
+        if (CollectionUtil.isNotEmpty(pidSet)) {
+            String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
+            // 过滤错误的PID读取数据
+
+            QueryWrapper<XmsShopifyPidImgError> imgErrorQueryWrapper = new QueryWrapper<>();
+            imgErrorQueryWrapper.lambda().in(XmsShopifyPidImgError::getShopifyPid, Arrays.asList(pidSet.toArray()))
+                    .eq(XmsShopifyPidImgError::getShopifyName, shopifyName);
+            List<XmsShopifyPidImgError> errorList = this.xmsShopifyPidImgErrorService.list(imgErrorQueryWrapper);
+
+            Set<Long> delaySet = new HashSet<>();
+            if (CollectionUtil.isNotEmpty(errorList)) {
+                errorList.forEach(e -> delaySet.add(Long.parseLong(e.getShopifyPid())));
+                errorList.clear();
+            }
+            Set<Long> normalSet = pidSet.stream().filter(e -> !delaySet.contains(e)).collect(Collectors.toSet());
+            pidSet.clear();
+
+            if (normalSet.size() > 0) {
+                Set<Long> filterSet = new HashSet<>();
+                QueryWrapper<XmsShopifyPidImg> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().in(XmsShopifyPidImg::getShopifyPid, Arrays.asList(normalSet.toArray()))
+                        .eq(XmsShopifyPidImg::getShopifyName, shopifyName);
+                List<XmsShopifyPidImg> list = this.xmsShopifyPidImgService.list(queryWrapper);
+                if (CollectionUtil.isNotEmpty(list)) {
+                    list.forEach(e -> {
+                        if (!normalSet.contains(Long.parseLong(e.getShopifyPid()))) {
+                            filterSet.add(Long.parseLong(e.getShopifyPid()));
+                        }
+                    });
+                    list.clear();
+                } else {
+                    filterSet.addAll(normalSet);
+                }
+
+                Set<Long> longSet = this.tryGetNewPidImg(accessToken, shopifyName, filterSet);
+
+                if (longSet.size() > 0) {
+                    delaySet.addAll(longSet);
+                }
+            }
+
+            this.tryGetErrorPidImg(accessToken, shopifyName, delaySet);
+        }
     }
 
 
@@ -1265,6 +1348,227 @@ public class ShopifyUtils {
             this.shopifyOrderAddressService.save(xmsShopifyOrderAddress);
         }
         return productList;
+    }
+
+
+    /**
+     * 优先处理新过来的商品PID
+     *
+     * @param accessToken
+     * @param shopifyName
+     * @param filterSet
+     * @return
+     */
+    private Set<Long> tryGetNewPidImg(String accessToken, String shopifyName, Set<Long> filterSet) {
+        Set<Long> delaySet = new HashSet<>();
+
+
+        System.err.println("accessToken:" + accessToken + ",pids:" + JSONObject.toJSONString(filterSet));
+        log.info("accessToken:" + accessToken + ",pids:" + JSONObject.toJSONString(filterSet));
+
+        List<String> sucList = new ArrayList<>();
+        if (filterSet.size() > 0) {
+            // 过滤后，挨个读取图片信息
+            filterSet.forEach(e -> {
+                if (null != e && e > 0) {
+                    boolean b = this.loopGainImg(e, accessToken, shopifyName);
+                    if (b) {
+                        sucList.add(String.valueOf(e));
+                    } else {
+                        delaySet.add(e);
+                    }
+                }
+
+            });
+            filterSet.clear();
+        }
+        // 成功的删除error数据
+        this.deleteSuccessImg(shopifyName, sucList);
+        return delaySet;
+    }
+
+    /**
+     * 处理以前错误和现在错误的PID
+     *
+     * @param accessToken
+     * @param shopifyName
+     * @param delaySet
+     */
+    private void tryGetErrorPidImg(String accessToken, String shopifyName, Set<Long> delaySet) {
+        List<String> sucList = new ArrayList<>();
+        List<String> errorList = new ArrayList<>();
+        if (delaySet.size() > 0) {
+
+            System.err.println("accessToken:" + accessToken + ",pids:" + JSONObject.toJSONString(delaySet));
+            log.info("accessToken:" + accessToken + ",pids:" + JSONObject.toJSONString(delaySet));
+
+            Set<Long> filterSet = new HashSet<>();
+            QueryWrapper<XmsShopifyPidImgError> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyPidImgError::getShopifyName, shopifyName)
+                    .in(XmsShopifyPidImgError::getShopifyPid, Arrays.asList(delaySet.toArray()))
+                    .gt(XmsShopifyPidImgError::getTotal, 10);
+            List<XmsShopifyPidImgError> list = this.xmsShopifyPidImgErrorService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                // 大于10次的不再处理
+                Set<String> collect = list.stream().map(XmsShopifyPidImgError::getShopifyPid).collect(Collectors.toSet());
+                delaySet.forEach(e -> {
+                    if (!collect.contains(String.valueOf(e))) {
+                        filterSet.add(e);
+                    }
+                });
+                list.clear();
+                delaySet.clear();
+            }
+
+            if (filterSet.size() > 0) {
+
+                filterSet.forEach(e -> {
+                    // boolean b = this.singleGetErrorImgInfo(e, accessToken, shopifyName);
+                    boolean b = this.reTryGainImg(e, accessToken, shopifyName);
+                    if (b) {
+                        sucList.add(String.valueOf(e));
+                    } else {
+                        errorList.add(String.valueOf(e));
+                    }
+                });
+                this.deleteSuccessImg(shopifyName, sucList);
+                if (CollectionUtil.isNotEmpty(errorList)) {
+                    this.saveErrorImg(shopifyName, errorList);
+                    errorList.clear();
+                }
+
+            }
+        }
+    }
+
+    /**
+     * 重试
+     *
+     * @param pid
+     * @param accessToken
+     * @param shopifyName
+     * @return
+     */
+    private boolean singleGetErrorImgInfo(Long pid, String accessToken, String shopifyName) {
+        boolean b = this.loopGainImg(pid, accessToken, shopifyName);
+        int count = 0;
+        while (!b && count < 2) {
+            count++;
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            b = this.loopGainImg(pid, accessToken, shopifyName);
+        }
+        return b;
+    }
+
+
+    private boolean reTryGainImg(Long pid, String accessToken, String shopifyName) {
+        Retryer<Boolean> reTryer = RetryerBuilder.<Boolean>newBuilder()
+                .retryIfResult(aBoolean -> Objects.equals(aBoolean, false))
+                .retryIfException()
+                .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+                .withStopStrategy(StopStrategies.stopAfterAttempt(2))
+                //.withRetryListener(new MyRetryListener<>())
+                .build();
+        Boolean call = false;
+        try {
+            call = reTryer.call(() -> this.loopGainImg(pid, accessToken, shopifyName));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return call;
+    }
+
+    private boolean loopGainImg(Long pid, String accessToken, String shopifyName) {
+        try {
+
+            String url = String.format(this.shopifyConfig.SHOPIFY_URI_PRODUCTS_IMGS, shopifyName, pid);
+
+            System.err.println(url);
+            String json = this.shopifyRestTemplate.get(url, accessToken);
+            if (null != json) {
+                JSONObject jsonObject = JSONObject.parseObject(json);
+                XmsShopifyPidImg pidImg = new XmsShopifyPidImg();
+                JSONArray images = jsonObject.getJSONArray("images");
+                if (null != images && images.size() > 0) {
+                    pidImg.setShopifyPid(String.valueOf(pid));
+                    pidImg.setShopifyName(shopifyName);
+                    pidImg.setImg(images.getJSONObject(0).getString("src"));
+                    pidImg.setImgInfo(images.toJSONString());
+                    pidImg.setCreateTime(new Date());
+                    this.xmsShopifyPidImgService.save(pidImg);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            //e.printStackTrace();
+            log.error("singleGetImgInfo,shopifyName[{}],pid[{}],error:", shopifyName, pid, e);
+        }
+        return false;
+    }
+
+
+    private void deleteSuccessImg(String shopifyName, List<String> sucList) {
+        try {
+            if (sucList.size() > 0) {
+                // 成功的删除error数据
+                QueryWrapper<XmsShopifyPidImgError> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyPidImgError::getShopifyName, shopifyName)
+                        .in(XmsShopifyPidImgError::getShopifyPid, sucList);
+                this.xmsShopifyPidImgErrorService.remove(queryWrapper);
+                sucList.clear();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveErrorImg(String shopifyName, List<String> errorList) {
+        synchronized (shopifyName) {
+            try {
+
+                QueryWrapper<XmsShopifyPidImgError> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyPidImgError::getShopifyName, shopifyName)
+                        .in(XmsShopifyPidImgError::getShopifyPid, errorList);
+                List<XmsShopifyPidImgError> list = this.xmsShopifyPidImgErrorService.list(queryWrapper);
+                Set<String> collect = new HashSet<>();
+                if (CollectionUtil.isNotEmpty(list)) {
+                    list.forEach(e -> collect.add(e.getShopifyPid()));
+
+                    list = list.stream().filter(e -> !errorList.contains(e.getShopifyPid())).collect(Collectors.toList());
+                    if (CollectionUtil.isNotEmpty(list)) {
+                        list.forEach(e -> e.setTotal(null == e.getTotal() ? 1 : e.getTotal() + 1));
+
+                        this.xmsShopifyPidImgErrorService.updateBatchById(list);
+                        list.clear();
+                    }
+
+                }
+
+                if (errorList.size() > 0) {
+                    List<XmsShopifyPidImgError> imgErrorList = new ArrayList<>();
+                    errorList.stream().filter(e -> !collect.contains(e)).forEach(e -> {
+                        XmsShopifyPidImgError temp = new XmsShopifyPidImgError();
+                        temp.setShopifyName(shopifyName);
+                        temp.setShopifyPid(e);
+                        temp.setTotal(1L);
+                        imgErrorList.add(temp);
+                    });
+                    if (CollectionUtil.isNotEmpty(imgErrorList)) {
+                        this.xmsShopifyPidImgErrorService.saveBatch(imgErrorList);
+                    }
+
+
+                    errorList.clear();
+                }
+                collect.clear();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

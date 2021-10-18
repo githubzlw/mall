@@ -1,13 +1,6 @@
 package com.macro.mall.service;
 
-import com.macro.mall.dto.UmsAdminParam;
-import com.macro.mall.dto.UpdateAdminPasswordParam;
-import com.macro.mall.model.UmsAdmin;
 import com.macro.mall.model.UmsMember;
-import com.macro.mall.model.UmsResource;
-import com.macro.mall.model.UmsRole;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,5 +15,10 @@ public interface UmsMemberService {
      */
     List<UmsMember> list(String keyword, Integer pageSize, Integer pageNum);
 
+    Long getListCount();
+
+    List<UmsMember> getListByLimit(Integer pageSize, Integer pageNum);
+
+    List<UmsMember> getByList(List<Long> list);
 
 }

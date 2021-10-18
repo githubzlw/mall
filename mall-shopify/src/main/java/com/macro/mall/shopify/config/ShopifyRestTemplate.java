@@ -3,6 +3,7 @@ package com.macro.mall.shopify.config;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.macro.mall.common.util.UrlUtil;
+import com.macro.mall.shopify.exception.AccessTokenException;
 import com.macro.mall.shopify.exception.ShopifyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,7 +94,11 @@ public class ShopifyRestTemplate {
             return restTemplate.postForObject(uri, requestEntity, String.class);
         } catch (Exception e) {
             log.error("postForObject", e);
-            throw e;
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "postForObject error");
+            }
         }
 
     }
@@ -141,22 +145,30 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("exchange,uri[{}],token[{}]", uri, token, e);
-            throw new ShopifyException("1003", "exchange error");
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "exchange error");
+            }
         }
     }
 
     public String get(String uri, String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Shopify-Access-Token", token);
-        HttpEntity entity = new HttpEntity(headers);
-        String params = null;
-        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class, params);
-        if (response.getStatusCode().is2xxSuccessful()) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Shopify-Access-Token", token);
+            HttpEntity entity = new HttpEntity(headers);
+            String params = null;
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class, params);
             return response.getBody();
-        } else {
-            log.error("exchange,uri[{}],token[{}],error!!", uri, token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "get error");
+            }
         }
-        return null;
     }
 
 
@@ -231,7 +243,11 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("put", e);
-            throw new ShopifyException("1003", "put error");
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "put error");
+            }
         }
     }
 
@@ -251,7 +267,11 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("put", e);
-            throw new ShopifyException("1003", "put error");
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "put error");
+            }
         }
     }
 
@@ -268,7 +288,11 @@ public class ShopifyRestTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("post", e);
-            throw new ShopifyException("1003", "post error");
+            if (e.getMessage().contains("Invalid API key or access token")) {
+                throw new AccessTokenException("1004", "Invalid token");
+            } else {
+                throw new ShopifyException("1003", "post error");
+            }
         }
     }
 
@@ -284,5 +308,6 @@ public class ShopifyRestTemplate {
         return JSONObject.parseObject(postForEntity.toString());*/
         return urlUtil.postUrlByToken(uri, token, params);
     }
+
 
 }

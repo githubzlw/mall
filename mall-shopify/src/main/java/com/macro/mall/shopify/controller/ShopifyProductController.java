@@ -4,6 +4,7 @@ package com.macro.mall.shopify.controller;
 import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.shopify.cache.RedisUtil;
+import com.macro.mall.shopify.exception.AccessTokenException;
 import com.macro.mall.shopify.pojo.AddProductBean;
 import com.macro.mall.shopify.service.XmsShopifyProductService;
 import com.macro.mall.shopify.util.ShopifyUtils;
@@ -16,9 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Slf4j
@@ -75,7 +74,10 @@ public class ShopifyProductController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("getProductsByShopifyName, shopifyName[{}],error:", shopifyName, e);
-            return CommonResult.failed(e.getMessage());
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("getProductsByShopifyName error!");
         }
     }
 
@@ -85,26 +87,36 @@ public class ShopifyProductController {
     @ResponseBody
     public CommonResult addProduct(AddProductBean addProductBean) {
 
-        String shopname = addProductBean.getShopName();
-        if (StringUtils.isBlank(shopname)) {
-            return CommonResult.failed("SHOPNAME IS NULL");
-        }
-        String pid = addProductBean.getPid();
-        if (StringUtils.isBlank(pid)) {
-            return CommonResult.failed("PRODUCT IS NULL");
-        }
-        Map<String, String> map = new HashMap<>();
-        Object val = this.redisUtil.hmgetObj(RedisUtil.ADD_PRODUCT, shopname + "_" + pid);
-        if (null != val && "success".equalsIgnoreCase(val.toString())) {
-            return CommonResult.success("this shop is execute!!");
+        try {
+            String shopname = addProductBean.getShopName();
+            if (StringUtils.isBlank(shopname)) {
+                return CommonResult.failed("SHOPNAME IS NULL");
+            }
+            String pid = addProductBean.getPid();
+            if (StringUtils.isBlank(pid)) {
+                return CommonResult.failed("PRODUCT IS NULL");
+            }
+            Map<String, String> map = new HashMap<>();
+            Object val = this.redisUtil.hmgetObj(RedisUtil.ADD_PRODUCT, shopname + "_" + pid);
+            if (null != val && "success".equalsIgnoreCase(val.toString())) {
+                return CommonResult.success("this shop is execute!!");
+            }
+
+            CommonResult commonResult = this.shopifyService.pushProduct(addProductBean);
+            if (null != commonResult && commonResult.getCode() == 200) {
+                map.put(shopname + "_" + pid, "success");
+                this.redisUtil.hmset(RedisUtil.ADD_PRODUCT, map, 60);
+            }
+            return commonResult;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("addProduct,addProductBean[{}],error:", addProductBean, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed(e.getMessage());
         }
 
-        CommonResult commonResult = this.shopifyService.pushProduct(addProductBean);
-        if (null != commonResult && commonResult.getCode() == 200) {
-            map.put(shopname + "_" + pid, "success");
-            this.redisUtil.hmset(RedisUtil.ADD_PRODUCT, map, 60);
-        }
-        return commonResult;
     }
 
     @ApiOperation("删除shopify商品")
@@ -118,7 +130,11 @@ public class ShopifyProductController {
             return CommonResult.success(s);
         } catch (Exception e) {
             e.printStackTrace();
-            return CommonResult.failed(e.getMessage());
+            log.error("deleteProduct,idList[{}],shopifyName[{}],error:", idList, shopifyName, e);
+            if (e instanceof AccessTokenException) {
+                return CommonResult.unauthorized("Please reauthorize");
+            }
+            return CommonResult.failed("deleteProduct error!");
         }
 
     }

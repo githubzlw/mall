@@ -77,41 +77,33 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
     @Override
     public CommonResult pushProduct(AddProductBean addProductBean) {
-        try {
+        LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
+        ProductRequestWrap wrap = new ProductRequestWrap();
+        wrap.setPid(addProductBean.getPid());
+        wrap.setSourcingId(addProductBean.getSourcingId());
+        wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
+        wrap.setShopname(addProductBean.getShopName());
+        List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
+        wrap.setSkus(skuList);
 
-            LOGGER.info("begin push addProductBean[{}] to shopify[{}]", addProductBean, addProductBean.getShopName());
-            ProductRequestWrap wrap = new ProductRequestWrap();
-            wrap.setPid(addProductBean.getPid());
-            wrap.setSourcingId(addProductBean.getSourcingId());
-            wrap.setPublished("1".equalsIgnoreCase(addProductBean.getPublished()));
-            wrap.setShopname(addProductBean.getShopName());
-            List<String> skuList = Arrays.asList(addProductBean.getSkuCodes().split(","));
-            wrap.setSkus(skuList);
-
-            if (StrUtil.isNotBlank(addProductBean.getCollectionId())) {
-                wrap.setCollectionId(addProductBean.getCollectionId());
-            }
-            if (StrUtil.isNotBlank(addProductBean.getProductTags())) {
-                wrap.setProductTags(addProductBean.getProductTags());
-            }
-            if (StrUtil.isNotBlank(addProductBean.getProductType())) {
-                wrap.setProductType(addProductBean.getProductType());
-            }
+        if (StrUtil.isNotBlank(addProductBean.getCollectionId())) {
+            wrap.setCollectionId(addProductBean.getCollectionId());
+        }
+        if (StrUtil.isNotBlank(addProductBean.getProductTags())) {
+            wrap.setProductTags(addProductBean.getProductTags());
+        }
+        if (StrUtil.isNotBlank(addProductBean.getProductType())) {
+            wrap.setProductType(addProductBean.getProductType());
+        }
 
 
-            ProductWraper wraper = this.pushProductWFW(wrap, addProductBean.getMemberId());
-            if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
-                return CommonResult.success("PUSH SUCCESSED");
-            } else if (wraper != null && wraper.isPush()) {
-                return CommonResult.failed("PRODUCT HAD PUSHED");
-            } else {
-                return CommonResult.failed("NO PRODUCT TO PUSH");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOGGER.error("PUSH PRODUCT FAILED:", e);
-            return CommonResult.failed(e.getMessage());
+        ProductWraper wraper = this.pushProductWFW(wrap, addProductBean.getMemberId());
+        if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
+            return CommonResult.success("PUSH SUCCESSED");
+        } else if (wraper != null && wraper.isPush()) {
+            return CommonResult.failed("PRODUCT HAD PUSHED");
+        } else {
+            return CommonResult.failed("NO PRODUCT TO PUSH");
         }
     }
 
@@ -134,7 +126,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId())
-        .eq(XmsPmsSkuStockEdit::getMemberId, memberId);
+                .eq(XmsPmsSkuStockEdit::getMemberId, memberId);
         List<XmsPmsSkuStockEdit> skuList = this.skuStockMapper.selectList(queryWrapper);
 
         LOGGER.info("pushProductWFW,skuList[{}]", skuList);
@@ -143,7 +135,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
         Set<String> skuSet = new HashSet<>();
         skuList.forEach(e -> {
-            if(wrap.getSkus().contains(e.getSkuCode()) && !skuSet.contains(e.getSkuCode())){
+            if (wrap.getSkus().contains(e.getSkuCode()) && !skuSet.contains(e.getSkuCode())) {
                 collect.add(e);
                 skuSet.add(e.getSkuCode());
             }
@@ -400,6 +392,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             product.setTags(jsonArray.toJSONString());
         }
 
+        product.setBody_html(goods.getInfoHtml());
         XmsShopifyPidInfo shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(goods.getPid());
@@ -436,7 +429,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         try {
             // 如果有collectionId则绑定数据
             QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
-            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname()).eq(XmsShopifyAuth::getMemberId, memberId);;
+            authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, wrap.getShopname()).eq(XmsShopifyAuth::getMemberId, memberId);
+            ;
             XmsShopifyAuth shopifyAuth = this.xmsShopifyAuthMapper.selectOne(authQueryWrapper);
             String token = shopifyAuth.getAccessToken();
 
@@ -613,7 +607,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             variants.setInventory_quantity(skuList.get(i).getStock());
             variants.setInventory_management("shopify");
 //            variants.setCompare_at_price(String.valueOf(skuList.get(i).getComparedAtPrice()));
-            if(StrUtil.isNotBlank(skuList.get(i).getPic())){
+            if (StrUtil.isNotBlank(skuList.get(i).getPic())) {
                 image.add(skuList.get(i).getPic());
             }
             // 规格数据
@@ -853,7 +847,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                         nameSet.clear();
                     }
                 }
-                if(newOptions.size() > 0){
+                if (newOptions.size() > 0) {
                     product.put("options", newOptions);
                 }
 
@@ -870,7 +864,10 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                 // 6.组合PID数据 title和body_html
                 product.put("id", xmsShopifyPidInfo.getShopifyPid());
                 product.put("title", productWraper.getProduct().getTitle());
-                product.put("body_html", productWraper.getProduct().getBody_html());
+                if (StrUtil.isNotBlank(productWraper.getProduct().getBody_html())) {
+                    product.put("body_html", productWraper.getProduct().getBody_html());
+                }
+
                 // 7.完整更新
                 saveObject.put("product", product);
 

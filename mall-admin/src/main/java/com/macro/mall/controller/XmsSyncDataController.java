@@ -1,10 +1,12 @@
 package com.macro.mall.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.OmsOrderDetail;
 import com.macro.mall.dto.SyncOrderParam;
 import com.macro.mall.model.OmsOrder;
 import com.macro.mall.service.OmsOrderService;
+import com.macro.mall.task.ShopifyTask;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,6 +36,9 @@ public class XmsSyncDataController {
 
     @Autowired
     private OmsOrderService orderService;
+
+    @Autowired
+    private ShopifyTask shopifyTask;
 
     @ApiOperation("获取客户的订单总数")
     @RequestMapping(value = "/getOrderCountByUserInfo/{memberId}", method = RequestMethod.GET)
@@ -81,6 +88,29 @@ public class XmsSyncDataController {
             e.printStackTrace();
             log.error("orderDetails,orderNo[{}],error:", orderNo, e);
             return CommonResult.failed("query list error!");
+        }
+    }
+
+
+    @ApiOperation("获取客户的订单详情")
+    @RequestMapping(value = "/shopifyTask", method = RequestMethod.GET)
+    public CommonResult shopifyTask(String memberIds) {
+
+        try {
+            if (StrUtil.isNotBlank(memberIds) && memberIds.length() > 1) {
+                List<Long> list = new ArrayList<>();
+                for (String e : memberIds.split(",")) {
+                    list.add(Long.parseLong(e));
+                }
+                this.shopifyTask.getAndSyncShopifyByList(list);
+            } else {
+                this.shopifyTask.getAndSyncShopify();
+            }
+            return CommonResult.success(memberIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("shopifyTask,memberIds[{}],error:", memberIds, e);
+            return CommonResult.failed("shopifyTask error," + e.getMessage());
         }
     }
 
