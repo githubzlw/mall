@@ -39,7 +39,18 @@ public class XmsChromeUploadController {
             xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getUrl().substring(0, 300));
         }
         if(StrUtil.isNotEmpty(xmsChromeUploadParam.getImages()) && xmsChromeUploadParam.getImages().length() > 2500){
-            xmsChromeUploadParam.setUrl(xmsChromeUploadParam.getImages().substring(0, 2500));
+            String tempImgs = xmsChromeUploadParam.getImages().substring(0, 2500);
+
+            if(xmsChromeUploadParam.getUrl().contains("https://www.walmart.com/")){
+                // odnHeight=80&odnWidth=80
+                if(tempImgs.contains("odnHeight=80")){
+                    tempImgs = tempImgs.replace("odnHeight=80","odnHeight=612");
+                }
+                if(tempImgs.contains("odnWidth=80")){
+                    tempImgs = tempImgs.replace("odnWidth=80","odnWidth=612");
+                }
+            }
+            xmsChromeUploadParam.setImages(tempImgs);
         }
         // 处理productDescription和productDetail的emoji表情
         if(StrUtil.isNotEmpty(xmsChromeUploadParam.getProductDetail())){
