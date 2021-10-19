@@ -290,6 +290,7 @@ public class XmsSourcingController {
         Assert.isTrue(null != sourcingProductParam.getSourcingId() && sourcingProductParam.getSourcingId() > 0, "sourcingId null");
         Assert.isTrue(null != sourcingProductParam.getWeight() && sourcingProductParam.getWeight().doubleValue() > 0, "weight null");
         Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSkuList()), "skuList null");
+        Assert.isTrue(StrUtil.isNotBlank(sourcingProductParam.getSaveList()), "saveList null");
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
@@ -298,6 +299,8 @@ public class XmsSourcingController {
             if (null == xmsSourcingList) {
                 return CommonResult.validateFailed("No data available");
             }
+
+            List<ProductSkuSaveEdit> saveEditList = JSONArray.parseArray(sourcingProductParam.getSaveList(), ProductSkuSaveEdit.class);
 
             List<XmsPmsSkuStockEdit> stockEditList = JSONArray.parseArray(sourcingProductParam.getSkuList(), XmsPmsSkuStockEdit.class);
             if (CollectionUtil.isEmpty(stockEditList)) {
@@ -332,7 +335,7 @@ public class XmsSourcingController {
                 }
 
                 // 保存sku的数据
-                one.setSkuJson(JSONArray.toJSONString(stockEditList));
+                one.setSkuJson(JSONArray.toJSONString(saveEditList));
                 one.setCollectionId(sourcingProductParam.getCollectionId());
                 one.setProductTags(sourcingProductParam.getProductTags());
                 one.setProductType(sourcingProductParam.getProductType());
@@ -399,6 +402,7 @@ public class XmsSourcingController {
                     stockEditList.clear();
                 }
 
+                saveEditList.clear();
                 // 保存日志信息
                 this.xmsProductSaveEditService.saveOrUpdate(one);
 

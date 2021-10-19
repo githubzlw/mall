@@ -122,7 +122,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         LOGGER.info("pushProductWFW,wrap[{}],memberId[{}]", wrap, memberId);
         LOGGER.info("pushProductWFW,XmsPmsProductEdit[{}]", pmsProduct);
 
-        ShopifyData goods = composeShopifyData(pmsProduct, wrap.getSite());
+        ShopifyData goods = this.composeShopifyData(pmsProduct, wrap.getSite());
 
         QueryWrapper<XmsPmsSkuStockEdit> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(XmsPmsSkuStockEdit::getProductId, pmsProduct.getProductId())
@@ -773,7 +773,11 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                                 tmJson.put("id", jsonObject.getString("id"));
                                 tmJson.put("price", sku.getPrice());
                                 tmJson.put("grams", sku.getInventory_quantity());
-                                tmJson.put("title", sku.getOption1() + " / " + sku.getOption2());
+                                if (StrUtil.isNotBlank(sku.getOption2())) {
+                                    tmJson.put("title", sku.getOption1() + " / " + sku.getOption2());
+                                } else {
+                                    tmJson.put("title", sku.getOption1());
+                                }
                                 tmJson.put("option1", sku.getOption1());
                                 tmJson.put("option2", sku.getOption2());
                                 tmJson.put("option3", sku.getOption3());
@@ -788,6 +792,11 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                                 tmJson.put("price", v.getPrice());
                                 tmJson.put("grams", v.getInventory_quantity());
                                 tmJson.put("title", v.getOption1() + " / " + v.getOption2());
+                                if (StrUtil.isNotBlank(v.getOption2())) {
+                                    tmJson.put("title", v.getOption1() + " / " + v.getOption2());
+                                } else {
+                                    tmJson.put("title", v.getOption1());
+                                }
                                 tmJson.put("product_id", xmsShopifyPidInfo.getShopifyPid());
                                 tmJson.put("sku", v.getSku());
                                 tmJson.put("option1", v.getOption1());

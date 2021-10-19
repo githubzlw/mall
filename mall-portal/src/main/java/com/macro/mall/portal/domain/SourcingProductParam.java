@@ -1,13 +1,9 @@
 package com.macro.mall.portal.domain;
 
-import com.macro.mall.entity.XmsPmsProductEdit;
-import com.macro.mall.entity.XmsPmsSkuStockEdit;
 import com.macro.mall.model.PmsProduct;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * @author: JiangXW
@@ -25,6 +21,9 @@ public class SourcingProductParam extends PmsProduct {
 
     @ApiModelProperty(value = "product的sku数据:list的字符串")
     private String skuList;
+
+    @ApiModelProperty(value = "保存的字段")
+    private String saveList;
 
     private String collectionId;
     private String productType;
