@@ -49,5 +49,6 @@ public class XmsShopifyPidInfo implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     private Date updateTime;
 
+    private Long sourcingId;
 
 }

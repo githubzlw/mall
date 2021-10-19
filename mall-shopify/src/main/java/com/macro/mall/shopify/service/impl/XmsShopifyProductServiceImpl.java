@@ -97,7 +97,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         }
 
 
-        ProductWraper wraper = this.pushProductWFW(wrap, addProductBean.getMemberId());
+        ProductWraper wraper = this.pushProductWFW(wrap, addProductBean.getMemberId(), addProductBean.getSourcingId());
         if (wraper != null && wraper.getProduct() != null && wraper.getProduct().getId() != 0L && !wraper.isPush()) {
             return CommonResult.success("PUSH SUCCESSED");
         } else if (wraper != null && wraper.isPush()) {
@@ -107,7 +107,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         }
     }
 
-    public ProductWraper pushProductWFW(ProductRequestWrap wrap, Long memberId) throws ShopifyException {
+    public ProductWraper pushProductWFW(ProductRequestWrap wrap, Long memberId, Long sourcingId) throws ShopifyException {
         //验证是否已经铺货过
         /*ProductWraper productWraper = checkPush(wrap.getShopname(), wrap.getPid());
         if (productWraper != null) {
@@ -146,7 +146,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         goods.setSkus(wrap.getSkus());
         goods.setPublished(wrap.isPublished());
         goods.setBodyHtml(wrap.isBodyHtml());
-        return this.onlineProduct(wrap, goods, memberId);
+        return this.onlineProduct(wrap, goods, memberId, sourcingId);
     }
 
     /**
@@ -377,7 +377,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return shopifyPidInfoMapper.selectOne(lambdaQuery);
     }
 
-    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods, Long memberId) throws ShopifyException {
+    public ProductWraper onlineProduct(ProductRequestWrap wrap, ShopifyData goods, Long memberId, Long sourcingId) throws ShopifyException {
         String shopname = wrap.getShopname();
         Product product = this.toProduct(goods);
         if (StrUtil.isNotBlank(wrap.getCollectionId())) {
@@ -413,6 +413,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             shopifyBean.setShopifyPid(String.valueOf(productWraper.getProduct().getId()));
             shopifyBean.setShopifyInfo(JSONObject.toJSONString(productWraper));
             shopifyBean.setPublish(product.isPublished() ? 1 : 0);
+            shopifyBean.setSourcingId(sourcingId);
             shopifyBean.setCreateTime(new Date());
             this.insertShopifyIdWithPid(shopifyBean);
 
