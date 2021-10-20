@@ -287,6 +287,7 @@ public class ProductUtils {
             // 更新shopify
             customerProduct.setProductId((long) productMaxId);
             customerProduct.setSourcingId(xmsSourcingList.getId());
+            customerProduct.setImportFlag(0);
             this.xmsCustomerProductMapper.updateById(customerProduct);
 
             QueryWrapper<XmsShopifyPidInfo> pidInfoWrapper = new QueryWrapper<>();
@@ -302,6 +303,7 @@ public class ProductUtils {
                 xmsShopifyPidInfo.setShopifyName(customerProduct.getShopifyName());
                 xmsShopifyPidInfo.setShopifyPid(String.valueOf(customerProduct.getShopifyProductId()));
                 xmsShopifyPidInfo.setSourcingId(customerProduct.getSourcingId());
+                xmsShopifyPidInfo.setMemberId(customerProduct.getMemberId());
                 this.xmsShopifyPidInfoMapper.insert(xmsShopifyPidInfo);
             }
             return true;

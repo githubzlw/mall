@@ -47,11 +47,10 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         }
         if(null != productParam.getImportFlag()){
             if(1 == productParam.getImportFlag()){
-                lambdaQuery.gt(XmsCustomerProduct::getProductId, 0);
-                lambdaQuery.gt(XmsCustomerProduct::getSourcingId, 0);
-                lambdaQuery.gt(XmsCustomerProduct::getShopifyProductId, 0);
+                lambdaQuery.gt(XmsCustomerProduct::getImportFlag, 1);
+                lambdaQuery.gt(XmsCustomerProduct::getStatus, 1);
             } else if(0 == productParam.getImportFlag()){
-                lambdaQuery.eq(XmsCustomerProduct::getSourcingId, 0);
+                lambdaQuery.eq(XmsCustomerProduct::getImportFlag, 0);
             }
 
         }

@@ -92,7 +92,9 @@ public class PmsPortalProductController {
             if (CollectionUtil.isNotEmpty(productList)) {
                 List<Long> collect = productList.stream().mapToLong(PmsProduct::getId).boxed().collect(Collectors.toList());
                 QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
-                queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, currentMember.getShopifyName()).in(XmsShopifyPidInfo::getPid, collect);
+                queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, currentMember.getShopifyName())
+                        .in(XmsShopifyPidInfo::getMemberId, currentMember.getId())
+                        .in(XmsShopifyPidInfo::getPid, collect);
                 List<XmsShopifyPidInfo> list = this.xmsShopifyPidInfoService.list(queryWrapper);
                 List<String> pidList = list.stream().map(XmsShopifyPidInfo::getPid).collect(Collectors.toList());
 
@@ -108,6 +110,7 @@ public class PmsPortalProductController {
                 Map<String, List<XmsShopifyPidInfo>> finalPidMap = pidMap;
                 productList.forEach(e -> {
                     String tempId = String.valueOf(e.getId());
+                    // note是1的表示已经导入到shopify，0未导入
                     if (pidList.contains(tempId)) {
                         e.setNote("1");
                     } else {
@@ -116,6 +119,7 @@ public class PmsPortalProductController {
                     if(StrUtil.isBlank(e.getMoq())){
                         e.setMoq("1");
                     }
+                    // lowStock  里面的数量标识已经同步的数量
                     if(finalPidMap.containsKey(tempId)){
                         e.setLowStock(finalPidMap.get(tempId).size());
                     } else{

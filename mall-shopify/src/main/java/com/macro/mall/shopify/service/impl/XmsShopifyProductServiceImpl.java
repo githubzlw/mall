@@ -348,8 +348,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return imgList;
     }
 
-    private ProductWraper checkPush(String shopName, String pid) {
-        XmsShopifyPidInfo shopifyBean = checkProduct(shopName, pid);
+    private ProductWraper checkPush(String shopName, String pid, Long memberId) {
+        XmsShopifyPidInfo shopifyBean = checkProduct(shopName, pid, memberId);
         if (shopifyBean != null && StringUtils.isNotBlank(shopifyBean.getShopifyPid())) {
             ProductWraper wraper = new ProductWraper();
             if (StringUtils.isNotBlank(shopifyBean.getShopifyInfo())) {
@@ -363,16 +363,18 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         return null;
     }
 
-    public XmsShopifyPidInfo checkProduct(String shopname, String itemId) throws ShopifyException {
+    public XmsShopifyPidInfo checkProduct(String shopname, String itemId, Long memberId) throws ShopifyException {
         XmsShopifyPidInfo shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(itemId);
+        shopifyBean.setMemberId(memberId);
         return selectShopifyId(shopifyBean);
     }
 
     public XmsShopifyPidInfo selectShopifyId(XmsShopifyPidInfo shopifyBean) {
         LambdaQueryWrapper<XmsShopifyPidInfo> lambdaQuery = Wrappers.lambdaQuery();
         lambdaQuery.eq(XmsShopifyPidInfo::getShopifyName, shopifyBean.getShopifyName())
+                .eq(XmsShopifyPidInfo::getMemberId, shopifyBean.getMemberId())
                 .eq(XmsShopifyPidInfo::getPid, shopifyBean.getPid());
         return shopifyPidInfoMapper.selectOne(lambdaQuery);
     }
@@ -396,6 +398,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         XmsShopifyPidInfo shopifyBean = new XmsShopifyPidInfo();
         shopifyBean.setShopifyName(shopname);
         shopifyBean.setPid(goods.getPid());
+        shopifyBean.setMemberId(memberId);
         XmsShopifyPidInfo shopifyId = selectShopifyId(shopifyBean);
         if (shopifyId != null) {
             product.setId(Long.parseLong(shopifyId.getShopifyPid()));
@@ -534,7 +537,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
         int result = 0;
         if (sopifyId != null) {
             UpdateWrapper<XmsShopifyPidInfo> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("shopify_name", shopifyBean.getShopifyName()).eq("pid", shopifyBean.getPid());
+            updateWrapper.eq("shopify_name", shopifyBean.getShopifyName())
+                    .eq("pid", shopifyBean.getPid())
+            .eq("member_id", shopifyBean.getMemberId());
             XmsShopifyPidInfo bean = new XmsShopifyPidInfo();
 
             BeanUtil.copyProperties(sopifyId, bean);
@@ -685,6 +690,7 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
 
             QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
             pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getPid, productId)
+                    .eq(XmsShopifyPidInfo::getMemberId, memberId)
                     .eq(XmsShopifyPidInfo::getShopifyName, shopName);
             XmsShopifyPidInfo xmsShopifyPidInfo = this.shopifyPidInfoMapper.selectOne(pidInfoQueryWrapper);
 

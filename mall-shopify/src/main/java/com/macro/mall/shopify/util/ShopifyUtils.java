@@ -15,7 +15,6 @@ import com.google.gson.Gson;
 import com.macro.mall.common.util.BigDecimalUtil;
 import com.macro.mall.entity.*;
 import com.macro.mall.mapper.XmsCustomerProductMapper;
-import com.macro.mall.mapper.XmsCustomerSkuStockMapper;
 import com.macro.mall.mapper.XmsShopifyPidInfoMapper;
 import com.macro.mall.mapper.XmsSourcingListMapper;
 import com.macro.mall.shopify.config.ShopifyConfig;
@@ -416,7 +415,8 @@ public class ShopifyUtils {
             boolean b = checkHasCustomerProduct(customerProduct);
             if (!b) {
                 QueryWrapper<XmsShopifyPidInfo> pidInfoWrapper = new QueryWrapper<>();
-                pidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId());
+                pidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId())
+                        .eq(XmsShopifyPidInfo::getMemberId, memberId);
                 List<XmsShopifyPidInfo> pidInfoList = this.xmsShopifyPidInfoMapper.selectList(pidInfoWrapper);
                 if (CollectionUtil.isNotEmpty(pidInfoList)) {
                     QueryWrapper<XmsSourcingList> sourcingWrapper = new QueryWrapper<>();
@@ -1081,7 +1081,9 @@ public class ShopifyUtils {
             productList.forEach(e -> shopifyPidList.add(e.getShopifyProductId()));
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
+            updateWrapper.lambda().in(XmsSourcingList::getId, collect)
+                    .eq(XmsSourcingList::getMemberId, memberId)
+                    .set(XmsSourcingList::getAddProductFlag, 0);
             this.xmsSourcingListMapper.update(null, updateWrapper);
             collect.clear();
 
@@ -1100,6 +1102,7 @@ public class ShopifyUtils {
                 QueryWrapper<XmsShopifyPidInfo> pidInfoQueryWrapper = new QueryWrapper<>();
                 // 删除关联关系
                 pidInfoQueryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                        .eq(XmsShopifyPidInfo::getMemberId, memberId)
                         .in(XmsShopifyPidInfo::getShopifyPid, shopifyPidList);
                 this.xmsShopifyPidInfoMapper.delete(pidInfoQueryWrapper);
                 shopifyPidList.clear();

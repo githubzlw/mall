@@ -235,7 +235,12 @@ public class XmsYouLiveProductController {
         try {
 
 
+            /**
+             * 删除your live product商品（同时删除shopify上商品时），恢复sourcinglist中商品add to your live product按钮，
+             * 只删除your live product商品（未删除shopify上商品时），sourcinglist中商品按钮不恢复
+             */
             boolean b;
+            List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductService.listByIds(ids);
             if (null != sameShopify && sameShopify == 1) {
 
                 StringBuffer sb = new StringBuffer();
@@ -248,18 +253,19 @@ public class XmsYouLiveProductController {
                 JSONObject jsonObject = this.urlUtil.postURL(this.microServiceConfig.getShopifyUrl() + "/deleteProduct", param);
                 b = null != jsonObject && jsonObject.containsKey("code") && jsonObject.getIntValue("code") == 200;
                 if (b) {
-                    return CommonResult.success(b);
+
+                    return CommonResult.success(true);
                 }
             } else {
-                List<Long> productIds = new ArrayList<>();
-                List<XmsCustomerProduct> xmsCustomerProducts = this.xmsCustomerProductService.listByIds(ids);
+                //List<Long> productIds = new ArrayList<>();
                 if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
                     List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
-                    productIds = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
+                    //productIds = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
                     UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
                     updateWrapper.lambda().in(XmsSourcingList::getId, collect).set(XmsSourcingList::getAddProductFlag, 0);
                     this.xmsSourcingListService.update(null, updateWrapper);
                     collect.clear();
+                    xmsCustomerProducts.clear();
                 }
 
                 if (CollectionUtil.isNotEmpty(ids)) {

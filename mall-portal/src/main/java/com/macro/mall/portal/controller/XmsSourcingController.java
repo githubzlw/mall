@@ -466,6 +466,8 @@ public class XmsSourcingController {
     @RequestMapping(value = "/deleteSourcing", method = RequestMethod.POST)
     @ApiImplicitParams({@ApiImplicitParam(name = "sourcingId", value = "sourcing表的ID", required = true, dataType = "Long")})
     public CommonResult deleteSourcing(Long sourcingId) {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             // 检查数据是否存在
             XmsSourcingList xmsSourcingList = this.xmsSourcingListService.getById(sourcingId);
@@ -474,8 +476,17 @@ public class XmsSourcingController {
             }
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, 4);
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
+
+            // sourclinglist中该商品，恢复quato price按钮（询价、删除按钮）
+            UpdateWrapper<XmsCustomerProduct> productUpdateWrapper = new UpdateWrapper<>();
+            productUpdateWrapper.lambda().set(XmsCustomerProduct::getImportFlag, 0)
+                    .eq(XmsCustomerProduct::getSourcingId, sourcingId)
+                    .eq(XmsCustomerProduct::getMemberId, currentMember.getId());
+
+            this.xmsCustomerProductService.update(productUpdateWrapper);
+
             return CommonResult.success(update);
         } catch (Exception e) {
             e.printStackTrace();
@@ -533,6 +544,7 @@ public class XmsSourcingController {
             product.setSiteType(xmsSourcingList.getSiteType());
             product.setCreateTime(new Date());
             product.setUpdateTime(new Date());
+            product.setImportFlag(1);
             this.xmsCustomerProductService.save(product);
             // 设置同步成功标识
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();

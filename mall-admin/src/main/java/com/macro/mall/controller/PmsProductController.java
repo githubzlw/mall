@@ -91,6 +91,7 @@ public class PmsProductController {
         if (StrUtil.isNotBlank(shopifyName)) {
             QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                    .eq(XmsShopifyPidInfo::getMemberId, memberId)
                     .eq(XmsShopifyPidInfo::getPid, id);
             XmsShopifyPidInfo one = this.xmsShopifyPidInfoService.getOne(queryWrapper);
 

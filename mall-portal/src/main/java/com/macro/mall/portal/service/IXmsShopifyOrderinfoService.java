@@ -26,7 +26,7 @@ public interface IXmsShopifyOrderinfoService extends IService<XmsShopifyOrderinf
 
    int queryCount(XmsShopifyOrderinfoParam xmsShopifyOrderinfoParam);
 
-   List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems);
+   List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems, Long memberId);
 
    void dealShopifyOrderDetailsMainImg(Map<Long, List<ShopifyOrderDetailsShort>> shortMap);
 

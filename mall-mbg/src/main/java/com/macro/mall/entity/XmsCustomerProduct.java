@@ -100,4 +100,7 @@ public class XmsCustomerProduct implements Serializable {
     @ApiModelProperty(value = "shopify商品url")
     private String shopifyProductUrl;
 
+    @ApiModelProperty(value = "sourcing导入标识 0未导入 1sourcing导入")
+    private Integer importFlag;
+
 }

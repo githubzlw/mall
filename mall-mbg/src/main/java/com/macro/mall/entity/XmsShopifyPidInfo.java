@@ -51,4 +51,6 @@ public class XmsShopifyPidInfo implements Serializable {
 
     private Long sourcingId;
 
+    private Long memberId;
+
 }

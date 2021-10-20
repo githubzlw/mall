@@ -102,6 +102,10 @@ public class XmsShopifyController {
     private IXmsShopifyFulfillmentItemService xmsShopifyFulfillmentItemService;
     @Autowired
     private IXmsShopifyLocationService xmsShopifyLocationService;
+    @Autowired
+    private IXmsCustomerProductService xmsCustomerProductService;
+    @Autowired
+    private IXmsShopifyPidInfoService xmsShopifyPidInfoService;
 
     @PostMapping(value = "/authorization")
     @ApiOperation("请求授权接口")
@@ -235,6 +239,16 @@ public class XmsShopifyController {
 
                     Long memberId = currentMember.getId();
                     if (!noLogin) {
+
+                        UmsMember byId = this.umsMemberService.getById(currentMember.getId());
+                        if (StrUtil.isNotBlank(byId.getShopifyName()) && !shop.equalsIgnoreCase(byId.getShopifyName())) {
+                            // 如果存在原始店铺，并且和当前店铺不一致，则删除原始数据
+                            this.deleteShopifyInfo(byId);
+                        } else {
+                            // 检查和更新其他授权的当前店铺数据
+                            this.updateShopifyInfo(byId.getId(), shop);
+                        }
+
                         // 优先删除其他的授权token
                         QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
                         queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shop).notIn(XmsShopifyAuth::getUuid, state).nested(wrapper -> wrapper.eq(XmsShopifyAuth::getMemberId, 0).or().eq(XmsShopifyAuth::getMemberId, memberId));
@@ -281,6 +295,9 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
             orderinfoParam.setShopifyName(currentMember.getShopifyName());
             orderinfoParam.setMemberId(currentMember.getId());
             CommonPage<XmsShopifyOrderComb> list = this.shopifyOrderinfoService.list(orderinfoParam);
@@ -301,6 +318,10 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the store first");
+            }
+
             orderinfoParam.setShopifyName(currentMember.getShopifyName());
             orderinfoParam.setFinancialStatus(null);
             orderinfoParam.setFulfillmentStatus(null);
@@ -363,6 +384,9 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
             if (StrUtil.isNotBlank(flag)) {
                 this.getCountryByShopifyName();
             }
@@ -521,15 +545,11 @@ public class XmsShopifyController {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
-
             UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            if (StrUtil.isNotBlank(byId.getShopifyName())) {
-                QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
-                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, byId.getShopifyName()).eq(XmsShopifyAuth::getMemberId, byId.getId());
-                this.xmsShopifyAuthService.remove(queryWrapper);
-                this.umsMemberService.updateShopifyInfo(byId.getId(), "", 0);
+            if (StrUtil.isBlank(byId.getShopifyName())) {
+                return CommonResult.failed("Please bind the shopify store first");
             }
-            this.umsMemberService.updateSecurityContext();
+            this.deleteShopifyInfo(byId);
             return CommonResult.success(0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -582,6 +602,7 @@ public class XmsShopifyController {
         try {
 
             UmsMember umsMember = this.umsMemberService.getById(currentMember.getId());
+
             XmsShopifyOrderinfo byId = this.shopifyOrderinfoService.getById(shopifyOrderNoId);
             if (null == byId) {
                 return CommonResult.failed("no this order");
@@ -596,7 +617,7 @@ public class XmsShopifyController {
             if (CollectionUtil.isNotEmpty(detailsList)) {
                 List<Long> collect = detailsList.stream().map(XmsShopifyOrderDetails::getProductId).collect(Collectors.toList());
                 // 获取shopify对应的我司商品ID
-                List<XmsShopifyPidInfo> pidInfoList = this.shopifyOrderinfoService.queryByShopifyLineItem(umsMember.getShopifyName(), collect);
+                List<XmsShopifyPidInfo> pidInfoList = this.shopifyOrderinfoService.queryByShopifyLineItem(umsMember.getShopifyName(), collect, umsMember.getId());
                 collect.clear();
                 Map<Long, PmsProduct> pmsProductMap = new HashMap<>();// 存放商品信息
                 Map<Long, List<XmsCustomerSkuStock>> skuStockMap = new HashMap<>();//存放购买库存信息
@@ -1485,6 +1506,10 @@ public class XmsShopifyController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
             Map<String, String> param = new HashMap<>();
 
             param.put("shopifyName", currentMember.getShopifyName());
@@ -1527,6 +1552,10 @@ public class XmsShopifyController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
+            if (StrUtil.isBlank(currentMember.getShopifyName())) {
+                return CommonResult.failed("Please bind the shopify store first");
+            }
+
             Map<String, String> param = new HashMap<>();
 
             param.put("shopifyName", currentMember.getShopifyName());
@@ -1556,5 +1585,172 @@ public class XmsShopifyController {
         }
     }
 
+
+    /**
+     * 检查多账号绑定店铺的数据
+     *
+     * @param memberId
+     * @param shopifyName
+     */
+    private void updateShopifyInfo(Long memberId, String shopifyName) {
+
+        /**
+         * 多账号绑定同一个店铺
+         * 新的账号绑定已有店铺，提示店铺已被绑定，如果强行绑定，会强制取消上一个绑定账号内店铺的所有内容，包括商品和订单，并将上一个绑定账号内的商品和订单转移到新的账号上
+         * 老账号状态类似解绑店铺
+         * 新账号状态copy上一个绑定账号
+         */
+
+        System.err.println("updateShopifyInfo:" + memberId + "," + shopifyName);
+        try {
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getMemberId, memberId);
+            List<XmsShopifyAuth> list = this.xmsShopifyAuthService.list(queryWrapper);
+            if (CollectionUtil.isNotEmpty(list)) {
+                List<Long> memberList = list.stream().filter(e -> null != e.getMemberId() && e.getMemberId() > 0).mapToLong(XmsShopifyAuth::getMemberId).boxed().collect(Collectors.toList());
+
+                // 更新your live product下所有商品
+                UpdateWrapper<XmsCustomerProduct> customerProductWrapper = new UpdateWrapper<>();
+                customerProductWrapper.lambda()
+                        .set(XmsCustomerProduct::getMemberId, memberId)
+                        .eq(XmsCustomerProduct::getShopifyName, shopifyName)
+                        .in(XmsCustomerProduct::getMemberId, memberList);
+                this.xmsCustomerProductService.remove(customerProductWrapper);
+
+                // 更新shopify order下所有订单
+                UpdateWrapper<XmsShopifyOrderinfo> shopifyOrderinfoWrapper = new UpdateWrapper<>();
+                shopifyOrderinfoWrapper.lambda()
+                        .set(XmsShopifyOrderinfo::getMemberId, memberId)
+                        .in(XmsShopifyOrderinfo::getMemberId, memberList)
+                        .eq(XmsShopifyOrderinfo::getShopifyName, shopifyName);
+                this.shopifyOrderinfoService.update(shopifyOrderinfoWrapper);
+
+
+                // pid关联关系更新
+                UpdateWrapper<XmsShopifyPidInfo> shopifyPidInfoWrapper = new UpdateWrapper<>();
+                shopifyPidInfoWrapper.lambda()
+                        .set(XmsShopifyPidInfo::getMemberId, memberId)
+                        .eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                        .in(XmsShopifyPidInfo::getMemberId, memberList);
+                this.xmsShopifyPidInfoService.update(shopifyPidInfoWrapper);
+
+                // 删除其他授权token
+                QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getMemberId, memberId);
+                this.xmsShopifyAuthService.remove(authQueryWrapper);
+
+                list.clear();
+            }
+
+            System.err.println("updateShopifyInfo:" + memberId + "," + shopifyName + "--------end");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("updateShopifyInfo,memberId[{}],shopifyName[{}],error:", memberId, shopifyName, e);
+        }
+
+
+    }
+
+    /**
+     * 删除店铺数据
+     *
+     * @param byId
+     */
+    private void deleteShopifyInfo(UmsMember byId) {
+
+        /**
+         * 解绑 需要强提醒用户，解绑店铺会清除与店铺相关的所有内容，包括商品和订单等
+         * 清除your live product下所有商品
+         * 清除shopify order下所有订单
+         * recommend下商品状态全部变为not imported状态
+         * sourcing list下所有success状态的商品在more actions中恢复add to my live product选项
+         */
+
+        System.err.println("deleteShopifyInfo:" + byId.getId() + "," + byId.getShopifyName());
+        try {
+
+            // 清除your live product下所有商品
+            QueryWrapper<XmsCustomerProduct> customerProductWrapper = new QueryWrapper<>();
+            customerProductWrapper.lambda().eq(XmsCustomerProduct::getShopifyName, byId.getShopifyName())
+                    .eq(XmsCustomerProduct::getMemberId, byId.getId());
+            this.xmsCustomerProductService.remove(customerProductWrapper);
+
+            // 清除shopify order下所有订单
+            QueryWrapper<XmsShopifyOrderinfo> shopifyOrderinfoWrapper = new QueryWrapper<>();
+            shopifyOrderinfoWrapper.lambda().eq(XmsShopifyOrderinfo::getMemberId, byId.getId())
+                    .eq(XmsShopifyOrderinfo::getShopifyName, byId.getShopifyName());
+            List<XmsShopifyOrderinfo> orderinfoList = this.shopifyOrderinfoService.list(shopifyOrderinfoWrapper);
+
+            if (CollectionUtil.isNotEmpty(orderinfoList)) {
+                List<Long> longList = orderinfoList.stream().mapToLong(XmsShopifyOrderinfo::getOrderNo).boxed().collect(Collectors.toList());
+
+                QueryWrapper<XmsShopifyOrderDetails> orderDetailsWrapper = new QueryWrapper<>();
+                orderDetailsWrapper.lambda().in(XmsShopifyOrderDetails::getOrderNo, longList);
+                this.xmsShopifyOrderDetailsService.remove(orderDetailsWrapper);
+
+                QueryWrapper<XmsShopifyOrderAddress> orderAddressWrapper = new QueryWrapper<>();
+                orderAddressWrapper.lambda().in(XmsShopifyOrderAddress::getOrderNo, longList);
+                this.xmsShopifyOrderAddressService.remove(orderAddressWrapper);
+
+                orderinfoList.clear();
+                longList.clear();
+            }
+
+            this.shopifyOrderinfoService.remove(shopifyOrderinfoWrapper);
+
+
+            // sourcing list下所有success状态的商品在more actions中恢复add to my live product选项
+            QueryWrapper<XmsShopifyPidInfo> shopifyPidInfoWrapper = new QueryWrapper<>();
+            shopifyPidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, byId.getShopifyName())
+                    .eq(XmsShopifyPidInfo::getMemberId, byId.getId());
+
+            List<XmsShopifyPidInfo> pidInfoList = this.xmsShopifyPidInfoService.list(shopifyPidInfoWrapper);
+
+            if (CollectionUtil.isNotEmpty(pidInfoList)) {
+
+
+                List<Long> sourcingIdsList = pidInfoList.stream().filter(e -> null != e.getSourcingId() && e.getSourcingId() > 0).mapToLong(XmsShopifyPidInfo::getSourcingId).boxed().collect(Collectors.toList());
+
+                List<Long> productIdsList = pidInfoList.stream().filter(e -> StrUtil.isNotBlank(e.getPid())).mapToLong(XmsShopifyPidInfo::getSourcingId).boxed().collect(Collectors.toList());
+
+                if (CollectionUtil.isNotEmpty(sourcingIdsList) && CollectionUtil.isNotEmpty(productIdsList)) {
+                    QueryWrapper<XmsSourcingList> sourcingListWrapper = new QueryWrapper<>();
+                    sourcingListWrapper.lambda().in(XmsSourcingList::getId, sourcingIdsList)
+                            .in(XmsSourcingList::getProductId, productIdsList)
+                            .eq(XmsSourcingList::getMemberId, byId.getId());
+                    List<XmsSourcingList> oldList = this.xmsSourcingListService.list(sourcingListWrapper);
+                    if (CollectionUtil.isNotEmpty(oldList)) {
+                        List<Long> idTempList = oldList.stream().mapToLong(XmsSourcingList::getId).boxed().collect(Collectors.toList());
+                        UpdateWrapper<XmsSourcingList> sourcingUpdateWrapper = new UpdateWrapper<>();
+                        sourcingUpdateWrapper.set("add_product_flag", 0).in("id", idTempList);
+                        this.xmsSourcingListService.update(sourcingUpdateWrapper);
+                        oldList.clear();
+                    }
+                    sourcingIdsList.clear();
+                    productIdsList.clear();
+                }
+                pidInfoList.clear();
+            }
+
+            // 删除shopify的PID关联关系, recommend下商品状态全部变为not imported状态
+            this.xmsShopifyPidInfoService.remove(shopifyPidInfoWrapper);
+
+            // 删除授权信息
+            QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, byId.getShopifyName()).eq(XmsShopifyAuth::getMemberId, byId.getId());
+            this.xmsShopifyAuthService.remove(queryWrapper);
+
+            // 更新客户的绑定信息
+            this.umsMemberService.updateShopifyInfo(byId.getId(), "", 0);
+
+            // 刷新缓存
+            this.umsMemberService.updateSecurityContext();
+
+            System.err.println("deleteShopifyInfo:" + byId.getId() + "," + byId.getShopifyName() + "-------end");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("deleteShopifyInfo,byId[{}],error:", byId, e);
+        }
+    }
 
 }

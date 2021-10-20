@@ -160,9 +160,11 @@ public class XmsShopifyOrderinfoServiceImpl extends ServiceImpl<XmsShopifyOrderi
     }
 
     @Override
-    public List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems) {
+    public List<XmsShopifyPidInfo> queryByShopifyLineItem(String shopifyName, List<Long> lineItems, Long memberId) {
         QueryWrapper<XmsShopifyPidInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName).in(XmsShopifyPidInfo::getShopifyPid, lineItems);
+        queryWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, shopifyName)
+                .eq(XmsShopifyPidInfo::getMemberId, memberId)
+                .in(XmsShopifyPidInfo::getShopifyPid, lineItems);
         return this.xmsShopifyPidInfoMapper.selectList(queryWrapper);
     }
 
