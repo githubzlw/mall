@@ -385,7 +385,7 @@ public class ShopifyUtils {
         if (StrUtil.isNotEmpty(shopifyName)) {
             String token = this.xmsShopifyAuthService.getShopifyToken(shopifyName, memberId);
             String url = String.format(shopifyConfig.SHOPIFY_URI_PRODUCTS, shopifyName);
-            String json = this.shopifyRestTemplate.exchange(url, token);
+            String json = this.shopifyRestTemplate.exchange(url + "?limit=250", token);
             JSONObject jsonObject = JSONObject.parseObject(json);
             JSONArray products = jsonObject.getJSONArray("products");
             this.saveShopifyProducts(shopifyName, memberId, userName, products);
@@ -948,7 +948,7 @@ public class ShopifyUtils {
         try {
             // uri_post_fulfillment_orders
             String url = String.format(shopifyConfig.SHOPIFY_URI_POST_FULFILLMENT_ORDERS, shopifyName, String.valueOf(orderNo));
-            String rs = this.shopifyRestTemplate.exchange(url, token);
+            String rs = this.shopifyRestTemplate.exchange(url + "?limit=250", token);
             if (null != rs) {
                 JSONArray fulfillments = JSONObject.parseObject(rs).getJSONArray("fulfillments");
 
@@ -1145,7 +1145,7 @@ public class ShopifyUtils {
     private OrdersWraper getOrders(String shopName, Long memberId) {
         String url = String.format(shopifyConfig.SHOPIFY_URI_ORDERS, shopName);
         String accessToken = this.xmsShopifyAuthService.getShopifyToken(shopName, memberId);
-        String json = this.shopifyRestTemplate.exchange(url, accessToken);
+        String json = this.shopifyRestTemplate.exchange(url + "?limit=250", accessToken);
         OrdersWraper result = new Gson().fromJson(json, OrdersWraper.class);
         return result;
     }

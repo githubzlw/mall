@@ -572,6 +572,8 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             updateWrapper.lambda()
                     .set(XmsCustomerProduct::getShopifyProductId, shopifyProductId)
                     .set(XmsCustomerProduct::getShopifyPrice, price)
+                    .set(XmsCustomerProduct::getStatus, 1)
+                    .set(XmsCustomerProduct::getImportFlag, 1)
                     .set(XmsCustomerProduct::getUpdateTime, new Date())
                     .set(XmsCustomerProduct::getSyncTime, new Date())
                     .eq(XmsCustomerProduct::getId, customerProduct.getId());

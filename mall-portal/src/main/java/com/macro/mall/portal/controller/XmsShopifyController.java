@@ -244,10 +244,9 @@ public class XmsShopifyController {
                         if (StrUtil.isNotBlank(byId.getShopifyName()) && !shop.equalsIgnoreCase(byId.getShopifyName())) {
                             // 如果存在原始店铺，并且和当前店铺不一致，则删除原始数据
                             this.deleteShopifyInfo(byId);
-                        } else {
-                            // 检查和更新其他授权的当前店铺数据
-                            this.updateShopifyInfo(byId.getId(), shop);
                         }
+                        // 检查和更新其他授权的当前店铺数据
+                        this.changeShopifyInfo(byId.getId(), shop);
 
                         // 优先删除其他的授权token
                         QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
@@ -1592,7 +1591,7 @@ public class XmsShopifyController {
      * @param memberId
      * @param shopifyName
      */
-    private void updateShopifyInfo(Long memberId, String shopifyName) {
+    private void changeShopifyInfo(Long memberId, String shopifyName) {
 
         /**
          * 多账号绑定同一个店铺
@@ -1634,11 +1633,13 @@ public class XmsShopifyController {
                         .in(XmsShopifyPidInfo::getMemberId, memberList);
                 this.xmsShopifyPidInfoService.update(shopifyPidInfoWrapper);
 
+                //System.err.println(Arrays.toString(Thread.currentThread().getStackTrace()));
+
+                System.err.println("------delete shopifyName:" + shopifyName + ";memberId:" + memberId);
                 // 删除其他授权token
                 QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
-                queryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getMemberId, memberId);
+                authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getMemberId, memberId);
                 this.xmsShopifyAuthService.remove(authQueryWrapper);
-
                 list.clear();
             }
 
