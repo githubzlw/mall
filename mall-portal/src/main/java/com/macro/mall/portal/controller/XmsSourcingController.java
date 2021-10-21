@@ -476,16 +476,16 @@ public class XmsSourcingController {
             }
 
             UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, -1);
+            updateWrapper.lambda().eq(XmsSourcingList::getId, sourcingId).set(XmsSourcingList::getStatus, 4);
             boolean update = this.xmsSourcingListService.update(null, updateWrapper);
 
-            // sourclinglist中该商品，恢复quato price按钮（询价、删除按钮）
+            /*// sourclinglist中该商品，恢复quato price按钮（询价、删除按钮）
             UpdateWrapper<XmsCustomerProduct> productUpdateWrapper = new UpdateWrapper<>();
             productUpdateWrapper.lambda().set(XmsCustomerProduct::getImportFlag, 0)
                     .eq(XmsCustomerProduct::getSourcingId, sourcingId)
                     .eq(XmsCustomerProduct::getMemberId, currentMember.getId());
 
-            this.xmsCustomerProductService.update(productUpdateWrapper);
+            this.xmsCustomerProductService.update(productUpdateWrapper);*/
 
             return CommonResult.success(update);
         } catch (Exception e) {

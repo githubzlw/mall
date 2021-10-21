@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -245,8 +246,7 @@ public class XmsShopifyController {
                             // 如果存在原始店铺，并且和当前店铺不一致，则删除原始数据
                             this.deleteShopifyInfo(byId);
                         }
-                        // 检查和更新其他授权的当前店铺数据
-                        this.changeShopifyInfo(byId.getId(), shop);
+
 
                         // 优先删除其他的授权token
                         QueryWrapper<XmsShopifyAuth> queryWrapper = new QueryWrapper<>();
@@ -259,6 +259,11 @@ public class XmsShopifyController {
                         this.umsMemberService.updateSecurityContext();
                     }
 
+                    // 检查和更新其他授权的当前店铺数据
+                    this.changeShopifyInfo(memberId, shop);
+
+                    // 异步同步shopify的数据
+                    this.asyncShopifyInfo(currentMember.getId(), shop, currentMember.getUsername());
                     // 插入shopify的token
                     // ------------------
                     rsMap.put("shopifyName", shop);
@@ -1609,20 +1614,20 @@ public class XmsShopifyController {
                 List<Long> memberList = list.stream().filter(e -> null != e.getMemberId() && e.getMemberId() > 0).mapToLong(XmsShopifyAuth::getMemberId).boxed().collect(Collectors.toList());
 
                 // 更新your live product下所有商品
-                UpdateWrapper<XmsCustomerProduct> customerProductWrapper = new UpdateWrapper<>();
+                QueryWrapper<XmsCustomerProduct> customerProductWrapper = new QueryWrapper<>();
                 customerProductWrapper.lambda()
-                        .set(XmsCustomerProduct::getMemberId, memberId)
+                        .notIn(XmsCustomerProduct::getMemberId, memberId)
                         .eq(XmsCustomerProduct::getShopifyName, shopifyName)
                         .in(XmsCustomerProduct::getMemberId, memberList);
                 this.xmsCustomerProductService.remove(customerProductWrapper);
 
                 // 更新shopify order下所有订单
-                UpdateWrapper<XmsShopifyOrderinfo> shopifyOrderinfoWrapper = new UpdateWrapper<>();
+                QueryWrapper<XmsShopifyOrderinfo> shopifyOrderinfoWrapper = new QueryWrapper<>();
                 shopifyOrderinfoWrapper.lambda()
-                        .set(XmsShopifyOrderinfo::getMemberId, memberId)
+                        .notIn(XmsShopifyOrderinfo::getMemberId, memberId)
                         .in(XmsShopifyOrderinfo::getMemberId, memberList)
                         .eq(XmsShopifyOrderinfo::getShopifyName, shopifyName);
-                this.shopifyOrderinfoService.update(shopifyOrderinfoWrapper);
+                this.shopifyOrderinfoService.remove(shopifyOrderinfoWrapper);
 
 
                 // pid关联关系更新
@@ -1674,6 +1679,26 @@ public class XmsShopifyController {
             QueryWrapper<XmsCustomerProduct> customerProductWrapper = new QueryWrapper<>();
             customerProductWrapper.lambda().eq(XmsCustomerProduct::getShopifyName, byId.getShopifyName())
                     .eq(XmsCustomerProduct::getMemberId, byId.getId());
+
+
+            List<XmsCustomerProduct> productList = this.xmsCustomerProductService.list(customerProductWrapper);
+
+            if (CollectionUtil.isNotEmpty(productList)) {
+                List<Long> sourcingIdsList = productList.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
+                List<Long> productIdsList = productList.stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(sourcingIdsList) && CollectionUtil.isNotEmpty(productIdsList)) {
+                    UpdateWrapper<XmsSourcingList> sourcingUpdateWrapper = new UpdateWrapper<>();
+                    sourcingUpdateWrapper.lambda().set(XmsSourcingList::getAddProductFlag, 0)
+                            .in(XmsSourcingList::getId, sourcingIdsList)
+                            .in(XmsSourcingList::getProductId, productIdsList)
+                            .eq(XmsSourcingList::getMemberId, byId.getId());
+                    this.xmsSourcingListService.update(sourcingUpdateWrapper);
+                    sourcingIdsList.clear();
+                    productIdsList.clear();
+                }
+                productList.clear();
+            }
+
             this.xmsCustomerProductService.remove(customerProductWrapper);
 
             // 清除shopify order下所有订单
@@ -1705,33 +1730,8 @@ public class XmsShopifyController {
             shopifyPidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, byId.getShopifyName())
                     .eq(XmsShopifyPidInfo::getMemberId, byId.getId());
 
-            List<XmsShopifyPidInfo> pidInfoList = this.xmsShopifyPidInfoService.list(shopifyPidInfoWrapper);
+            // List<XmsShopifyPidInfo> pidInfoList = this.xmsShopifyPidInfoService.list(shopifyPidInfoWrapper);
 
-            if (CollectionUtil.isNotEmpty(pidInfoList)) {
-
-
-                List<Long> sourcingIdsList = pidInfoList.stream().filter(e -> null != e.getSourcingId() && e.getSourcingId() > 0).mapToLong(XmsShopifyPidInfo::getSourcingId).boxed().collect(Collectors.toList());
-
-                List<Long> productIdsList = pidInfoList.stream().filter(e -> StrUtil.isNotBlank(e.getPid())).mapToLong(XmsShopifyPidInfo::getSourcingId).boxed().collect(Collectors.toList());
-
-                if (CollectionUtil.isNotEmpty(sourcingIdsList) && CollectionUtil.isNotEmpty(productIdsList)) {
-                    QueryWrapper<XmsSourcingList> sourcingListWrapper = new QueryWrapper<>();
-                    sourcingListWrapper.lambda().in(XmsSourcingList::getId, sourcingIdsList)
-                            .in(XmsSourcingList::getProductId, productIdsList)
-                            .eq(XmsSourcingList::getMemberId, byId.getId());
-                    List<XmsSourcingList> oldList = this.xmsSourcingListService.list(sourcingListWrapper);
-                    if (CollectionUtil.isNotEmpty(oldList)) {
-                        List<Long> idTempList = oldList.stream().mapToLong(XmsSourcingList::getId).boxed().collect(Collectors.toList());
-                        UpdateWrapper<XmsSourcingList> sourcingUpdateWrapper = new UpdateWrapper<>();
-                        sourcingUpdateWrapper.set("add_product_flag", 0).in("id", idTempList);
-                        this.xmsSourcingListService.update(sourcingUpdateWrapper);
-                        oldList.clear();
-                    }
-                    sourcingIdsList.clear();
-                    productIdsList.clear();
-                }
-                pidInfoList.clear();
-            }
 
             // 删除shopify的PID关联关系, recommend下商品状态全部变为not imported状态
             this.xmsShopifyPidInfoService.remove(shopifyPidInfoWrapper);
@@ -1751,6 +1751,35 @@ public class XmsShopifyController {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("deleteShopifyInfo,byId[{}],error:", byId, e);
+        }
+    }
+
+
+    private void asyncShopifyInfo(Long memberId, String shopifyName, String userName) {
+        try {
+
+            String url = microServiceConfig.getShopifyUrl().replace("/shopify", "/shopifyTask") + "/syncInfoByShopifyName";
+
+            List<ShopifyTaskBean> taskBeanList = new ArrayList<>();
+            System.err.println(JSONObject.toJSONString(taskBeanList));
+            Map<String, String> param = new HashMap<>();
+            param.put("listParam", JSONObject.toJSONString(taskBeanList));
+            JSONObject jsonObject = this.urlUtil.postURL(url, param);
+            CommonResult commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            if (null == commonResult || commonResult.getCode() != 200) {
+                TimeUnit.SECONDS.sleep(3);
+                jsonObject = this.urlUtil.postURL(url, param);
+                commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            }
+            if (null == commonResult || commonResult.getCode() != 200) {
+                TimeUnit.SECONDS.sleep(3);
+                jsonObject = this.urlUtil.postURL(url, param);
+                commonResult = JSONObject.parseObject(jsonObject.toJSONString(), CommonResult.class);
+            }
+            System.err.println("asyncShopifyInfo:" + JSONObject.toJSONString(commonResult));
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("asyncShopifyInfo,memberId:[{}],shopifyName:[{}],error:", memberId, shopifyName, e);
         }
     }
 
