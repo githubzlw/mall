@@ -124,4 +124,6 @@ public interface UmsMemberService {
     void setOtherInfo(UmsMember umsMember);
 
     void setLogo(UmsMember ums);
+
+    int clearOtherShopifyInfo(Long id, String shopifyName);
 }

@@ -258,7 +258,7 @@ public class XmsYouLiveProductController {
                 }
             } else {
                 //List<Long> productIds = new ArrayList<>();
-                if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
+                /*if (CollectionUtil.isNotEmpty(xmsCustomerProducts)) {
                     List<Long> collect = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getSourcingId).boxed().collect(Collectors.toList());
                     //productIds = xmsCustomerProducts.stream().mapToLong(XmsCustomerProduct::getProductId).boxed().collect(Collectors.toList());
                     UpdateWrapper<XmsSourcingList> updateWrapper = new UpdateWrapper<>();
@@ -266,7 +266,7 @@ public class XmsYouLiveProductController {
                     this.xmsSourcingListService.update(null, updateWrapper);
                     collect.clear();
                     xmsCustomerProducts.clear();
-                }
+                }*/
 
                 if (CollectionUtil.isNotEmpty(ids)) {
                     QueryWrapper<XmsCustomerProduct> productQueryWrapper = new QueryWrapper<>();

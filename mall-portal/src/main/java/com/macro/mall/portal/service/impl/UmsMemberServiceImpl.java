@@ -524,4 +524,13 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             this.memberCacheService.setMember(usm);
     }
 
+
+    @Override
+    public int clearOtherShopifyInfo(Long id,String shopifyName) {
+        if (null != id && id > 0 && StrUtil.isNotBlank(shopifyName)) {
+            return this.memberMapper.clearOtherShopifyInfo(id, shopifyName);
+        }
+        return 0;
+    }
+
 }

@@ -1645,6 +1645,10 @@ public class XmsShopifyController {
                 QueryWrapper<XmsShopifyAuth> authQueryWrapper = new QueryWrapper<>();
                 authQueryWrapper.lambda().eq(XmsShopifyAuth::getShopName, shopifyName).notIn(XmsShopifyAuth::getMemberId, memberId);
                 this.xmsShopifyAuthService.remove(authQueryWrapper);
+                // 更新客户信息的其他此店铺
+                this.umsMemberService.clearOtherShopifyInfo(memberId, shopifyName);
+
+
                 list.clear();
             }
 
