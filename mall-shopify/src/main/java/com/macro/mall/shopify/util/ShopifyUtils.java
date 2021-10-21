@@ -426,6 +426,8 @@ public class ShopifyUtils {
                         XmsSourcingList xmsSourcingList = sourcingLists.get(0);
                         customerProduct.setProductId(xmsSourcingList.getProductId());
                         customerProduct.setSourcingId(xmsSourcingList.getId());
+                        customerProduct.setImportFlag(1);
+                        customerProduct.setStatus(1);
                         xmsSourcingList.setAddProductFlag(1);
                         xmsSourcingList.setUpdateTime(new Date());
                         this.xmsSourcingListMapper.updateById(xmsSourcingList);
