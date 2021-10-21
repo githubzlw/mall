@@ -50,8 +50,8 @@ public class ShopifyRestTemplate {
 
     private SimpleClientHttpRequestFactory getFactory() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(30000);
-        factory.setReadTimeout(20000);
+        factory.setConnectTimeout(180000);
+        factory.setReadTimeout(120000);
         return factory;
     }
 

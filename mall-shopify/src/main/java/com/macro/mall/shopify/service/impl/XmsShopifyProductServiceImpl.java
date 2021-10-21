@@ -639,6 +639,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
             lstVariants.add(variants);
         }
 
+        if(lstVariants.size() > 100){
+            throw new ShopifyException("1004","variants maximum number 100 limit is exceeded");
+        }
         optionMap.entrySet().stream().forEach(o -> lstOptions.add(o.getValue()));
         return OptionWrap.builder().lstImages(image)
                 .options(lstOptions).variants(lstVariants).build();
@@ -818,6 +821,9 @@ public class XmsShopifyProductServiceImpl implements XmsShopifyProductService {
                         variantsMap.clear();
                         skuSet.clear();
                     }
+                }
+                if(newVariants.size() > 100){
+                    throw new ShopifyException("1004","variants maximum number 100 limit is exceeded");
                 }
                 product.put("variants", newVariants);
 
