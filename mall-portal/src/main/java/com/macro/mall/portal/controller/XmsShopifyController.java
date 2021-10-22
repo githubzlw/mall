@@ -815,6 +815,7 @@ public class XmsShopifyController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
 
+            UmsMember usmBean = this.umsMemberService.getById(currentMember.getId());
             XmsShopifyOrderinfo byId = this.shopifyOrderinfoService.getById(purchaseShopifyOrderParam.getShopifyOrderId());
             if (null == byId) {
                 return CommonResult.failed("no this shopify order");
@@ -897,7 +898,7 @@ public class XmsShopifyController {
                 OrderPayParam orderPayParam = new OrderPayParam();
                 BeanUtil.copyProperties(purchaseShopifyOrderParam, orderPayParam);
                 GenerateOrderParam generateParam = GenerateOrderParam.builder().currentMember(currentMember)
-                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).shopifyOrderNo(byId.getOrderNo()).shippingFrom(purchaseShopifyOrderParam.getShippingFrom()).build();
+                        .orderNo(orderNo).totalFreight(purchaseShopifyOrderParam.getShippingCostValue()).type(1).customerSkuStockList(updateList).orderPayParam(orderPayParam).shopifyOrderNo(byId.getOrderNo()).shippingFrom(purchaseShopifyOrderParam.getShippingFrom()).logoFlag(purchaseShopifyOrderParam.getLogoFlag()).logoUrl(usmBean.getLogoUrl()).build();
                 // 确认库存数据，生成订单,然后扣库存
                 GenerateOrderResult orderResult = this.orderUtils.generateDeliveryOrder(generateParam);
                 // 生成订单成功后，更新shopify的order信息

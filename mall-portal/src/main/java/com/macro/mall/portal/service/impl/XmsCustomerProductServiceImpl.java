@@ -47,8 +47,8 @@ public class XmsCustomerProductServiceImpl extends ServiceImpl<XmsCustomerProduc
         }
         if(null != productParam.getImportFlag()){
             if(1 == productParam.getImportFlag()){
-                lambdaQuery.gt(XmsCustomerProduct::getImportFlag, 1);
-                lambdaQuery.gt(XmsCustomerProduct::getStatus, 1);
+                lambdaQuery.eq(XmsCustomerProduct::getImportFlag, 1);
+                lambdaQuery.in(XmsCustomerProduct::getStatus, 1);
             } else if(0 == productParam.getImportFlag()){
                 lambdaQuery.eq(XmsCustomerProduct::getImportFlag, 0);
             }

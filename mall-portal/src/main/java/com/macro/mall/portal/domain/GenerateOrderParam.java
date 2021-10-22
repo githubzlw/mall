@@ -42,4 +42,9 @@ public class GenerateOrderParam {
 
     @ApiModelProperty(value = "下单的时候选择的国家 0china 1usa")
     private Integer shippingFrom;
+
+    @ApiModelProperty(value = "logo标识0或者null表示不贴1表示贴标识")
+    private Integer logoFlag;
+
+    private String logoUrl;
 }

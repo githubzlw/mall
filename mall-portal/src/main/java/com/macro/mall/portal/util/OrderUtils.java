@@ -299,7 +299,12 @@ public class OrderUtils {
             addressMap.put("modeOfTransportation", generateParam.getOrderPayParam().getModeOfTransportation());
             addressMap.put("deliveryTime", generateParam.getOrderPayParam().getDeliveryTime());
             addressMap.put("address", generateParam.getOrderPayParam().getReceiverDetailAddress());
-            order.setNote(JSONObject.toJSONString(addressMap));
+            if(null != generateParam.getLogoFlag() && generateParam.getLogoFlag() == 1){
+                order.setNote(JSONObject.toJSONString(addressMap) + ",!!! Need to stick logo["+generateParam.getLogoUrl()+"]!!!");
+            } else{
+                order.setNote(JSONObject.toJSONString(addressMap));
+            }
+
 
 
             List<OmsOrderItem> orderItemList = new ArrayList<>();
