@@ -193,6 +193,24 @@ public class XmsSourcingController {
         }
     }
 
+    @ApiOperation("sourcingList的Pending统计")
+    @RequestMapping(value = "/sourcingListPendingCount", method = RequestMethod.GET)
+    public CommonResult sourcingListPendingCount() {
+
+        UmsMember currentMember = this.umsMemberService.getCurrentMember();
+        try {
+            LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
+            lambdaQuery.eq(XmsSourcingList::getMemberId, currentMember.getId());
+            lambdaQuery.eq(XmsSourcingList::getStatus, 0);
+            int count = this.xmsSourcingListService.count(lambdaQuery);
+            return CommonResult.success(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("sourcingListPendingCount,currentMember[{}],error:", currentMember, e);
+            return CommonResult.failed("query failed");
+        }
+    }
+
 
     @ApiOperation("sourcingListByUuid列表")
     @RequestMapping(value = "/sourcingListByUuid", method = RequestMethod.GET)

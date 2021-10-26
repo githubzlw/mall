@@ -634,6 +634,19 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     @Override
+    public long processPaymentCount() {
+        Integer orderType = 0;
+        Integer sourceType = 0;
+        UmsMember member = memberService.getCurrentMember();
+        OmsOrderExample orderExample = new OmsOrderExample();
+        OmsOrderExample.Criteria criteria = orderExample.createCriteria();
+        criteria.andDeleteStatusEqualTo(0)
+                .andMemberIdEqualTo(member.getId()).andOrderTypeEqualTo(orderType)
+                .andSourceTypeEqualTo(sourceType).andStatusEqualTo(0);
+        return orderMapper.countByExample(orderExample);
+    }
+
+    @Override
     public CommonPage<OmsOrderDetail> list(XmsShopifyOrderinfoParam orderInfoParam) throws ParseException {
         Integer status = orderInfoParam.getDeliverOrderStatus();
         if (status == -2) {

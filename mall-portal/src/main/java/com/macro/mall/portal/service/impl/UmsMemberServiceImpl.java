@@ -1,5 +1,6 @@
 package com.macro.mall.portal.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -531,6 +532,19 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             return this.memberMapper.clearOtherShopifyInfo(id, shopifyName);
         }
         return 0;
+    }
+
+    @Override
+    public int getByShopifyName(String shopifyName) {
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andShopifyNameEqualTo(shopifyName);
+        List<UmsMember> umsMembers = this.memberMapper.selectByExample(example);
+        int total = 0;
+        if(CollectionUtil.isNotEmpty(umsMembers)){
+            total = umsMembers.size();
+            umsMembers.clear();
+        }
+        return total;
     }
 
 }

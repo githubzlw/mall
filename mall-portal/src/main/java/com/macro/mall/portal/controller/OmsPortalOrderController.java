@@ -129,6 +129,15 @@ public class OmsPortalOrderController {
         return CommonResult.success(orderPage);
     }
 
+    @ApiOperation("获取待支付的订单总数")
+    @RequestMapping(value = "/processPaymentCount", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<Long> processPaymentCount() {
+        long paymentCount = portalOrderService.processPaymentCount();
+        return CommonResult.success(paymentCount);
+    }
+
+
     @ApiOperation("根据ID获取订单详情")
     @RequestMapping(value = "/detail/{orderId}", method = RequestMethod.GET)
     @ResponseBody

@@ -62,6 +62,8 @@ public interface OmsPortalOrderService {
      */
     CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize, String productName);
 
+    long processPaymentCount();
+
     /**
      * 分页获取用户发货订单
      */

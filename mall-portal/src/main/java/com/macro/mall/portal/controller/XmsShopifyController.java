@@ -529,13 +529,20 @@ public class XmsShopifyController {
 
     @GetMapping(value = "/getShopifyName")
     @ApiOperation("获取客户shopify的店铺名称")
-    public CommonResult getShopifyName() {
+    public CommonResult getShopifyName(String shopifyName) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
         try {
             // 数据库判断是否绑定
             UmsMember byId = this.umsMemberService.getById(currentMember.getId());
-            return CommonResult.success(byId.getShopifyName());
+            if(StrUtil.isNotBlank(byId.getShopifyName())){
+                return CommonResult.success(1);
+            }
+            int byShopifyName = this.umsMemberService.getByShopifyName(shopifyName);
+            if(byShopifyName == 0){
+                return CommonResult.success(0);
+            }
+            return CommonResult.success(2);
         } catch (Exception e) {
             log.error("getShopifyName,currentMember[{}],error", currentMember, e);
             return CommonResult.failed(e.getMessage());

@@ -418,7 +418,7 @@ public class ShopifyUtils {
                 pidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId())
                         .eq(XmsShopifyPidInfo::getMemberId, memberId);
                 List<XmsShopifyPidInfo> pidInfoList = this.xmsShopifyPidInfoMapper.selectList(pidInfoWrapper);
-                if (CollectionUtil.isNotEmpty(pidInfoList)) {
+                if (CollectionUtil.isNotEmpty(pidInfoList) && StrUtil.isNotBlank(pidInfoList.get(0).getPid())) {
                     QueryWrapper<XmsSourcingList> sourcingWrapper = new QueryWrapper<>();
                     sourcingWrapper.lambda().eq(XmsSourcingList::getProductId, Long.parseLong(pidInfoList.get(0).getPid()));
                     List<XmsSourcingList> sourcingLists = this.xmsSourcingListMapper.selectList(sourcingWrapper);
@@ -432,6 +432,18 @@ public class ShopifyUtils {
                         xmsSourcingList.setUpdateTime(new Date());
                         this.xmsSourcingListMapper.updateById(xmsSourcingList);
                     }
+                } else {
+                    XmsShopifyPidInfo shopifyPidInfo = new XmsShopifyPidInfo();
+                    shopifyPidInfo.setMemberId(memberId);
+                    shopifyPidInfo.setShopifyPid(String.valueOf(customerProduct.getShopifyProductId()));
+                    shopifyPidInfo.setShopifyName(shopifyName);
+                    shopifyPidInfo.setShopifyInfo(customerProduct.getShopifyJson());
+                    shopifyPidInfo.setCreateTime(new Date());
+                    shopifyPidInfo.setUpdateTime(new Date());
+                    shopifyPidInfo.setSourcingId(null);
+                    shopifyPidInfo.setPid(null);
+                    shopifyPidInfo.setPublish(1);
+                    this.xmsShopifyPidInfoMapper.insert(shopifyPidInfo);
                 }
                 if (null == customerProduct.getSourcingId()) {
                     customerProduct.setSourcingId(0L);

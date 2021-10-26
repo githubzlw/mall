@@ -292,7 +292,8 @@ public class ProductUtils {
 
             QueryWrapper<XmsShopifyPidInfo> pidInfoWrapper = new QueryWrapper<>();
             pidInfoWrapper.lambda().eq(XmsShopifyPidInfo::getShopifyName, customerProduct.getShopifyName())
-                    .eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId());
+                    .eq(XmsShopifyPidInfo::getShopifyPid, customerProduct.getShopifyProductId())
+                    .eq(XmsShopifyPidInfo::getMemberId, customerProduct.getMemberId());
             XmsShopifyPidInfo xmsShopifyPidInfo = this.xmsShopifyPidInfoMapper.selectOne(pidInfoWrapper);
             if (null == xmsShopifyPidInfo) {
                 xmsShopifyPidInfo = new XmsShopifyPidInfo();
@@ -305,6 +306,11 @@ public class ProductUtils {
                 xmsShopifyPidInfo.setSourcingId(customerProduct.getSourcingId());
                 xmsShopifyPidInfo.setMemberId(customerProduct.getMemberId());
                 this.xmsShopifyPidInfoMapper.insert(xmsShopifyPidInfo);
+            } else {
+                xmsShopifyPidInfo.setSourcingId(customerProduct.getSourcingId());
+                xmsShopifyPidInfo.setPid(String.valueOf(productMaxId));
+                xmsShopifyPidInfo.setUpdateTime(new Date());
+                this.xmsShopifyPidInfoMapper.updateById(xmsShopifyPidInfo);
             }
             return true;
         } catch (Exception e) {
