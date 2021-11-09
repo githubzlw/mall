@@ -29,9 +29,10 @@ public class XmsSourcingInfoParam implements Serializable {
     @ApiModelProperty(value = "productId")
     private Long productId;
 
+    @ApiModelProperty(value = "插件的uuid,方便sourcingList的更新")
+    private String uuid;
+
     /*
-
-
     @ApiModelProperty(value = "网站类型：1->阿里巴巴；2->速卖通；...")
     private Integer siteType;
 

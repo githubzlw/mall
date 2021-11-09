@@ -25,6 +25,7 @@ import com.macro.mall.portal.service.*;
 import com.macro.mall.portal.enums.OrderPrefixEnum;
 import com.macro.mall.portal.util.OrderUtils;
 import com.macro.mall.portal.util.PayUtil;
+import com.macro.mall.portal.util.SourcingUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -78,6 +79,8 @@ public class XmsSourcingController {
     private UrlUtil urlUtil = UrlUtil.getInstance();
     @Autowired
     private IXmsProductSaveEditService xmsProductSaveEditService;
+    @Autowired
+    private SourcingUtils sourcingUtils;
 
     @InitBinder
     protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
@@ -95,6 +98,12 @@ public class XmsSourcingController {
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
 
         try {
+
+            // 整合sourcing数据
+            String uuid = sourcingParam.getUuid();
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(currentMember, uuid);
+            }
 
             if (null == sourcingParam.getPageNum() || sourcingParam.getPageNum() == 0) {
                 sourcingParam.setPageNum(1);
@@ -142,12 +151,15 @@ public class XmsSourcingController {
 
     @ApiOperation("sourcingList统计")
     @RequestMapping(value = "/sourcingListStatistics", method = RequestMethod.GET)
-    public CommonResult sourcingListStatistics(String url) {
+    public CommonResult sourcingListStatistics(String url, String uuid) {
 
         UmsMember currentMember = this.umsMemberService.getCurrentMember();
 
         try {
-
+            // 整合sourcing数据
+            if (StrUtil.isNotEmpty(uuid) && uuid.length() > 10) {
+                this.sourcingUtils.mergeSourcingList(currentMember, uuid);
+            }
 
             LambdaQueryWrapper<XmsSourcingList> lambdaQuery = Wrappers.lambdaQuery();
             lambdaQuery.eq(XmsSourcingList::getUsername, currentMember.getUsername());
