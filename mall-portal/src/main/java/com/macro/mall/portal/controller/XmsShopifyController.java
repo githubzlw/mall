@@ -155,7 +155,7 @@ public class XmsShopifyController {
                                      HttpServletRequest request) {
 
         Assert.isTrue(StrUtil.isNotBlank(state), "state null");
-        log.info("code:{},hmac:{},timestamp:{},state:{},shop:{},host:{}", code, hmac, timestamp, state, shop, host);
+        log.info("authCallback code:{},hmac:{},timestamp:{},state:{},shop:{},host:{}", code, hmac, timestamp, state, shop, host);
         String redirectUrl = "redirect:/apa/shopifyBindResult.html";
 
         Map<String, String[]> parameters = request.getParameterMap();

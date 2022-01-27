@@ -36,12 +36,19 @@ public class XmsShopifyWebhook implements Serializable {
     @ApiModelProperty(value = "传递的参数体")
     private String payload;
 
+
+    @ApiModelProperty(value = "店铺链接")
+    private String shopifyUrl;
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     @ApiModelProperty(value = "1:customers/data_request , 2:customers/redact, 3:shop/redact")
     private Integer type;
+
+    @ApiModelProperty(value = "传递的头部参数体")
+    private String headers;
 
 
 }
